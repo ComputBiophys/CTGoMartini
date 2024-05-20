@@ -31,3 +31,5 @@ Warninging: bonded types in [ atomtypes ]
 # charge check and atom number check
 xtcreporter
 
+# 
+Two CVs instead of all CVs
