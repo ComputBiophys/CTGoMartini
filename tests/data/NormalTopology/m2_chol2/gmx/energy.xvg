@@ -1,0 +1,25 @@
+# This file was created Wed Aug 17 14:15:13 2022
+# Created by:
+#            :-) GROMACS - gmx energy, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/SongYang/test/Martini3-openmm/martini_openmm-martini3/tests/m2_chol2/gmx
+# Command line:
+#   gmx_d energy -f run
+# gmx energy is part of G R O M A C S:
+#
+# Glycine aRginine prOline Methionine Alanine Cystine Serine
+#
+@    title "GROMACS Energies"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "(kJ/mol)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "Potential"
+    0.000000   19.417432

@@ -1,0 +1,47 @@
+mini_nstep  = 0                                 ; Number of steps for minimization
+mini_Tol    = 1000.0                            ; Minimization energy tolerance
+
+gen_vel     = no                                ; Generate initial velocities
+gen_temp    = 310                               ; Temperature for generating initial velocities (K)
+
+nstep       = 5000                              ; number of steps to run
+dt          = 0.020                             ; time-step (ps)
+b_step      = 0                                 ; set begininng step count
+append      = no                               ; append new dcd to the old one
+
+input       = npt.gro
+topol       = system.top
+ichk        = npt.chk                           ; Load check file
+nstout      = 1000                              ; Writing output frequency (steps)
+nstdcd      = 1000                              ; Writing coordinates trajectory frequency (steps)
+output      = md.gro
+output_pdb  = md.pdb
+odcd        = md.dcd
+ochk        = md.chk
+
+defines     = 
+
+rest        = no                                ; Turn on/off restraints
+rest_file   = npt.gro                           ; Reference structure file
+rest_file   = restraints.txt
+gen_rest    = no                                ; Generate restraint file
+atomname    = BB                                ; Select atom name
+fc          = 1000.0                            ; Positional restraint force constant for restraint generation (kJ/mol/nm^2)
+gen_rest_file = restraints.txt                  ; Generated restraint file name
+
+platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
+precision   = single                            ; single, mixed, double for CUDA and OpenCL. For CPU and Reference platforms, default precision is used.
+GPU_id      =    
+temp        = 310                               ; Temperature (K)
+fric_coeff  = 1                                 ; Friction coefficient for Langevin dynamics
+nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions. Unit: nm
+epsilon_r   = 15.0                              ; epsilon_r
+
+pcouple     = yes                               ; Turn on/off pressure coupling
+p_ref       = 1.0                               ; Pressure (Pref or Pxx, Pyy, Pzz; bar)
+p_type      = isotropic                         ; MonteCarloBarostat type: isotropic, membrane
+p_freq      = 100                               ; Pressure coupling frequency (steps)
+
+
+
+

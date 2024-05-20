@@ -1,0 +1,115 @@
+cp /home/ys/SongYang/GoMartini3/gbp_sw/PDB/*_1_clean.pdb .
+mkdir FF
+cp /home/ys/CommonUse/Martini/ForceField3/*.itp FF/
+cp ~/CommonUse/Martini/create_goVirt_for_multimer.py .
+cp ~/CommonUse/Martini/Contact.py .
+
+
+#---------------------------------------------
+
+martinize2 -f 1GGG_1_clean.pdb -o system.top -x GBP_open_cg.pdb -dssp dssp -p backbone -ff martini3001 -govs-include -govs-moltype gbp_open  -cys auto
+
+#upload pdb to http://www.ifpan.edu.pl/~rcsu/rcsu/index.html
+wget http://www.ifpan.edu.pl/~rcsu/rcsu/work2/1640746666/1GGG_1_clean.tgz
+tar -zxvf 1GGG_1_clean.tgz
+mv work2/1640746666/1GGG_1_clean.map .
+rm 1GGG_1_clean.tgz
+rm work2 -r
+
+python create_goVirt_for_multimer.py -r 1GGG_1_clean.pdb -s GBP_open_cg.pdb -f 1GGG_1_clean.map --moltype gbp_open --go_eps 12 --Natoms 512
+# Only symmetric OV + rCSU contacts (singly counted):479
+
+mkdir OpenItp
+cp FF/*.itp OpenItp/
+mv *.itp OpenItp/
+cd OpenItp/
+sed -i "s/\[ nonbond_params \]/\#ifdef GO_VIRT\n\#include \"BB-part-def_VirtGoSites.itp\"\n\#endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp
+echo -e "\n#ifdef GO_VIRT \n#include \"go-table_VirtGoSites.itp\"\n#endif" >> martini_v3.0.0.itp
+mv martini_v3.0.0.itp martini_v3.0.0_gbp_open.itp
+cd ..
+
+#--------------------------------------------
+
+martinize2 -f 1WDN_1_clean.pdb -o system.top -x GBP_closed_cg.pdb -dssp dssp -p backbone -ff martini3001 -govs-include -govs-moltype gbp_closed  -cys auto
+
+wget http://www.ifpan.edu.pl/~rcsu/rcsu/work2/1640746772/1WDN_1_clean.tgz
+tar -zxvf 1WDN_1_clean.tgz
+mv work2/1640746772/1WDN_1_clean.map .
+rm 1WDN_1_clean.tgz
+rm work2 -r
+
+python create_goVirt_for_multimer.py -r 1WDN_1_clean.pdb -s GBP_closed_cg.pdb -f 1WDN_1_clean.map --moltype gbp_closed --go_eps 12 --Natoms 512
+# Only symmetric OV + rCSU contacts (singly counted):516
+
+mkdir ClosedItp
+cp FF/*.itp ClosedItp
+mv *.itp ClosedItp/
+cd ClosedItp/
+sed -i "s/\[ nonbond_params \]/\#ifdef GO_VIRT\n\#include \"BB-part-def_VirtGoSites.itp\"\n\#endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp
+echo -e "\n#ifdef GO_VIRT \n#include \"go-table_VirtGoSites.itp\"\n#endif" >> martini_v3.0.0.itp
+mv martini_v3.0.0.itp martini_v3.0.0_gbp_closed.itp
+cd ..
+
+#----------------------------------------------------------
+
+rm CA.pdb BB.pdb rCSU.map OV.map
+rm *.ssd
+rm *#
+
+vi system.top # add itp
+mv system.top system_open.top
+vi system_closed.top
+
+
+wget http://www.cgmartini.nl/images/tools/insane/insane.py
+python2 insane.py -f GBP_open_cg.pdb -box 8,8,7 -o ions.gro -salt 0.15 -charge auto -center -sol W 2>system.top
+
+del 3 NA in ions.gro and system.top
+sed -i "s/NA+    NA+/NA      NA/g" ions.gro
+sed -i "s/CL-    CL-/CL      CL/g" ions.gro
+sed -i "s/NA+/NA /g" system.top
+sed -i "s/CL-/CL /g" system.top
+
+cat system.top >> system_open.top
+cat system.top >> system_close.top
+
+cp ~/CommonUse/MDP/Martini_SOLU/YS/*.mdp .
+vi job_gmx.sh
+
+bash job_gmx.sh
+bash job_gmx2.sh
+
+##################
+python2 insane.py -f GBP_close_cg.pdb -box 8,8,7.1 -o ions_close.gro -salt 0.15 -charge auto -center -sol W 2>tmp.top
+sed -i "s/NA+    NA+/NA      NA/g" ions_close.gro
+sed -i "s/CL-    CL-/CL      CL/g" ions_close.gro
+vi ions_close.gro # delete 9 W and 3 NA
+
+###################
+cp /home/ys/SongYang/GoMartini3/gbp_sw/Martini3_300ns/repeat-copy/*.mdp .
+cp /home/ys/SongYang/GoMartini3/gbp_sw/Martini3_300ns/repeat-copy/job_gmx.sh .
+cp ions_open.gro ions.gro
+
+##################
+cd OpenItp/
+cp ../../Contact.py .
+vi Contact.py 
+python Contact.py 
+vi gbp_open.itp # delete the long and short bonds
+cd ..
+
+cd ClosedItp/
+cp ../../Contact.py .
+vi Contact.py
+python Contact.py
+vi gbp_closed.itp # delete the long and short bonds
+cd ..
+
+##########################
+#/home/ys/SongYang/MultipleBasin/Work/ContactOpt/Jupyter-notebok/GlnBP/Contact8/GenMBTopology-MBContact8.ipynb
+
+vi system.top
+# add .inp
+
+
+

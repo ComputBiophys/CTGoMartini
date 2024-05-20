@@ -1,0 +1,39 @@
+# This file was created Wed Nov  1 14:53:16 2023
+# Created by:
+#             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/CommonUse/Martini/CTGoMartini/tests/data/NormalTopology/small_mols_m3/mono/3HT/gmx
+# Command line:
+#   gmx_d traj -f conf -s conf -of forces_conf
+# gmx traj is part of G R O M A C S:
+#
+# GROtesk MACabre and Sinister
+#
+@    title "Force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ mol\S-1\N nm\S-1\N)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "atom 1 X"
+@ s1 legend "atom 1 Y"
+@ s2 legend "atom 1 Z"
+@ s3 legend "atom 2 X"
+@ s4 legend "atom 2 Y"
+@ s5 legend "atom 2 Z"
+@ s6 legend "atom 3 X"
+@ s7 legend "atom 3 Y"
+@ s8 legend "atom 3 Z"
+@ s9 legend "atom 4 X"
+@ s10 legend "atom 4 Y"
+@ s11 legend "atom 4 Z"
+@ s12 legend "atom 5 X"
+@ s13 legend "atom 5 Y"
+@ s14 legend "atom 5 Z"
+ 0	1.91796	11.9074	10.4777	0.573374	10.1204	-2.0628	-26.4175	-19.5962	-21.5129	157.62	124.751	-136.309	-133.694	-127.183	149.407

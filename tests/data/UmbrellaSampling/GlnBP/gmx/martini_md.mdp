@@ -1,0 +1,57 @@
+integrator               = md
+tinit                    = 0.0
+dt                       = 0.020
+nsteps                   = 500000 ; 500,000 * 0.020 = 10 ns
+
+nstxout                  = 1
+nstvout                  = 1
+nstfout                  = 1
+nstlog                   = 1
+nstenergy                = 1
+nstxout-compressed       = 5000
+compressed-x-precision   = 1000
+compressed-x-grps        = System
+energygrps               =
+
+cutoff-scheme            = Verlet
+nstlist                  = 20
+ns_type                  = grid
+pbc                      = xyz
+verlet-buffer-tolerance  = 0.005
+
+epsilon_r                = 15
+coulombtype              = reaction-field
+rcoulomb                 = 1.1
+vdw_type                 = cutoff
+vdw-modifier             = Potential-shift-verlet
+rvdw                     = 1.1
+
+tcoupl                   = v-rescale
+tc-grps                  = system
+tau_t                    = 1.0
+ref_t                    = 310.15
+
+; Pressure coupling:
+Pcoupl                   = Parrinello-rahman
+Pcoupltype               = isotropic
+tau_p                    = 12.0
+compressibility          = 3e-4
+ref_p                    = 1.0
+
+; GENERATE VELOCITIES FOR STARTUP RUN:
+gen_vel                  = no
+refcoord_scaling         = all
+
+; Pull code
+pull                    = yes
+pull_ncoords            = 1         ; only one reaction coordinate
+pull_ngroups            = 2         ; two groups defining one reaction coordinate
+pull_group1_name        = 289
+pull_group2_name        = 130
+pull_coord1_type        = umbrella  ; harmonic potential
+pull_coord1_geometry    = distance  ; simple distance increase
+pull_coord1_dim         = Y Y Y     ; pull along distance
+pull_coord1_groups      = 1 2       ; groups 1 (Chain A) and 2 (Chain B) define the reaction coordinate
+pull_coord1_start       = yes       ; define initial COM distance > 0
+pull_coord1_rate        = 0         ; 0.001 nm per ps = 1 nm per ns
+pull_coord1_k           = 1000      ; kJ mol^-1 nm^-2

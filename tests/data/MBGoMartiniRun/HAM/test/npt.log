@@ -1,0 +1,34 @@
+Loading parameters
+
+Using platform: CUDA, Precision: single
+Using GPU_id: 0
+gbp uses the multiple basin potential.
+['True', 'ham', '2', '1000', '-50', '0']
+(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;;
+energy1 = state1_force1 + state1_force2 + state1_force3;
+energy2 = state2_force1 + state2_force2 + state2_force3;
+
+Loading system finishes!
+
+  Start Time: 2024-05-13 11:19:57
+    End Time: 2024-05-13 11:19:59
+Elapsed Time: 1.53
+
+Initial system energy: -41665.386 kJ/mol
+
+Plan Energy minimization: 10000 steps
+Minimized system energy: -42040.844 kJ/mol
+
+  Start Time: 2024-05-13 11:19:59
+    End Time: 2024-05-13 11:19:59
+Elapsed Time: 0.11
+
+Generate initial velocities: 310.0 K
+
+MD run: begin 0, end 5000, total 5000
+#"Progress (%)"	"Step"	"Time (ps)"	"Potential Energy (kJ/mole)"	"Temperature (K)"	"Speed (ns/day)"	"Time Remaining"
+20.0%	1000	9.999999999999831	-112489.01137862318	314.5228362416108	0	--
+40.0%	2000	20.000000000000327	-111198.06392444338	306.00797520404524	2.71e+03	0:00
+60.0%	3000	30.00000000000189	-110327.06330065348	313.9530118685503	2.73e+03	0:00
+80.0%	4000	40.00000000000061	-110837.08518659144	305.71882929296527	2.74e+03	0:00
+100.0%	5000	49.99999999999862	-110375.66934502541	303.30390375910616	2.73e+03	0:00

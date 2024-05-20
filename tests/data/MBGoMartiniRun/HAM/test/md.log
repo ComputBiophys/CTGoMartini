@@ -1,0 +1,52 @@
+Loading parameters
+
+Using platform: CUDA, Precision: single
+gbp uses the multiple basin potential.
+['True', 'ham', '2', '1000', '-50', '0']
+(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;;
+energy1 = state1_force1 + state1_force2 + state1_force3;
+energy2 = state2_force1 + state2_force2 + state2_force3;
+
+Load checkpoint file: npt.chk
+
+Loading system finishes!
+
+  Start Time: 2024-05-13 11:20:01
+    End Time: 2024-05-13 11:20:03
+Elapsed Time: 1.69
+
+Initial system energy: -110710.017 kJ/mol
+
+MD run: begin 0, end 5000, total 5000
+#"Progress (%)"	"Step"	"Time (ps)"	"Potential Energy (kJ/mole)"	"Temperature (K)"	"Speed (ns/day)"	"Time Remaining"
+20.0%	1000	19.999999999999662	-109955.02752712452	309.6658766149006	0	--
+40.0%	2000	40.000000000000654	-109786.67241615623	305.5361190220427	5.1e+03	0:01
+60.0%	3000	60.00000000000378	-109339.3273222549	312.3965712271597	4.33e+03	0:00
+80.0%	4000	80.00000000000122	-110329.1392224451	307.92070356030746	4.52e+03	0:00
+100.0%	5000	99.99999999999724	-110081.64022311644	311.81682667798935	4.57e+03	0:00
+Loading parameters
+
+Using platform: CUDA, Precision: single
+gbp uses the multiple basin potential.
+['True', 'ham', '2', '1000', '-50', '0']
+(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;;
+energy1 = state1_force1 + state1_force2 + state1_force3;
+energy2 = state2_force1 + state2_force2 + state2_force3;
+
+Load checkpoint file: md.chk
+
+Loading system finishes!
+
+  Start Time: 2024-05-13 11:20:06
+    End Time: 2024-05-13 11:20:07
+Elapsed Time: 1.49
+
+Initial system energy: -110081.641 kJ/mol
+
+MD run: begin 5000, end 10000, total 5000
+#"Progress (%)"	"Step"	"Time (ps)"	"Potential Energy (kJ/mole)"	"Temperature (K)"	"Speed (ns/day)"	"Time Remaining"
+60.0%	6000	119.99999999999326	-110092.93035056638	310.4543999977926	0	--
+70.0%	7000	139.9999999999978	-110342.1417968518	304.3829740898764	5.2e+03	0:00
+80.0%	8000	160.00000000000804	-110190.57133461992	318.62260164291143	4.34e+03	0:00
+90.0%	9000	180.00000000001828	-110355.38888581164	300.6987028036012	4.51e+03	0:00
+100.0%	10000	200.0000000000285	-110185.87134548982	301.3139262997307	4.68e+03	0:00

@@ -1,0 +1,20 @@
+set bg white
+hide atoms
+hide pseudobonds
+
+graphics silhouettes true
+lighting full shadow false depthcue true
+lighting soft
+lighting shadows false
+
+color protein tain
+color :5-84 | : 186-224 skyblue
+color :90-180 salmon
+
+show protein cartoon
+cartoon style protein thickness 1
+
+#-------------------------------------
+view matrix camera -0.75415,0.27325,-0.59715,-74.325,-0.25782,-0.95951,-0.11346,21.791,-0.60397,0.068396,0.79407,180.81
+#------------------------------------
+perframe "coordset #1 $1; wait 1; save ./GlnBP_No$1.png width 997 height 655 supersample 4" range 1,10,1

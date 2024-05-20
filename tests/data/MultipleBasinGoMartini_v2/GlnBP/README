@@ -1,0 +1,8 @@
+change the bonds, constraints, angles, dihedrals, and exclusions of the single-basin GoMartini model to the multi-basin GoModel
+
+
+# Strfile:
+data_path = '/home/ys/SongYang/GoMartini3/gbp_sw/Martini3_300ns/Data/repeat-48'
+strfile = os.path.join(data_path, "md_start.pdb")
+trjfile_processed = os.path.join(data_path, 'md_rottrans.xtc')
+trjfile_raw = os.path.join(data_path, "md_whole.xtc")
