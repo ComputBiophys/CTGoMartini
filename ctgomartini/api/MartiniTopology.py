@@ -229,10 +229,10 @@ class MartiniTopFile(Topology):
                             for fields in getattr(molecule_type, category):
                                 fields_used = False
                                 for i in range(n_states):
-                                    for interaction in mbp_bonded_interaction_dict_list[i][category]:
+                                    for interaction in mbp_bonded_interaction_dict_list[i]['multi_allbonds']:    # Use the multi_allbonds instead of the individual category
                                         try:
-                                            interaction.add_interaction(str(i+1), fields, base_atom_index, offset=-1)
-                                            exceptions = interaction.get_exception(molecule_type.atoms, fields, base_atom_index, offset=-1)
+                                            interaction.add_interaction(str(i+1), category, fields, base_atom_index, offset=-1)
+                                            exceptions = interaction.get_exception(molecule_type.atoms, category, fields, base_atom_index, offset=-1)
                                             all_exceptions.extend(exceptions)
                                             if fields_used:
                                                 raise ValueError(f"{fields} is used twice!")
