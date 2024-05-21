@@ -30,3 +30,5 @@ Warninging: bonded types in [ atomtypes ]
 4. Testing Completion: Develop a comprehensive test to validate the integrity and reliability of the project, ensuring that all components function as intended.
 5. Charge and atom number checkment: Add charge check and atom number check
 6. XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
+7. hello
+
