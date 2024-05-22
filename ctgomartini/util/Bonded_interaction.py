@@ -598,17 +598,19 @@ class Multi_allbonds(Interaction):
         self.nonbonded_cutoff = nonbonded_cutoff
         self.use_sigma_eps = use_sigma_eps
 
-        self.mm_force = mm.CustomCompoundBondForce(4,
-            "delta_g96 * g96_angle + delta_rest * restricted_angle + delta_pd * periodic_dihedral + delta_contact * contact" 
-            "g96_angle = 0.5 * k_g96 * (cos(theta) - cos(theta0_g96))^2"
-            "restricted_angle = 0.5 * k_rest * (cos(theta) - cos(theta0_rest))^2 / sin(theta)^2"
-            "theta = angle(p1,p2,p3)"
-            "periodic_dihedral = k_pd*(1+cos(n*theta_d-theta0_pd)"
-            "theta_d = dihedral(p1,p2,p3,p4)"
-            "contact = step(rcut-r) * (energy - corr);"
-            "r = distance(p1,p2)"
+        self.mm_force = mm.CustomCompoundBondForce(4,                                            
+            "select(delta_g96, g96_angle, 0) + select(delta_rest, restricted_angle, 0) + select(delta_pd, periodic_dihedral, 0) + select(delta_contact, contact, 0);" 
+            "g96_angle = 0.5 * k_g96 * (cos(theta) - cos(theta0_g96))^2;"
+            "restricted_angle = 0.5 * k_rest * (cos(theta) - cos(theta0_rest))^2 / sin(theta)^2;"
+            "theta = angle(p1,p2,p3);"
+            "periodic_dihedral = k_pd * ( 1 + cos( n * theta_d - theta0_pd));"
+            "theta_d = dihedral(p1,p2,p3,p4);"
+            "theta_d = select(0, theta_d_0, 1);"
+            "theta_d_0 = dihedral(p1,p2,p3,p4);"
+            "contact = step(rcut - r) * (energy - corr);"
             "energy = (C12/r^12 - C6/r^6);"
             "corr = (C12/rcut^12 - C6/rcut^6);"
+            "r = distance(p1,p2);"
             f"rcut={self.nonbonded_cutoff.value_in_unit(mm.unit.nanometers)};"
         )
         self.mm_force.addPerBondParameter("delta_g96")
@@ -642,7 +644,7 @@ class Multi_allbonds(Interaction):
                             base_atom_index + int(fields[0]) + offset, 
                             base_atom_index + int(fields[1]) + offset, 
                             base_atom_index + int(fields[2]) + offset,
-                            base_atom_index + int(fields[0]) + offset,
+                            base_atom_index + int(fields[1]) + offset,
                         ],
                         # delta_g96, delta_rest, delta_pd, delta_contact,
                         [1, 0, 0, 0,] + \
@@ -665,7 +667,7 @@ class Multi_allbonds(Interaction):
                             base_atom_index + int(fields[0]) + offset, 
                             base_atom_index + int(fields[1]) + offset, 
                             base_atom_index + int(fields[2]) + offset,
-                            base_atom_index + int(fields[0]) + offset,
+                            base_atom_index + int(fields[1]) + offset,
                         ],
                         # delta_g96, delta_rest, delta_pd, delta_contact,
                         [0, 1, 0, 0,] + \
