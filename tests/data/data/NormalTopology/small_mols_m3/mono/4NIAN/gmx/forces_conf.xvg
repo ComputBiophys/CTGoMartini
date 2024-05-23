@@ -1,0 +1,36 @@
+# This file was created Wed Nov  1 14:53:20 2023
+# Created by:
+#             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/CommonUse/Martini/CTGoMartini/tests/data/NormalTopology/small_mols_m3/mono/4NIAN/gmx
+# Command line:
+#   gmx_d traj -f conf -s conf -of forces_conf
+# gmx traj is part of G R O M A C S:
+#
+# Great Red Oystrich Makes All Chemists Sane
+#
+@    title "Force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ mol\S-1\N nm\S-1\N)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "atom 1 X"
+@ s1 legend "atom 1 Y"
+@ s2 legend "atom 1 Z"
+@ s3 legend "atom 2 X"
+@ s4 legend "atom 2 Y"
+@ s5 legend "atom 2 Z"
+@ s6 legend "atom 3 X"
+@ s7 legend "atom 3 Y"
+@ s8 legend "atom 3 Z"
+@ s9 legend "atom 4 X"
+@ s10 legend "atom 4 Y"
+@ s11 legend "atom 4 Z"
+ 0	3.89861	-7.82108	2.8748	-188.595	129.107	655.639	554.449	206.434	-282.85	-369.752	-327.72	-375.664

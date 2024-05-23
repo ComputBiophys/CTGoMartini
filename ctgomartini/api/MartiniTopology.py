@@ -100,6 +100,7 @@ class MartiniTopFile(Topology):
         self.nonbonded_cutoff = nonbonded_cutoff
         self.epsilon_r = epsilon_r
         self.vsites = VSiteManager()
+        self.charges = None
 
         sys = mm.System()
         box_vectors = self.topology.getPeriodicBoxVectors()
@@ -305,6 +306,10 @@ class MartiniTopFile(Topology):
    
         if remove_com_motion:
             sys.addForce(mm.CMMotionRemover())
+
+        # Get the charges of the whole system
+        self.charges = sum(all_charges)
+
         return sys
                              
 

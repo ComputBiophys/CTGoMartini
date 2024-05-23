@@ -17,7 +17,7 @@ def Compare_OMM_GMX(working_dir, epsilon_r=15.0):
     os.chdir(os.path.join(working_dir, "gmx"))
 
     # GMX_set(CreateMDP=False, double_precision=True)
-    GMX_run()
+    # GMX_run()
 
     gmx_energy=Load_energy(clean=False)
     gmx_forces=Load_forces(clean=False)

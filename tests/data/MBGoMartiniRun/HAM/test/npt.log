@@ -5,30 +5,34 @@ Using GPU_id: 0
 gbp uses the multiple basin potential.
 ['True', 'ham', '2', '1000', '-50', '0']
 (energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;;
-energy1 = state1_force1 + state1_force2 + state1_force3;
-energy2 = state2_force1 + state2_force2 + state2_force3;
+energy1 = state1_force1;
+energy2 = state2_force1;
 
 Loading system finishes!
+  Start Time: 2024-05-23 11:17:22
+    End Time: 2024-05-23 11:17:24
+Elapsed Time: 1.91
 
-  Start Time: 2024-05-13 11:19:57
-    End Time: 2024-05-13 11:19:59
-Elapsed Time: 1.53
-
-Initial system energy: -41665.386 kJ/mol
+Initial system energy: -41665.387 kJ/mol
 
 Plan Energy minimization: 10000 steps
 Minimized system energy: -42040.844 kJ/mol
-
-  Start Time: 2024-05-13 11:19:59
-    End Time: 2024-05-13 11:19:59
-Elapsed Time: 0.11
+  Start Time: 2024-05-23 11:17:24
+    End Time: 2024-05-23 11:17:24
+Elapsed Time: 0.17
 
 Generate initial velocities: 310.0 K
 
 MD run: begin 0, end 5000, total 5000
 #"Progress (%)"	"Step"	"Time (ps)"	"Potential Energy (kJ/mole)"	"Temperature (K)"	"Speed (ns/day)"	"Time Remaining"
-20.0%	1000	9.999999999999831	-112489.01137862318	314.5228362416108	0	--
-40.0%	2000	20.000000000000327	-111198.06392444338	306.00797520404524	2.71e+03	0:00
-60.0%	3000	30.00000000000189	-110327.06330065348	313.9530118685503	2.73e+03	0:00
-80.0%	4000	40.00000000000061	-110837.08518659144	305.71882929296527	2.74e+03	0:00
-100.0%	5000	49.99999999999862	-110375.66934502541	303.30390375910616	2.73e+03	0:00
+20.0%	1000	9.999999999999831	-111038.6179378099	311.492966709542	0	--
+40.0%	2000	20.000000000000327	-111184.3233798749	307.352440706883	3.23e+03	0:00
+60.0%	3000	30.00000000000189	-110522.60425870323	312.1761022658785	3.15e+03	0:00
+80.0%	4000	40.00000000000061	-110638.3810097021	305.1180100717655	3.19e+03	0:00
+100.0%	5000	49.99999999999862	-110144.14842284832	312.65457895393575	3.24e+03	0:00
+
+Write checkpoint file: npt.chk
+The task has finished!
+  Start Time: 2024-05-23 11:17:24
+    End Time: 2024-05-23 11:17:26
+Elapsed Time: 1.79

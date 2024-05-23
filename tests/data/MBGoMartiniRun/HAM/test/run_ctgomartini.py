@@ -22,7 +22,7 @@ def ReportTime(start_time):
     
     start_time=start_time.__format__("%Y-%m-%d %H:%M:%S")
     end_time=end_time.__format__("%Y-%m-%d %H:%M:%S")
-    print(end='\n')
+    # print(end='\n')
     print(f"  Start Time: {start_time}")
     print(f"    End Time: {end_time}")
     print(f"Elapsed Time: {elapsed:.2f}")
@@ -98,6 +98,14 @@ def WriteOutput(output_file, simulation, strfile):
     mda_u.dimensions[:3] = box_vectors # only for rectangular/cubic box
     mda_u.atoms.velocities = velocities
     mda_u.atoms.write(output_file)
+
+def WriteCheckPoint(simulation, input_ochk):
+    # Write CheckPoint file
+    state = simulation.context.getState(getPositions=True, getVelocities=True )
+    with open(input_ochk, 'w') as f:
+        f.write(mm.XmlSerializer.serialize(state))
+    print(f"\nWrite checkpoint file: {input_ochk}")
+
 
 def mdrun(inpfile):
     """
@@ -187,6 +195,10 @@ def mdrun(inpfile):
     assert len(conf.getPositions()) == top.topology.getNumAtoms(), f"Error: Number of atoms in {inputs.input} is not the same as that from {inputs.topol}!"
     simulation.context.setPositions(conf.getPositions())
 
+    # Check the charges of the system
+    if top.charges != 0:
+        print(f'Warning: The charges of the system are {top.charges} instead of 0.')
+
     if inputs.ichk:
         try:
             with open(inputs.ichk, 'r') as f:
@@ -248,16 +260,26 @@ def mdrun(inpfile):
                             remainingTime=True, speed=True, 
                             totalSteps=e_step, separator='\t')
         )
-                    
-        simulation.step(be_step)
-        be_step = 0 
+        
+        try:
+            simulation.step(be_step)
+            be_step = 0 
+        except KeyboardInterrupt:
+            print("The task has been canceled!")
+            ReportTime(start_time)
+            WriteCheckPoint(simulation, inputs.ochk)
+        
 
     # Write output file
     if inputs.output:
         WriteOutput(inputs.output, simulation, inputs.input)
     if inputs.output_pdb:
         WriteOutput(inputs.output_pdb, simulation, inputs.input)
-
+    if inputs.ochk:
+        WriteCheckPoint(simulation, inputs.ochk)
+    
+    print("The task has finished!")
+    ReportTime(start_time)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
