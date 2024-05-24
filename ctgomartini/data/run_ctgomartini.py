@@ -14,7 +14,7 @@ from ctgomartini.func import read_inputs
 import MDAnalysis as mda
 import argparse
 import datetime
-
+import signal
 
 def ReportTime(start_time):
     end_time=datetime.datetime.now()
@@ -106,6 +106,11 @@ def WriteCheckPoint(simulation, input_ochk):
         f.write(mm.XmlSerializer.serialize(state))
     print(f"\nWrite checkpoint file: {input_ochk}")
 
+def Cleanup(signum, simulation, inputs):
+    print("Received signal", signum, ". Performing cleanup...")
+    WriteCheckPoint(simulation, inputs.ochk)
+    sys.exit(0)
+signal.signal(signal.SIGTERM, Cleanup)
 
 def mdrun(inpfile):
     """
@@ -268,7 +273,8 @@ def mdrun(inpfile):
         except KeyboardInterrupt:
             print("The task has been canceled!")
             ReportTime(start_time)
-            WriteCheckPoint(simulation, inputs.ochk)
+            # WriteCheckPoint(simulation, inputs.ochk)
+            Cleanup(signal.SIGINT, simulation, inputs)
         
 
     # Write output file
