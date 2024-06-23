@@ -82,6 +82,7 @@ class Nonbonded_interaction(Interaction):
                          mm_force = None)
         self.mm_force = mm.CustomNonbondedForce(
             "step(rcut-r)*(LJ - corr + ES);"
+            # "(LJ - corr + ES);"
             "LJ = (C12(type1, type2) / r^12 - C6(type1, type2) / r^6);"
             "corr = (C12(type1, type2) / rcut^12 - C6(type1, type2) / rcut^6);"
             "ES = f/epsilon_r*q1*q2 * (1/r + krf * r^2 - crf);"

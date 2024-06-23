@@ -33,3 +33,5 @@ Warninging: bonded types in [ atomtypes ]
 - [x] Add Checkpoint at the ending of the simulations
 - [ ] Position restraints: x,y,z restraint instead of the distance restraint
 - [ ] Analysis module should be added.
+- [ ] Minimization output module should be added.
+- [ ] Plumed module should be added.

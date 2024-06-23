@@ -599,7 +599,8 @@ class Multi_allbonds(Interaction):
         self.use_sigma_eps = use_sigma_eps
 
         self.mm_force = mm.CustomCompoundBondForce(4,                                            
-            "select(delta_g96, g96_angle, 0) + select(delta_rest, restricted_angle, 0) + select(delta_pd, periodic_dihedral, 0) + select(delta_contact, contact, 0);" 
+            "select(delta_g96, g96_angle, 0) + select(delta_rest, restricted_angle, 0) + select(delta_pd, periodic_dihedral, 0) + \
+                select(delta_contact, contact, 0);" 
             "g96_angle = 0.5 * k_g96 * (cos(theta) - cos(theta0_g96))^2;"
             "restricted_angle = 0.5 * k_rest * (cos(theta) - cos(theta0_rest))^2 / sin(theta)^2;"
             "theta = angle(p1,p2,p3);"
