@@ -74,6 +74,8 @@ class Interaction:
 #         self.mm_force.setNonbondedMethod(mm.CustomNonbondedForce.CutoffPeriodic)
 #         self.mm_force.setCutoffDistance(nonbonded_cutoff.value_in_unit(unit.nanometer))        
 
+# Initial
+
 # nonbonded_interaction
 class Nonbonded_interaction(Interaction):
     def __init__(self, epsilon_r = 15, nonbonded_cutoff = 1.1 * unit.nanometers):
