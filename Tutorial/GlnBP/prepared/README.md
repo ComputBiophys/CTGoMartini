@@ -1,6 +1,6 @@
 ## Tutorial
 
-In this section, we will utilize GlnBP as an example to illustrate the capability of the Multiple-basin Gō-Martini method in sampling conformational transition pathways. In brief, we first generate the multiple-basin Gō-Martini model of open- and closed-state GlnBP. Subsequently, we perform a coarse-grained MD simulation with OpenMM. For convenience, all the necessary files used within this tutorial are supplied.
+In this section, we will utilize GlnBP as an example to illustrate the capability of the Multiple-basin Gō-Martini method in sampling conformational transitions. In brief, we first generate the multiple-basin Gō-Martini model of open- and closed-state GlnBP. Subsequently, we perform a coarse-grained MD simulation with OpenMM. For convenience, all the necessary files used within this tutorial are supplied.
 
 (1) Preprocess PDB files (PDB code: 1GGG and 1WDN) for the open- and closed-state GlnBP. Water around the proteins should be removed and residues of proteins should be trimmed to have the same length. In this case, we reserve residues 5-224 of GlnBP.
 
@@ -33,7 +33,7 @@ vi ions.gro # Delete 3 NA in ions.gro.
 
 ```
 
-(4) Prepare the following files: system.top and the .inp files (npt.inp and md.inp). 
+(4) Prepare the following files: system.top and the MD parameter files (npt.inp and md.inp). 
 
 ```
 vi system.top # Add the martini 3.0 force field and the GlnBP topology files
