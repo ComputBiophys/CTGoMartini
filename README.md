@@ -20,8 +20,6 @@ pip install .
 # Questions:
 CHOL for martini2
 
-Vsite self.nb_force.addExclusion(index + offset, atoms[0]) # ????
-Warninging: bonded types in [ atomtypes ]
 
 # Project Roadmap
 - [x] Force Class Refinement: Transition the force class to utilize objective classification criteria to enhance clarity and maintainability.
