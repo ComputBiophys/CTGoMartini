@@ -1,0 +1,16 @@
+
+#include "martini_v3.0.0.itp"
+#include "gbp_params.itp"
+#include "gbp.itp"
+#include "OpenItp/martini_v3.0.0_phospholipids_v1.itp"
+#include "OpenItp/martini_v3.0.0_solvents_v1.itp"
+#include "OpenItp/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+gbp    1
+W            23287
+NA             256
+CL             253

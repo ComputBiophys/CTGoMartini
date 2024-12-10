@@ -35,3 +35,4 @@ Warninging: bonded types in [ atomtypes ]
 - [ ] Analysis module should be added.
 - [ ] Minimization output module should be added.
 - [ ] Plumed module should be added.
+- [ ] Add the single-basin contact topology generation
