@@ -1,23 +1,24 @@
 # CTGoMartini: A Python package for protein conformational transitions with Go-Martini models
 
-CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martini, and Multiple-basin Go-Martini simulations. The main aim of this package is to provide a user-friendly scritps for conformational transition simulations of protiens, especially membrane proteins with Go-Martini models.
+CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martini, and Multiple-basin Go-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of protiens, with particular focus on membrane proteins, using Go-Martini models.
 
 
 ## Installation
 ### Prerequisites
-conda
-Python 3.8
-dssp
+- conda
+- Python 3.8
+- dssp
 
-
-'conda creaate -n ctgomartini python=3.8
+```
+conda creaate -n ctgomartini python=3.8
 conda activate ctgomartini
-pip install -e .'
+pip install -e .
+```
 
 ## Features
-- "Contacts" intereaction type is defined in this code to replace the LJ-type contact interactions in traditional GoMartini3 models, which can overcome the mistaken interactions between multiple copies of proteins in traditional GoMartini3 models and provide a more convient way to construct the multiple basin potentials in Multiple-basin GoMartini simulations.
-- This code can construct the topology of the GoMartini3 models for different methods automatically.
-- This can run the coarse-grained simulations easily.
+- Implement a new interaction type named "Contacts" to replace the LJ-type contact interactions in classic GoMartini3 models, which can (1) eliminate incorrect interactions between multiple protein copies in classic GoMartini3 models and (2) facilitate construction of multiple basin potentials in Multiple-basin GoMartini simulations.
+- Automatically construct GoMartini3 model topologies for different simulation methods.
+- Simplify the process of running coarse-grained simulations.
 
 ## Tutorial
 - Please see the directory Tutorial
