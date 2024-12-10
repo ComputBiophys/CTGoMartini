@@ -5,7 +5,7 @@ import argparse
 import subprocess
 import MDAnalysis as mda
 import ctgomartini
-from ctgomartini.api import GenMBPTop
+from ctgomartini.api import GenMBPTop, GenSBPTop
 from ctgomartini.func import WriteItp, ConvertLongShortElasticBonds
 from ctgomartini.func import Create_goVirt_for_multimer
 
@@ -64,7 +64,6 @@ sed -i 's/#include "martini.itp"/#include "{}"/g' system.top
         print(stderr)
         raise Exception(f'Error! {os.getcwd()}')
 
-    
 def MBGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dict_cutoffs, method='exp', dssp='dssp', ff='martini3001'):
     working_path = os.getcwd()
     print(f'Working path: {working_path}')
@@ -124,6 +123,63 @@ def MBGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dic
     WriteItp(mbmol)
     print('Finish!')
 
+def SBGOMartinize(aa_strfile_list, aa_map_list, state_name_list, sbmol_name, method='SBP', dssp='dssp', ff='martini3001'):
+    working_path = os.getcwd()
+    print(f'Working path: {working_path}')
+    
+    for aa_strfile, aa_map, state_name in zip(aa_strfile_list, aa_map_list, state_name_list):
+        os.chdir(working_path)
+        if os.path.exists(f'./{state_name}'):
+            raise ValueError(f'Error: Directory {state_name} exists!')
+            # subprocess.run(f'rm {state_name} -r', shell=True)
+            # os.mkdir(state_name)
+            # pass
+        else:
+            os.mkdir(state_name)
+
+        os.chdir(os.path.join(working_path, state_name))
+        
+        print('\n############')
+        print('Subworking_dir:', os.getcwd())
+        
+        # Martinize AA Proteins and scfix
+        print(f'\nMartinize the all-atom protein ({aa_strfile}) as the CG model with the state name ({state_name})')
+        Martinize2(os.path.join('../', aa_strfile), dssp, ff, state_name, other_params='-scfix')
+
+        # Generate Go-Contacts
+        print(f'\nGenerate the Go-Contacts for proteins')
+        GenGoContacts(os.path.join('../', aa_strfile), f'{state_name}_cg.pdb', os.path.join('../', aa_map), state_name, go_eps=12)
+
+        # Fetch the FF file
+        print(f'\nFetch the forcefield and append the Go-Contacts to the forcefields')
+        assert ff == 'martini3001', f'Error: Unsupport the forcefield: {ff}'
+        os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'data/ForceFields/Martini300/martini_v3.0.0.itp')} .")
+        ModifyFF(forcefield_file='martini_v3.0.0.itp')
+
+        # # Convert Long/Short Elastic Bonds to LJ Interactions
+        # print('\nConvert Long/Short Elastic Bonds to LJ Interactions')
+        # ConvertLongShortElasticBonds(state_name, f'{state_name}_cg.pdb', convertLongElasticBonds=True, convertShortElasticBonds=False, LJ_epsilon=12)
+        
+    print('############')
+    os.chdir(working_path)
+
+    # Combine single states into the single-basin potential
+    print(f'\nGenerate the single-basin potential for {sbmol_name}')
+    mols_list = []
+    for i, state_name in enumerate(state_name_list):
+        mols_list.append([f'{state_name}/system.top', state_name])
+    sbmol =  GenSBPTop(mols_list, sbmol_name)
+
+    # Modify the mulitple_basin parameters according to method
+    if method.lower() != "sbp":
+        raise ValueError(f'Error: Unsupport the method: {method}')
+
+    # Write the sbmol.itp
+    print(f'\nWrite the {sbmol_name}.itp and {sbmol_name}_params.itp')
+    WriteItp(sbmol)
+    print('Finish!')    
+
+
 def SwitchingGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dict_cutoffs, method='switching', dssp='dssp', ff='martini3001'):
     working_path = os.getcwd()
     print(f'Working path: {working_path}')
@@ -166,6 +222,9 @@ def CTGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dic
         SwitchingGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dict_cutoffs, method=method, dssp=dssp, ff=ff)
     elif method.lower() in ['exp', 'ham']:
         MBGOMartinize(aa_strfile_list, aa_map_list, state_name_list, mbmol_name, dict_cutoffs, method=method, dssp=dssp, ff=ff)
+    elif method.lower() == 'sbp':
+        SBGOMartinize(aa_strfile_list, aa_map_list, state_name_list, sbmol_name=mbmol_name, method=method, dssp=dssp, ff=ff)
+
     else:
         raise ValueError(f'Error: unsupport the method named {method}!')
     
