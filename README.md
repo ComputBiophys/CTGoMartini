@@ -42,7 +42,7 @@ python -m ctgomartini.tests.tests
 - [x] Add Checkpoint at the ending of the simulations
 - [x] Add the constraint tolerance parameter in .inp file to better manage the constraint
 - [x] Position restraints: x,y,z restraint instead of the distance restraint
-- [ ] Reconstruct the tests module
+- [x] Reconstruct the tests module
 - [ ] Analysis module should be added.
 - [ ] Minimization output module should be added.
 - [ ] Plumed module should be added.
