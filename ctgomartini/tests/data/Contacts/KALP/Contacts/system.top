@@ -1,0 +1,19 @@
+#include "FF/martini_v3.0.0.itp"
+#include "kalp_params.itp"
+#include "kalp.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+#include "FF/martini_v3.0.0_phospholipids_v1.itp"
+
+[ system ]
+; name
+Protein in INSANE! Membrane UpperLeaflet>POPC=1 LowerLeaflet>POPC=1
+
+[ molecules ]
+; name  number
+kalp        1
+POPC           245
+POPC           248
+W             3865
+NA              25
+CL              29

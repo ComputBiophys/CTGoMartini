@@ -1,0 +1,644 @@
+; Go bonds as harmonic bonds between the virtual particles: 
+; OV + symmetric rCSU contacts 
+ 682  686  1  0.697  1250  ; Inactive_30  Inactive_34 
+ 683  687  1  0.635  1250  ; Inactive_31  Inactive_35 
+ 684  688  1  0.587  1250  ; Inactive_32  Inactive_36 
+ 684  747  1  0.936  1250  ; Inactive_32  Inactive_95 
+ 685  689  1  0.572  1250  ; Inactive_33  Inactive_37 
+ 685  747  1  0.697  1250  ; Inactive_33  Inactive_95 
+ 686  690  1  0.602  1250  ; Inactive_34  Inactive_38 
+ 687  691  1  0.628  1250  ; Inactive_35  Inactive_39 
+ 688  692  1  0.612  1250  ; Inactive_36  Inactive_40 
+ 688  747  1  0.856  1250  ; Inactive_36  Inactive_95 
+ 689  693  1  0.594  1250  ; Inactive_37  Inactive_41 
+ 689  747  1  0.865  1250  ; Inactive_37  Inactive_95 
+ 690  694  1  0.611  1250  ; Inactive_38  Inactive_42 
+ 691  695  1  0.621  1250  ; Inactive_39  Inactive_43 
+ 692  696  1  0.623  1250  ; Inactive_40  Inactive_44 
+ 692  743  1  0.75  1250  ; Inactive_40  Inactive_91 
+ 692  931  1  1.07  1250  ; Inactive_40  Inactive_543 
+ 693  697  1  0.611  1250  ; Inactive_41  Inactive_45 
+ 694  698  1  0.591  1250  ; Inactive_42  Inactive_46 
+ 695  699  1  0.617  1250  ; Inactive_43  Inactive_47 
+ 695  739  1  0.844  1250  ; Inactive_43  Inactive_87 
+ 695  931  1  1.058  1250  ; Inactive_43  Inactive_543 
+ 695  935  1  0.755  1250  ; Inactive_43  Inactive_547 
+ 696  700  1  0.607  1250  ; Inactive_44  Inactive_48 
+ 696  735  1  0.543  1250  ; Inactive_44  Inactive_83 
+ 696  739  1  0.752  1250  ; Inactive_44  Inactive_87 
+ 696  740  1  0.82  1250  ; Inactive_44  Inactive_88 
+ 697  701  1  0.58  1250  ; Inactive_45  Inactive_49 
+ 698  702  1  0.598  1250  ; Inactive_46  Inactive_50 
+ 699  703  1  0.602  1250  ; Inactive_47  Inactive_51 
+ 699  731  1  0.672  1250  ; Inactive_47  Inactive_79 
+ 699  735  1  0.623  1250  ; Inactive_47  Inactive_83 
+ 699  739  1  1.039  1250  ; Inactive_47  Inactive_87 
+ 699  937  1  0.584  1250  ; Inactive_47  Inactive_549 
+ 699  938  1  0.534  1250  ; Inactive_47  Inactive_550 
+ 700  704  1  0.586  1250  ; Inactive_48  Inactive_52 
+ 700  732  1  0.614  1250  ; Inactive_48  Inactive_80 
+ 700  735  1  0.665  1250  ; Inactive_48  Inactive_83 
+ 700  736  1  0.863  1250  ; Inactive_48  Inactive_84 
+ 701  705  1  0.608  1250  ; Inactive_49  Inactive_53 
+ 702  706  1  0.627  1250  ; Inactive_50  Inactive_54 
+ 702  941  1  0.593  1250  ; Inactive_50  Inactive_553 
+ 703  707  1  0.616  1250  ; Inactive_51  Inactive_55 
+ 703  728  1  0.568  1250  ; Inactive_51  Inactive_76 
+ 703  731  1  0.74  1250  ; Inactive_51  Inactive_79 
+ 703  732  1  0.7  1250  ; Inactive_51  Inactive_80 
+ 703  937  1  0.865  1250  ; Inactive_51  Inactive_549 
+ 703  941  1  0.74  1250  ; Inactive_51  Inactive_553 
+ 704  708  1  0.608  1250  ; Inactive_52  Inactive_56 
+ 704  732  1  0.85  1250  ; Inactive_52  Inactive_80 
+ 705  709  1  0.611  1250  ; Inactive_53  Inactive_57 
+ 705  954  1  0.751  1250  ; Inactive_53  Inactive_566 
+ 705  957  1  0.838  1250  ; Inactive_53  Inactive_569 
+ 705  958  1  1.035  1250  ; Inactive_53  Inactive_570 
+ 706  710  1  0.625  1250  ; Inactive_54  Inactive_58 
+ 706  724  1  0.807  1250  ; Inactive_54  Inactive_72 
+ 706  728  1  0.755  1250  ; Inactive_54  Inactive_76 
+ 706  941  1  0.78  1250  ; Inactive_54  Inactive_553 
+ 706  944  1  0.946  1250  ; Inactive_54  Inactive_556 
+ 706  950  1  0.861  1250  ; Inactive_54  Inactive_562 
+ 706  954  1  0.886  1250  ; Inactive_54  Inactive_566 
+ 707  711  1  0.591  1250  ; Inactive_55  Inactive_59 
+ 707  725  1  0.672  1250  ; Inactive_55  Inactive_73 
+ 707  728  1  0.777  1250  ; Inactive_55  Inactive_76 
+ 707  729  1  0.933  1250  ; Inactive_55  Inactive_77 
+ 708  712  1  0.578  1250  ; Inactive_56  Inactive_60 
+ 708  957  1  0.904  1250  ; Inactive_56  Inactive_569 
+ 709  713  1  0.513  1250  ; Inactive_57  Inactive_61 
+ 709  716  1  0.692  1250  ; Inactive_57  Inactive_64 
+ 709  953  1  0.657  1250  ; Inactive_57  Inactive_565 
+ 709  954  1  0.788  1250  ; Inactive_57  Inactive_566 
+ 709  957  1  0.899  1250  ; Inactive_57  Inactive_569 
+ 710  716  1  0.516  1250  ; Inactive_58  Inactive_64 
+ 710  717  1  0.655  1250  ; Inactive_58  Inactive_65 
+ 710  721  1  0.724  1250  ; Inactive_58  Inactive_69 
+ 710  724  1  0.941  1250  ; Inactive_58  Inactive_72 
+ 710  725  1  0.868  1250  ; Inactive_58  Inactive_73 
+ 710  950  1  0.963  1250  ; Inactive_58  Inactive_562 
+ 711  717  1  0.796  1250  ; Inactive_59  Inactive_65 
+ 712  957  1  1.074  1250  ; Inactive_60  Inactive_569 
+ 713  717  1  0.645  1250  ; Inactive_61  Inactive_65 
+ 713  953  1  0.843  1250  ; Inactive_61  Inactive_565 
+ 715  949  1  0.829  1250  ; Inactive_63  Inactive_561 
+ 716  721  1  0.662  1250  ; Inactive_64  Inactive_69 
+ 716  949  1  0.822  1250  ; Inactive_64  Inactive_561 
+ 716  950  1  0.908  1250  ; Inactive_64  Inactive_562 
+ 716  953  1  1.006  1250  ; Inactive_64  Inactive_565 
+ 717  722  1  0.819  1250  ; Inactive_65  Inactive_70 
+ 717  799  1  0.925  1250  ; Inactive_65  Inactive_147 
+ 718  722  1  0.613  1250  ; Inactive_66  Inactive_70 
+ 718  799  1  0.787  1250  ; Inactive_66  Inactive_147 
+ 719  723  1  0.658  1250  ; Inactive_67  Inactive_71 
+ 719  782  1  0.915  1250  ; Inactive_67  Inactive_130 
+ 719  795  1  0.784  1250  ; Inactive_67  Inactive_143 
+ 719  797  1  0.76  1250  ; Inactive_67  Inactive_145 
+ 719  798  1  0.75  1250  ; Inactive_67  Inactive_146 
+ 719  799  1  0.697  1250  ; Inactive_67  Inactive_147 
+ 719  802  1  0.73  1250  ; Inactive_67  Inactive_150 
+ 720  724  1  0.619  1250  ; Inactive_68  Inactive_72 
+ 720  783  1  0.972  1250  ; Inactive_68  Inactive_131 
+ 720  893  1  1.061  1250  ; Inactive_68  Inactive_505 
+ 721  725  1  0.598  1250  ; Inactive_69  Inactive_73 
+ 722  726  1  0.617  1250  ; Inactive_70  Inactive_74 
+ 722  799  1  0.873  1250  ; Inactive_70  Inactive_147 
+ 722  803  1  0.818  1250  ; Inactive_70  Inactive_151 
+ 722  806  1  0.867  1250  ; Inactive_70  Inactive_154 
+ 723  727  1  0.602  1250  ; Inactive_71  Inactive_75 
+ 723  775  1  0.67  1250  ; Inactive_71  Inactive_123 
+ 723  778  1  0.834  1250  ; Inactive_71  Inactive_126 
+ 723  779  1  0.806  1250  ; Inactive_71  Inactive_127 
+ 723  802  1  0.853  1250  ; Inactive_71  Inactive_150 
+ 723  805  1  0.945  1250  ; Inactive_71  Inactive_153 
+ 723  806  1  0.81  1250  ; Inactive_71  Inactive_154 
+ 724  728  1  0.591  1250  ; Inactive_72  Inactive_76 
+ 724  779  1  0.986  1250  ; Inactive_72  Inactive_127 
+ 724  893  1  1.088  1250  ; Inactive_72  Inactive_505 
+ 725  729  1  0.611  1250  ; Inactive_73  Inactive_77 
+ 726  730  1  0.641  1250  ; Inactive_74  Inactive_78 
+ 726  775  1  0.787  1250  ; Inactive_74  Inactive_123 
+ 726  806  1  0.795  1250  ; Inactive_74  Inactive_154 
+ 726  810  1  0.986  1250  ; Inactive_74  Inactive_158 
+ 727  731  1  0.629  1250  ; Inactive_75  Inactive_79 
+ 727  772  1  0.626  1250  ; Inactive_75  Inactive_120 
+ 727  775  1  0.779  1250  ; Inactive_75  Inactive_123 
+ 727  776  1  0.914  1250  ; Inactive_75  Inactive_124 
+ 727  896  1  1.095  1250  ; Inactive_75  Inactive_508 
+ 727  940  1  0.942  1250  ; Inactive_75  Inactive_552 
+ 728  732  1  0.594  1250  ; Inactive_76  Inactive_80 
+ 729  733  1  0.601  1250  ; Inactive_77  Inactive_81 
+ 730  734  1  0.617  1250  ; Inactive_78  Inactive_82 
+ 730  768  1  0.531  1250  ; Inactive_78  Inactive_116 
+ 730  771  1  0.747  1250  ; Inactive_78  Inactive_119 
+ 730  772  1  0.753  1250  ; Inactive_78  Inactive_120 
+ 730  810  1  1.08  1250  ; Inactive_78  Inactive_158 
+ 731  735  1  0.613  1250  ; Inactive_79  Inactive_83 
+ 731  937  1  0.55  1250  ; Inactive_79  Inactive_549 
+ 732  736  1  0.617  1250  ; Inactive_80  Inactive_84 
+ 733  737  1  0.525  1250  ; Inactive_81  Inactive_85 
+ 733  738  1  0.662  1250  ; Inactive_81  Inactive_86 
+ 733  764  1  0.783  1250  ; Inactive_81  Inactive_112 
+ 733  768  1  0.786  1250  ; Inactive_81  Inactive_116 
+ 734  738  1  0.465  1250  ; Inactive_82  Inactive_86 
+ 734  739  1  0.587  1250  ; Inactive_82  Inactive_87 
+ 734  740  1  0.82  1250  ; Inactive_82  Inactive_88 
+ 734  768  1  0.797  1250  ; Inactive_82  Inactive_116 
+ 734  769  1  0.995  1250  ; Inactive_82  Inactive_117 
+ 734  934  1  0.766  1250  ; Inactive_82  Inactive_546 
+ 734  937  1  0.78  1250  ; Inactive_82  Inactive_549 
+ 735  739  1  0.548  1250  ; Inactive_83  Inactive_87 
+ 735  740  1  0.699  1250  ; Inactive_83  Inactive_88 
+ 736  740  1  0.651  1250  ; Inactive_84  Inactive_88 
+ 737  741  1  0.708  1250  ; Inactive_85  Inactive_89 
+ 737  761  1  0.694  1250  ; Inactive_85  Inactive_109 
+ 737  764  1  0.755  1250  ; Inactive_85  Inactive_112 
+ 738  742  1  0.629  1250  ; Inactive_86  Inactive_90 
+ 738  761  1  0.686  1250  ; Inactive_86  Inactive_109 
+ 738  764  1  0.766  1250  ; Inactive_86  Inactive_112 
+ 738  765  1  0.729  1250  ; Inactive_86  Inactive_113 
+ 738  934  1  0.906  1250  ; Inactive_86  Inactive_546 
+ 739  743  1  0.607  1250  ; Inactive_87  Inactive_91 
+ 739  931  1  0.939  1250  ; Inactive_87  Inactive_543 
+ 739  934  1  0.805  1250  ; Inactive_87  Inactive_546 
+ 740  744  1  0.625  1250  ; Inactive_88  Inactive_92 
+ 741  745  1  0.595  1250  ; Inactive_89  Inactive_93 
+ 741  751  1  0.926  1250  ; Inactive_89  Inactive_99 
+ 741  753  1  0.942  1250  ; Inactive_89  Inactive_101 
+ 741  757  1  1.005  1250  ; Inactive_89  Inactive_105 
+ 741  761  1  0.884  1250  ; Inactive_89  Inactive_109 
+ 742  746  1  0.632  1250  ; Inactive_90  Inactive_94 
+ 742  761  1  0.992  1250  ; Inactive_90  Inactive_109 
+ 742  931  1  0.992  1250  ; Inactive_90  Inactive_543 
+ 743  747  1  0.615  1250  ; Inactive_91  Inactive_95 
+ 743  931  1  1.06  1250  ; Inactive_91  Inactive_543 
+ 744  748  1  0.571  1250  ; Inactive_92  Inactive_96 
+ 744  753  1  1.057  1250  ; Inactive_92  Inactive_101 
+ 745  749  1  0.515  1250  ; Inactive_93  Inactive_97 
+ 745  750  1  0.438  1250  ; Inactive_93  Inactive_98 
+ 745  751  1  0.645  1250  ; Inactive_93  Inactive_99 
+ 745  843  1  0.837  1250  ; Inactive_93  Inactive_191 
+ 746  927  1  1.053  1250  ; Inactive_94  Inactive_539 
+ 748  752  1  0.925  1250  ; Inactive_96  Inactive_100 
+ 750  841  1  0.584  1250  ; Inactive_98  Inactive_189 
+ 751  757  1  1.006  1250  ; Inactive_99  Inactive_105 
+ 751  758  1  0.934  1250  ; Inactive_99  Inactive_106 
+ 751  840  1  0.606  1250  ; Inactive_99  Inactive_188 
+ 751  841  1  0.371  1250  ; Inactive_99  Inactive_189 
+ 751  842  1  0.557  1250  ; Inactive_99  Inactive_190 
+ 751  843  1  0.684  1250  ; Inactive_99  Inactive_191 
+ 753  757  1  0.597  1250  ; Inactive_101  Inactive_105 
+ 754  758  1  0.595  1250  ; Inactive_102  Inactive_106 
+ 754  840  1  0.519  1250  ; Inactive_102  Inactive_188 
+ 755  759  1  0.622  1250  ; Inactive_103  Inactive_107 
+ 755  837  1  0.784  1250  ; Inactive_103  Inactive_185 
+ 755  838  1  0.824  1250  ; Inactive_103  Inactive_186 
+ 755  839  1  0.759  1250  ; Inactive_103  Inactive_187 
+ 755  840  1  0.595  1250  ; Inactive_103  Inactive_188 
+ 756  760  1  0.614  1250  ; Inactive_104  Inactive_108 
+ 757  761  1  0.561  1250  ; Inactive_105  Inactive_109 
+ 757  764  1  1.032  1250  ; Inactive_105  Inactive_112 
+ 758  762  1  0.589  1250  ; Inactive_106  Inactive_110 
+ 758  843  1  0.695  1250  ; Inactive_106  Inactive_191 
+ 759  763  1  0.617  1250  ; Inactive_107  Inactive_111 
+ 759  821  1  0.697  1250  ; Inactive_107  Inactive_169 
+ 759  822  1  0.784  1250  ; Inactive_107  Inactive_170 
+ 759  824  1  1.057  1250  ; Inactive_107  Inactive_172 
+ 760  764  1  0.631  1250  ; Inactive_108  Inactive_112 
+ 760  818  1  0.855  1250  ; Inactive_108  Inactive_166 
+ 760  822  1  0.904  1250  ; Inactive_108  Inactive_170 
+ 761  765  1  0.623  1250  ; Inactive_109  Inactive_113 
+ 761  843  1  1.0  1250  ; Inactive_109  Inactive_191 
+ 762  766  1  0.636  1250  ; Inactive_110  Inactive_114 
+ 762  821  1  0.81  1250  ; Inactive_110  Inactive_169 
+ 762  845  1  0.921  1250  ; Inactive_110  Inactive_193 
+ 763  767  1  0.603  1250  ; Inactive_111  Inactive_115 
+ 763  817  1  0.584  1250  ; Inactive_111  Inactive_165 
+ 763  818  1  0.613  1250  ; Inactive_111  Inactive_166 
+ 763  821  1  0.746  1250  ; Inactive_111  Inactive_169 
+ 763  822  1  0.927  1250  ; Inactive_111  Inactive_170 
+ 764  768  1  0.598  1250  ; Inactive_112  Inactive_116 
+ 764  818  1  0.858  1250  ; Inactive_112  Inactive_166 
+ 765  769  1  0.632  1250  ; Inactive_113  Inactive_117 
+ 765  934  1  0.993  1250  ; Inactive_113  Inactive_546 
+ 766  770  1  0.604  1250  ; Inactive_114  Inactive_118 
+ 766  817  1  0.62  1250  ; Inactive_114  Inactive_165 
+ 766  821  1  1.046  1250  ; Inactive_114  Inactive_169 
+ 767  771  1  0.592  1250  ; Inactive_115  Inactive_119 
+ 767  810  1  0.8  1250  ; Inactive_115  Inactive_158 
+ 767  813  1  0.571  1250  ; Inactive_115  Inactive_161 
+ 767  814  1  0.68  1250  ; Inactive_115  Inactive_162 
+ 767  817  1  0.653  1250  ; Inactive_115  Inactive_165 
+ 767  818  1  0.865  1250  ; Inactive_115  Inactive_166 
+ 768  772  1  0.604  1250  ; Inactive_116  Inactive_120 
+ 769  773  1  0.641  1250  ; Inactive_117  Inactive_121 
+ 769  900  1  0.995  1250  ; Inactive_117  Inactive_512 
+ 769  904  1  0.985  1250  ; Inactive_117  Inactive_516 
+ 770  774  1  0.607  1250  ; Inactive_118  Inactive_122 
+ 770  813  1  0.626  1250  ; Inactive_118  Inactive_161 
+ 770  816  1  0.864  1250  ; Inactive_118  Inactive_164 
+ 770  859  1  0.569  1250  ; Inactive_118  Inactive_207 
+ 771  775  1  0.594  1250  ; Inactive_119  Inactive_123 
+ 771  809  1  0.653  1250  ; Inactive_119  Inactive_157 
+ 771  810  1  0.704  1250  ; Inactive_119  Inactive_158 
+ 771  813  1  0.683  1250  ; Inactive_119  Inactive_161 
+ 772  776  1  0.608  1250  ; Inactive_120  Inactive_124 
+ 772  900  1  0.922  1250  ; Inactive_120  Inactive_512 
+ 773  777  1  0.598  1250  ; Inactive_121  Inactive_125 
+ 773  859  1  0.75  1250  ; Inactive_121  Inactive_207 
+ 773  860  1  0.708  1250  ; Inactive_121  Inactive_208 
+ 773  863  1  0.613  1250  ; Inactive_121  Inactive_211 
+ 773  864  1  0.74  1250  ; Inactive_121  Inactive_212 
+ 773  867  1  0.896  1250  ; Inactive_121  Inactive_215 
+ 773  900  1  0.888  1250  ; Inactive_121  Inactive_512 
+ 774  778  1  0.616  1250  ; Inactive_122  Inactive_126 
+ 774  809  1  0.719  1250  ; Inactive_122  Inactive_157 
+ 774  812  1  0.967  1250  ; Inactive_122  Inactive_160 
+ 774  813  1  0.931  1250  ; Inactive_122  Inactive_161 
+ 774  863  1  0.646  1250  ; Inactive_122  Inactive_211 
+ 775  779  1  0.612  1250  ; Inactive_123  Inactive_127 
+ 775  809  1  0.814  1250  ; Inactive_123  Inactive_157 
+ 776  780  1  0.63  1250  ; Inactive_124  Inactive_128 
+ 776  867  1  0.719  1250  ; Inactive_124  Inactive_215 
+ 776  896  1  0.862  1250  ; Inactive_124  Inactive_508 
+ 776  897  1  0.765  1250  ; Inactive_124  Inactive_509 
+ 776  900  1  1.017  1250  ; Inactive_124  Inactive_512 
+ 777  781  1  0.631  1250  ; Inactive_125  Inactive_129 
+ 777  863  1  0.634  1250  ; Inactive_125  Inactive_211 
+ 777  866  1  0.688  1250  ; Inactive_125  Inactive_214 
+ 777  867  1  0.572  1250  ; Inactive_125  Inactive_215 
+ 778  782  1  0.593  1250  ; Inactive_126  Inactive_130 
+ 778  805  1  0.901  1250  ; Inactive_126  Inactive_153 
+ 778  809  1  1.038  1250  ; Inactive_126  Inactive_157 
+ 779  783  1  0.589  1250  ; Inactive_127  Inactive_131 
+ 779  893  1  0.879  1250  ; Inactive_127  Inactive_505 
+ 779  897  1  1.049  1250  ; Inactive_127  Inactive_509 
+ 780  784  1  0.603  1250  ; Inactive_128  Inactive_132 
+ 780  867  1  0.635  1250  ; Inactive_128  Inactive_215 
+ 780  870  1  0.609  1250  ; Inactive_128  Inactive_218 
+ 780  871  1  0.636  1250  ; Inactive_128  Inactive_219 
+ 780  874  1  0.844  1250  ; Inactive_128  Inactive_222 
+ 780  897  1  1.06  1250  ; Inactive_128  Inactive_509 
+ 781  785  1  0.626  1250  ; Inactive_129  Inactive_133 
+ 781  866  1  0.909  1250  ; Inactive_129  Inactive_214 
+ 781  870  1  0.705  1250  ; Inactive_129  Inactive_218 
+ 782  786  1  0.602  1250  ; Inactive_130  Inactive_134 
+ 782  795  1  0.709  1250  ; Inactive_130  Inactive_143 
+ 783  787  1  0.594  1250  ; Inactive_131  Inactive_135 
+ 783  793  1  0.712  1250  ; Inactive_131  Inactive_141 
+ 783  795  1  0.807  1250  ; Inactive_131  Inactive_143 
+ 783  871  1  0.824  1250  ; Inactive_131  Inactive_219 
+ 783  874  1  0.725  1250  ; Inactive_131  Inactive_222 
+ 783  890  1  0.932  1250  ; Inactive_131  Inactive_502 
+ 783  893  1  1.06  1250  ; Inactive_131  Inactive_505 
+ 784  788  1  0.604  1250  ; Inactive_132  Inactive_136 
+ 784  870  1  0.75  1250  ; Inactive_132  Inactive_218 
+ 784  873  1  0.742  1250  ; Inactive_132  Inactive_221 
+ 784  874  1  0.654  1250  ; Inactive_132  Inactive_222 
+ 785  789  1  0.581  1250  ; Inactive_133  Inactive_137 
+ 785  796  1  0.747  1250  ; Inactive_133  Inactive_144 
+ 786  792  1  0.542  1250  ; Inactive_134  Inactive_140 
+ 786  793  1  0.417  1250  ; Inactive_134  Inactive_141 
+ 786  794  1  0.463  1250  ; Inactive_134  Inactive_142 
+ 786  795  1  0.588  1250  ; Inactive_134  Inactive_143 
+ 787  793  1  0.586  1250  ; Inactive_135  Inactive_141 
+ 787  874  1  0.744  1250  ; Inactive_135  Inactive_222 
+ 787  877  1  0.709  1250  ; Inactive_135  Inactive_225 
+ 787  878  1  0.791  1250  ; Inactive_135  Inactive_226 
+ 787  881  1  1.0  1250  ; Inactive_135  Inactive_229 
+ 788  877  1  0.847  1250  ; Inactive_136  Inactive_225 
+ 789  796  1  0.949  1250  ; Inactive_137  Inactive_144 
+ 793  886  1  0.93  1250  ; Inactive_141  Inactive_498 
+ 796  801  1  0.897  1250  ; Inactive_144  Inactive_149 
+ 797  801  1  0.652  1250  ; Inactive_145  Inactive_149 
+ 797  802  1  0.721  1250  ; Inactive_145  Inactive_150 
+ 797  805  1  1.086  1250  ; Inactive_145  Inactive_153 
+ 798  802  1  0.582  1250  ; Inactive_146  Inactive_150 
+ 799  803  1  0.636  1250  ; Inactive_147  Inactive_151 
+ 800  804  1  0.641  1250  ; Inactive_148  Inactive_152 
+ 801  805  1  0.622  1250  ; Inactive_149  Inactive_153 
+ 802  806  1  0.607  1250  ; Inactive_150  Inactive_154 
+ 803  807  1  0.595  1250  ; Inactive_151  Inactive_155 
+ 804  808  1  0.591  1250  ; Inactive_152  Inactive_156 
+ 805  809  1  0.607  1250  ; Inactive_153  Inactive_157 
+ 806  810  1  0.631  1250  ; Inactive_154  Inactive_158 
+ 807  811  1  0.615  1250  ; Inactive_155  Inactive_159 
+ 808  812  1  0.597  1250  ; Inactive_156  Inactive_160 
+ 809  813  1  0.59  1250  ; Inactive_157  Inactive_161 
+ 810  814  1  0.592  1250  ; Inactive_158  Inactive_162 
+ 811  815  1  0.594  1250  ; Inactive_159  Inactive_163 
+ 812  816  1  0.595  1250  ; Inactive_160  Inactive_164 
+ 813  817  1  0.58  1250  ; Inactive_161  Inactive_165 
+ 814  818  1  0.527  1250  ; Inactive_162  Inactive_166 
+ 814  819  1  0.699  1250  ; Inactive_162  Inactive_167 
+ 815  819  1  0.576  1250  ; Inactive_163  Inactive_167 
+ 815  820  1  0.798  1250  ; Inactive_163  Inactive_168 
+ 816  820  1  0.694  1250  ; Inactive_164  Inactive_168 
+ 816  858  1  0.822  1250  ; Inactive_164  Inactive_206 
+ 817  821  1  0.643  1250  ; Inactive_165  Inactive_169 
+ 818  822  1  0.567  1250  ; Inactive_166  Inactive_170 
+ 819  823  1  0.549  1250  ; Inactive_167  Inactive_171 
+ 820  824  1  0.507  1250  ; Inactive_168  Inactive_172 
+ 820  825  1  0.497  1250  ; Inactive_168  Inactive_173 
+ 820  826  1  0.641  1250  ; Inactive_168  Inactive_174 
+ 820  851  1  0.932  1250  ; Inactive_168  Inactive_199 
+ 821  826  1  0.676  1250  ; Inactive_169  Inactive_174 
+ 825  848  1  0.747  1250  ; Inactive_173  Inactive_196 
+ 826  845  1  0.848  1250  ; Inactive_174  Inactive_193 
+ 826  846  1  0.649  1250  ; Inactive_174  Inactive_194 
+ 826  847  1  0.538  1250  ; Inactive_174  Inactive_195 
+ 826  848  1  0.518  1250  ; Inactive_174  Inactive_196 
+ 826  851  1  0.622  1250  ; Inactive_174  Inactive_199 
+ 827  837  1  1.036  1250  ; Inactive_175  Inactive_185 
+ 827  847  1  0.509  1250  ; Inactive_175  Inactive_195 
+ 827  848  1  0.528  1250  ; Inactive_175  Inactive_196 
+ 828  833  1  0.628  1250  ; Inactive_176  Inactive_181 
+ 828  837  1  0.971  1250  ; Inactive_176  Inactive_185 
+ 828  846  1  0.617  1250  ; Inactive_176  Inactive_194 
+ 828  847  1  0.539  1250  ; Inactive_176  Inactive_195 
+ 828  848  1  0.614  1250  ; Inactive_176  Inactive_196 
+ 829  834  1  0.74  1250  ; Inactive_177  Inactive_182 
+ 830  834  1  0.599  1250  ; Inactive_178  Inactive_182 
+ 830  846  1  0.916  1250  ; Inactive_178  Inactive_194 
+ 831  835  1  0.602  1250  ; Inactive_179  Inactive_183 
+ 832  836  1  0.629  1250  ; Inactive_180  Inactive_184 
+ 832  846  1  0.894  1250  ; Inactive_180  Inactive_194 
+ 833  837  1  0.611  1250  ; Inactive_181  Inactive_185 
+ 833  846  1  0.68  1250  ; Inactive_181  Inactive_194 
+ 834  838  1  0.617  1250  ; Inactive_182  Inactive_186 
+ 835  839  1  0.553  1250  ; Inactive_183  Inactive_187 
+ 836  842  1  0.5  1250  ; Inactive_184  Inactive_190 
+ 836  843  1  0.7  1250  ; Inactive_184  Inactive_191 
+ 836  844  1  0.659  1250  ; Inactive_184  Inactive_192 
+ 836  846  1  0.873  1250  ; Inactive_184  Inactive_194 
+ 837  846  1  0.927  1250  ; Inactive_185  Inactive_194 
+ 847  851  1  0.711  1250  ; Inactive_195  Inactive_199 
+ 847  852  1  0.727  1250  ; Inactive_195  Inactive_200 
+ 848  852  1  0.588  1250  ; Inactive_196  Inactive_200 
+ 849  853  1  0.602  1250  ; Inactive_197  Inactive_201 
+ 849  915  1  0.66  1250  ; Inactive_197  Inactive_527 
+ 850  854  1  0.582  1250  ; Inactive_198  Inactive_202 
+ 851  855  1  0.551  1250  ; Inactive_199  Inactive_203 
+ 852  856  1  0.601  1250  ; Inactive_200  Inactive_204 
+ 852  915  1  0.813  1250  ; Inactive_200  Inactive_527 
+ 853  857  1  0.609  1250  ; Inactive_201  Inactive_205 
+ 853  915  1  0.873  1250  ; Inactive_201  Inactive_527 
+ 854  858  1  0.599  1250  ; Inactive_202  Inactive_206 
+ 855  859  1  0.563  1250  ; Inactive_203  Inactive_207 
+ 856  860  1  0.52  1250  ; Inactive_204  Inactive_208 
+ 856  861  1  0.635  1250  ; Inactive_204  Inactive_209 
+ 856  908  1  0.743  1250  ; Inactive_204  Inactive_520 
+ 856  911  1  0.852  1250  ; Inactive_204  Inactive_523 
+ 857  861  1  0.462  1250  ; Inactive_205  Inactive_209 
+ 857  862  1  0.591  1250  ; Inactive_205  Inactive_210 
+ 858  862  1  0.583  1250  ; Inactive_206  Inactive_210 
+ 858  863  1  0.759  1250  ; Inactive_206  Inactive_211 
+ 859  863  1  0.696  1250  ; Inactive_207  Inactive_211 
+ 860  864  1  0.602  1250  ; Inactive_208  Inactive_212 
+ 860  900  1  1.088  1250  ; Inactive_208  Inactive_512 
+ 860  904  1  0.943  1250  ; Inactive_208  Inactive_516 
+ 860  905  1  0.949  1250  ; Inactive_208  Inactive_517 
+ 860  908  1  0.882  1250  ; Inactive_208  Inactive_520 
+ 861  865  1  0.605  1250  ; Inactive_209  Inactive_213 
+ 861  905  1  0.996  1250  ; Inactive_209  Inactive_517 
+ 861  908  1  0.947  1250  ; Inactive_209  Inactive_520 
+ 862  866  1  0.628  1250  ; Inactive_210  Inactive_214 
+ 863  867  1  0.599  1250  ; Inactive_211  Inactive_215 
+ 864  868  1  0.608  1250  ; Inactive_212  Inactive_216 
+ 864  901  1  0.879  1250  ; Inactive_212  Inactive_513 
+ 864  905  1  1.073  1250  ; Inactive_212  Inactive_517 
+ 865  869  1  0.601  1250  ; Inactive_213  Inactive_217 
+ 866  870  1  0.583  1250  ; Inactive_214  Inactive_218 
+ 867  871  1  0.569  1250  ; Inactive_215  Inactive_219 
+ 867  897  1  0.86  1250  ; Inactive_215  Inactive_509 
+ 868  872  1  0.597  1250  ; Inactive_216  Inactive_220 
+ 869  873  1  0.644  1250  ; Inactive_217  Inactive_221 
+ 870  874  1  0.642  1250  ; Inactive_218  Inactive_222 
+ 871  875  1  0.641  1250  ; Inactive_219  Inactive_223 
+ 871  890  1  0.922  1250  ; Inactive_219  Inactive_502 
+ 871  893  1  0.934  1250  ; Inactive_219  Inactive_505 
+ 871  894  1  0.82  1250  ; Inactive_219  Inactive_506 
+ 871  897  1  0.993  1250  ; Inactive_219  Inactive_509 
+ 872  876  1  0.631  1250  ; Inactive_220  Inactive_224 
+ 873  877  1  0.61  1250  ; Inactive_221  Inactive_225 
+ 874  878  1  0.597  1250  ; Inactive_222  Inactive_226 
+ 874  890  1  0.856  1250  ; Inactive_222  Inactive_502 
+ 875  879  1  0.594  1250  ; Inactive_223  Inactive_227 
+ 875  890  1  0.853  1250  ; Inactive_223  Inactive_502 
+ 875  891  1  0.976  1250  ; Inactive_223  Inactive_503 
+ 875  894  1  1.059  1250  ; Inactive_223  Inactive_506 
+ 876  880  1  0.598  1250  ; Inactive_224  Inactive_228 
+ 877  881  1  0.644  1250  ; Inactive_225  Inactive_229 
+ 878  887  1  0.782  1250  ; Inactive_226  Inactive_499 
+ 878  890  1  0.964  1250  ; Inactive_226  Inactive_502 
+ 881  887  1  1.095  1250  ; Inactive_229  Inactive_499 
+ 883  888  1  0.695  1250  ; Inactive_495  Inactive_500 
+ 884  888  1  0.582  1250  ; Inactive_496  Inactive_500 
+ 885  889  1  0.608  1250  ; Inactive_497  Inactive_501 
+ 886  890  1  0.626  1250  ; Inactive_498  Inactive_502 
+ 887  891  1  0.63  1250  ; Inactive_499  Inactive_503 
+ 888  892  1  0.633  1250  ; Inactive_500  Inactive_504 
+ 888  946  1  0.81  1250  ; Inactive_500  Inactive_558 
+ 889  893  1  0.639  1250  ; Inactive_501  Inactive_505 
+ 890  894  1  0.609  1250  ; Inactive_502  Inactive_506 
+ 891  895  1  0.604  1250  ; Inactive_503  Inactive_507 
+ 891  946  1  0.93  1250  ; Inactive_503  Inactive_558 
+ 892  896  1  0.631  1250  ; Inactive_504  Inactive_508 
+ 892  943  1  0.686  1250  ; Inactive_504  Inactive_555 
+ 892  944  1  0.774  1250  ; Inactive_504  Inactive_556 
+ 892  946  1  0.784  1250  ; Inactive_504  Inactive_558 
+ 893  897  1  0.62  1250  ; Inactive_505  Inactive_509 
+ 894  898  1  0.599  1250  ; Inactive_506  Inactive_510 
+ 895  899  1  0.589  1250  ; Inactive_507  Inactive_511 
+ 895  943  1  0.779  1250  ; Inactive_507  Inactive_555 
+ 896  900  1  0.614  1250  ; Inactive_508  Inactive_512 
+ 896  940  1  0.732  1250  ; Inactive_508  Inactive_552 
+ 896  943  1  0.818  1250  ; Inactive_508  Inactive_555 
+ 896  944  1  1.026  1250  ; Inactive_508  Inactive_556 
+ 897  901  1  0.614  1250  ; Inactive_509  Inactive_513 
+ 898  902  1  0.604  1250  ; Inactive_510  Inactive_514 
+ 899  903  1  0.602  1250  ; Inactive_511  Inactive_515 
+ 899  936  1  0.756  1250  ; Inactive_511  Inactive_548 
+ 899  939  1  0.879  1250  ; Inactive_511  Inactive_551 
+ 899  943  1  1.095  1250  ; Inactive_511  Inactive_555 
+ 900  904  1  0.6  1250  ; Inactive_512  Inactive_516 
+ 900  936  1  0.719  1250  ; Inactive_512  Inactive_548 
+ 901  905  1  0.572  1250  ; Inactive_513  Inactive_517 
+ 902  906  1  0.73  1250  ; Inactive_514  Inactive_518 
+ 903  932  1  0.515  1250  ; Inactive_515  Inactive_544 
+ 903  933  1  0.515  1250  ; Inactive_515  Inactive_545 
+ 903  936  1  0.75  1250  ; Inactive_515  Inactive_548 
+ 904  908  1  0.633  1250  ; Inactive_516  Inactive_520 
+ 904  930  1  0.754  1250  ; Inactive_516  Inactive_542 
+ 904  933  1  0.625  1250  ; Inactive_516  Inactive_545 
+ 904  934  1  0.926  1250  ; Inactive_516  Inactive_546 
+ 905  909  1  0.604  1250  ; Inactive_517  Inactive_521 
+ 906  910  1  0.629  1250  ; Inactive_518  Inactive_522 
+ 906  929  1  0.658  1250  ; Inactive_518  Inactive_541 
+ 907  911  1  0.657  1250  ; Inactive_519  Inactive_523 
+ 907  926  1  0.7  1250  ; Inactive_519  Inactive_538 
+ 907  929  1  0.591  1250  ; Inactive_519  Inactive_541 
+ 907  930  1  0.713  1250  ; Inactive_519  Inactive_542 
+ 908  912  1  0.661  1250  ; Inactive_520  Inactive_524 
+ 909  913  1  0.611  1250  ; Inactive_521  Inactive_525 
+ 910  914  1  0.597  1250  ; Inactive_522  Inactive_526 
+ 910  921  1  0.813  1250  ; Inactive_522  Inactive_533 
+ 910  926  1  0.816  1250  ; Inactive_522  Inactive_538 
+ 910  929  1  0.97  1250  ; Inactive_522  Inactive_541 
+ 911  915  1  0.647  1250  ; Inactive_523  Inactive_527 
+ 911  926  1  0.989  1250  ; Inactive_523  Inactive_538 
+ 912  916  1  0.638  1250  ; Inactive_524  Inactive_528 
+ 913  917  1  0.464  1250  ; Inactive_525  Inactive_529 
+ 913  920  1  0.811  1250  ; Inactive_525  Inactive_532 
+ 914  918  1  0.477  1250  ; Inactive_526  Inactive_530 
+ 914  919  1  0.711  1250  ; Inactive_526  Inactive_531 
+ 914  920  1  0.803  1250  ; Inactive_526  Inactive_532 
+ 914  921  1  0.856  1250  ; Inactive_526  Inactive_533 
+ 921  925  1  0.694  1250  ; Inactive_533  Inactive_537 
+ 922  926  1  0.607  1250  ; Inactive_534  Inactive_538 
+ 923  927  1  0.604  1250  ; Inactive_535  Inactive_539 
+ 924  928  1  0.604  1250  ; Inactive_536  Inactive_540 
+ 925  929  1  0.609  1250  ; Inactive_537  Inactive_541 
+ 926  930  1  0.628  1250  ; Inactive_538  Inactive_542 
+ 927  931  1  0.632  1250  ; Inactive_539  Inactive_543 
+ 928  932  1  0.634  1250  ; Inactive_540  Inactive_544 
+ 929  933  1  0.639  1250  ; Inactive_541  Inactive_545 
+ 930  934  1  0.615  1250  ; Inactive_542  Inactive_546 
+ 931  935  1  0.592  1250  ; Inactive_543  Inactive_547 
+ 932  936  1  0.642  1250  ; Inactive_544  Inactive_548 
+ 935  939  1  0.748  1250  ; Inactive_547  Inactive_551 
+ 938  942  1  0.755  1250  ; Inactive_550  Inactive_554 
+ 939  943  1  0.625  1250  ; Inactive_551  Inactive_555 
+ 940  944  1  0.612  1250  ; Inactive_552  Inactive_556 
+ 941  945  1  0.694  1250  ; Inactive_553  Inactive_557 
+ 941  954  1  1.055  1250  ; Inactive_553  Inactive_566 
+ 944  950  1  0.626  1250  ; Inactive_556  Inactive_562 
+ 944  954  1  1.027  1250  ; Inactive_556  Inactive_566 
+ 945  951  1  0.602  1250  ; Inactive_557  Inactive_563 
+ 945  954  1  0.967  1250  ; Inactive_557  Inactive_566 
+ 947  951  1  0.587  1250  ; Inactive_559  Inactive_563 
+ 948  952  1  0.603  1250  ; Inactive_560  Inactive_564 
+ 949  953  1  0.59  1250  ; Inactive_561  Inactive_565 
+ 950  954  1  0.586  1250  ; Inactive_562  Inactive_566 
+ 951  955  1  0.616  1250  ; Inactive_563  Inactive_567 
+ 952  956  1  0.628  1250  ; Inactive_564  Inactive_568 
+ 953  957  1  0.63  1250  ; Inactive_565  Inactive_569 
+ 954  958  1  0.583  1250  ; Inactive_566  Inactive_570 
+ 955  959  1  0.521  1250  ; Inactive_567  Inactive_571 
+ 688  746  1  0.968  1250  ; Inactive_36  Inactive_94 
+ 696  736  1  0.776  1250  ; Inactive_44  Inactive_84 
+ 705  941  1  0.816  1250  ; Inactive_53  Inactive_553 
+ 709  950  1  0.779  1250  ; Inactive_57  Inactive_562 
+ 710  722  1  0.854  1250  ; Inactive_58  Inactive_70 
+ 712  717  1  0.876  1250  ; Inactive_60  Inactive_65 
+ 720  779  1  0.747  1250  ; Inactive_68  Inactive_127 
+ 720  782  1  0.883  1250  ; Inactive_68  Inactive_130 
+ 722  802  1  0.75  1250  ; Inactive_70  Inactive_150 
+ 731  772  1  0.938  1250  ; Inactive_79  Inactive_120 
+ 731  936  1  0.831  1250  ; Inactive_79  Inactive_548 
+ 731  940  1  1.02  1250  ; Inactive_79  Inactive_552 
+ 733  767  1  0.961  1250  ; Inactive_81  Inactive_115 
+ 745  841  1  0.942  1250  ; Inactive_93  Inactive_189 
+ 755  836  1  0.969  1250  ; Inactive_103  Inactive_184 
+ 755  842  1  0.761  1250  ; Inactive_103  Inactive_190 
+ 765  930  1  1.094  1250  ; Inactive_113  Inactive_542 
+ 769  860  1  0.848  1250  ; Inactive_117  Inactive_208 
+ 775  806  1  0.842  1250  ; Inactive_123  Inactive_154 
+ 782  796  1  0.788  1250  ; Inactive_130  Inactive_144 
+ 784  877  1  0.896  1250  ; Inactive_132  Inactive_225 
+ 791  796  1  0.882  1250  ; Inactive_139  Inactive_144 
+ 816  851  1  1.079  1250  ; Inactive_164  Inactive_199 
+ 816  855  1  0.769  1250  ; Inactive_164  Inactive_203 
+ 816  859  1  0.79  1250  ; Inactive_164  Inactive_207 
+ 819  825  1  0.798  1250  ; Inactive_167  Inactive_173 
+ 829  848  1  0.883  1250  ; Inactive_177  Inactive_196 
+ 853  912  1  0.739  1250  ; Inactive_201  Inactive_524 
+ 857  912  1  1.086  1250  ; Inactive_205  Inactive_524 
+ 868  901  1  1.096  1250  ; Inactive_216  Inactive_513 
+ 885  948  1  1.012  1250  ; Inactive_497  Inactive_560 
+ 893  944  1  0.961  1250  ; Inactive_505  Inactive_556 
+ 906  932  1  0.929  1250  ; Inactive_518  Inactive_544 
+ 913  921  1  0.884  1250  ; Inactive_525  Inactive_533 
+ 933  937  1  0.744  1250  ; Inactive_545  Inactive_549 
+ 946  951  1  0.775  1250  ; Inactive_558  Inactive_563 
+ 682  681  1  1.  1     ; Inactive_1  Inactive_0 --> added for vmd 
+ 683  682  1  1.  1     ; Inactive_2  Inactive_1 --> added for vmd 
+ 684  683  1  1.  1     ; Inactive_3  Inactive_2 --> added for vmd 
+ 685  684  1  1.  1     ; Inactive_4  Inactive_3 --> added for vmd 
+ 686  685  1  1.  1     ; Inactive_5  Inactive_4 --> added for vmd 
+ 687  686  1  1.  1     ; Inactive_6  Inactive_5 --> added for vmd 
+ 688  687  1  1.  1     ; Inactive_7  Inactive_6 --> added for vmd 
+ 689  688  1  1.  1     ; Inactive_8  Inactive_7 --> added for vmd 
+ 690  689  1  1.  1     ; Inactive_9  Inactive_8 --> added for vmd 
+ 691  690  1  1.  1     ; Inactive_10  Inactive_9 --> added for vmd 
+ 692  691  1  1.  1     ; Inactive_11  Inactive_10 --> added for vmd 
+ 693  692  1  1.  1     ; Inactive_12  Inactive_11 --> added for vmd 
+ 694  693  1  1.  1     ; Inactive_13  Inactive_12 --> added for vmd 
+ 695  694  1  1.  1     ; Inactive_14  Inactive_13 --> added for vmd 
+ 696  695  1  1.  1     ; Inactive_15  Inactive_14 --> added for vmd 
+ 697  696  1  1.  1     ; Inactive_16  Inactive_15 --> added for vmd 
+ 698  697  1  1.  1     ; Inactive_17  Inactive_16 --> added for vmd 
+ 699  698  1  1.  1     ; Inactive_18  Inactive_17 --> added for vmd 
+ 700  699  1  1.  1     ; Inactive_19  Inactive_18 --> added for vmd 
+ 701  700  1  1.  1     ; Inactive_20  Inactive_19 --> added for vmd 
+ 702  701  1  1.  1     ; Inactive_21  Inactive_20 --> added for vmd 
+ 703  702  1  1.  1     ; Inactive_22  Inactive_21 --> added for vmd 
+ 704  703  1  1.  1     ; Inactive_23  Inactive_22 --> added for vmd 
+ 705  704  1  1.  1     ; Inactive_24  Inactive_23 --> added for vmd 
+ 706  705  1  1.  1     ; Inactive_25  Inactive_24 --> added for vmd 
+ 707  706  1  1.  1     ; Inactive_26  Inactive_25 --> added for vmd 
+ 708  707  1  1.  1     ; Inactive_27  Inactive_26 --> added for vmd 
+ 709  708  1  1.  1     ; Inactive_28  Inactive_27 --> added for vmd 
+ 710  709  1  1.  1     ; Inactive_29  Inactive_28 --> added for vmd 
+ 743  742  1  1.  1     ; Inactive_62  Inactive_61 --> added for vmd 
+ 819  818  1  1.  1     ; Inactive_138  Inactive_137 --> added for vmd 
+ 911  910  1  1.  1     ; Inactive_230  Inactive_229 --> added for vmd 
+ 912  911  1  1.  1     ; Inactive_231  Inactive_230 --> added for vmd 
+ 913  912  1  1.  1     ; Inactive_232  Inactive_231 --> added for vmd 
+ 914  913  1  1.  1     ; Inactive_233  Inactive_232 --> added for vmd 
+ 915  914  1  1.  1     ; Inactive_234  Inactive_233 --> added for vmd 
+ 916  915  1  1.  1     ; Inactive_235  Inactive_234 --> added for vmd 
+ 917  916  1  1.  1     ; Inactive_236  Inactive_235 --> added for vmd 
+ 918  917  1  1.  1     ; Inactive_237  Inactive_236 --> added for vmd 
+ 919  918  1  1.  1     ; Inactive_238  Inactive_237 --> added for vmd 
+ 920  919  1  1.  1     ; Inactive_239  Inactive_238 --> added for vmd 
+ 921  920  1  1.  1     ; Inactive_240  Inactive_239 --> added for vmd 
+ 922  921  1  1.  1     ; Inactive_241  Inactive_240 --> added for vmd 
+ 923  922  1  1.  1     ; Inactive_242  Inactive_241 --> added for vmd 
+ 924  923  1  1.  1     ; Inactive_243  Inactive_242 --> added for vmd 
+ 925  924  1  1.  1     ; Inactive_244  Inactive_243 --> added for vmd 
+ 926  925  1  1.  1     ; Inactive_245  Inactive_244 --> added for vmd 
+ 927  926  1  1.  1     ; Inactive_246  Inactive_245 --> added for vmd 
+ 928  927  1  1.  1     ; Inactive_247  Inactive_246 --> added for vmd 
+ 929  928  1  1.  1     ; Inactive_248  Inactive_247 --> added for vmd 
+ 930  929  1  1.  1     ; Inactive_249  Inactive_248 --> added for vmd 
+ 931  930  1  1.  1     ; Inactive_250  Inactive_249 --> added for vmd 
+ 932  931  1  1.  1     ; Inactive_251  Inactive_250 --> added for vmd 
+ 933  932  1  1.  1     ; Inactive_252  Inactive_251 --> added for vmd 
+ 934  933  1  1.  1     ; Inactive_253  Inactive_252 --> added for vmd 
+ 935  934  1  1.  1     ; Inactive_254  Inactive_253 --> added for vmd 
+ 936  935  1  1.  1     ; Inactive_255  Inactive_254 --> added for vmd 
+ 937  936  1  1.  1     ; Inactive_256  Inactive_255 --> added for vmd 
+ 938  937  1  1.  1     ; Inactive_257  Inactive_256 --> added for vmd 
+ 939  938  1  1.  1     ; Inactive_258  Inactive_257 --> added for vmd 
+ 940  939  1  1.  1     ; Inactive_259  Inactive_258 --> added for vmd 
+ 941  940  1  1.  1     ; Inactive_260  Inactive_259 --> added for vmd 
+ 942  941  1  1.  1     ; Inactive_261  Inactive_260 --> added for vmd 
+ 943  942  1  1.  1     ; Inactive_262  Inactive_261 --> added for vmd 
+ 944  943  1  1.  1     ; Inactive_263  Inactive_262 --> added for vmd 
+ 945  944  1  1.  1     ; Inactive_264  Inactive_263 --> added for vmd 
+ 946  945  1  1.  1     ; Inactive_265  Inactive_264 --> added for vmd 
+ 947  946  1  1.  1     ; Inactive_266  Inactive_265 --> added for vmd 
+ 948  947  1  1.  1     ; Inactive_267  Inactive_266 --> added for vmd 
+ 949  948  1  1.  1     ; Inactive_268  Inactive_267 --> added for vmd 
+ 950  949  1  1.  1     ; Inactive_269  Inactive_268 --> added for vmd 
+ 951  950  1  1.  1     ; Inactive_270  Inactive_269 --> added for vmd 
+ 952  951  1  1.  1     ; Inactive_271  Inactive_270 --> added for vmd 
+ 953  952  1  1.  1     ; Inactive_272  Inactive_271 --> added for vmd 
+ 954  953  1  1.  1     ; Inactive_273  Inactive_272 --> added for vmd 
+ 955  954  1  1.  1     ; Inactive_274  Inactive_273 --> added for vmd 
+ 956  955  1  1.  1     ; Inactive_275  Inactive_274 --> added for vmd 
+ 957  956  1  1.  1     ; Inactive_276  Inactive_275 --> added for vmd 
+ 958  957  1  1.  1     ; Inactive_277  Inactive_276 --> added for vmd 
+ 959  958  1  1.  1     ; Inactive_278  Inactive_277 --> added for vmd 

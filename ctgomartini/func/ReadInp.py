@@ -28,7 +28,8 @@ class _OpenMMReadInputs():
         self.nstdcd           = 0                                         # Writing coordinates trajectory frequency (steps)
         self.output           = 'output.gro'
         self.output_pdb       = 'output.pdb'
-        self.odcd             = 'output.dcd'
+        self.odcd             = None
+        self.oxtc             = None
         self.ochk             = 'output.chk'
         # self.orst             = 'output.rst'
 
@@ -49,7 +50,8 @@ class _OpenMMReadInputs():
         self.temp             = 310.0                                     # Temperature (K)
         self.fric_coeff       = 1                                         # Friction coefficient for Langevin dynamics
         self.nonbonded_cutoff = 1.1                                       # nm
-        
+        self.const_tol        = None                                      # Set the distance tolerance within which constraints are maintained. 
+
         self.pcouple          = 'no'                                      # Turn on/off pressure coupling
         self.p_ref            = 1.0                                       # Pressure (Pref or Pxx, Pyy, Pzz; bar)
         self.p_type           = 'membrane'                                # MonteCarloBarotat type: isotropic or membrane
@@ -92,6 +94,7 @@ class _OpenMMReadInputs():
                     if input_param == 'OUTPUT':                         self.output           = str(input_value)
                     if input_param == 'OUTPUT_PDB':                     self.output_pdb       = str(input_value)
                     if input_param == 'ODCD':                           self.odcd             = str(input_value)
+                    if input_param == 'OXTC':                           self.oxtc             = str(input_value)
                     if input_param == 'OCHK':                           self.ochk             = str(input_value)
                     # if input_param == 'ORST':                           self.orst             = str(input_value)
 
@@ -120,7 +123,8 @@ class _OpenMMReadInputs():
                     if input_param == 'TEMP':                           self.temp             = float(input_value)
                     if input_param == 'FRIC_COEFF':                     self.fric_coeff       = float(input_value)
                     if input_param == 'NONBONDED_CUTOFF':               self.nonbonded_cutoff = float(input_value)
-                        
+                    if input_param == 'CONST_TOL':                      self.const_tol        = float(input_value)
+
                     if input_param == 'PCOUPLE':
                         if input_value.upper() == 'YES':                self.pcouple          = 'yes'
                         if input_value.upper() == 'NO':                 self.pcouple          = 'no'

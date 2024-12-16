@@ -15,6 +15,11 @@ conda activate ctgomartini
 pip install -e .
 ```
 
+Verify your installation by typing the following command
+```
+python -m ctgomartini.tests.tests
+```
+
 ## Features
 - Implement a new interaction type named "Contacts" to replace the LJ-type contact interactions in classic GoMartini3 models, which can (1) eliminate incorrect interactions between multiple protein copies in classic GoMartini3 models and (2) facilitate construction of multiple basin potentials in Multiple-basin GoMartini simulations.
 - Automatically construct GoMartini3 model topologies for different simulation methods.
@@ -30,12 +35,14 @@ pip install -e .
 ## Project Roadmap
 - [x] Force Class Refinement: Transition the force class to utilize objective classification criteria to enhance clarity and maintainability.
 - [x] Multi-basin Force Groups Overhaul: Rebuild the multiple-basin force groups by employing a more efficient approach using two collective variables (CVs) instead of analyzing across all CVs. This will improve performance.
-- [ ] Vermouth Martinize Functions Update: Update the Vermouth Martinize functions to ensure compatibility with the latest standards and to improve overall functionality.
+- [ ] Vermouth Martinize Functions Update: Update the Vermouth Martinize functions to ensure compatibility with the latest standards and to improve overall functionality. Will be done until Vermouth becomes stable 
 - [x] Testing Completion: Develop a comprehensive test to validate the integrity and reliability of the project, ensuring that all components function as intended.
 - [x] Charge and atom number checkment: Add charge check and atom number check
-- [ ] XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
+- [x] XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
 - [x] Add Checkpoint at the ending of the simulations
-- [ ] Position restraints: x,y,z restraint instead of the distance restraint
+- [x] Add the constraint tolerance parameter in .inp file to better manage the constraint
+- [x] Position restraints: x,y,z restraint instead of the distance restraint
+- [ ] Reconstruct the tests module
 - [ ] Analysis module should be added.
 - [ ] Minimization output module should be added.
 - [ ] Plumed module should be added.

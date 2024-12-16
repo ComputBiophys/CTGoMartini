@@ -1,0 +1,597 @@
+; Go bonds as harmonic bonds between the virtual particles: 
+; OV + symmetric rCSU contacts 
+ 683  687  1  0.605  1250  ; Active_31  Active_35 
+ 684  688  1  0.593  1250  ; Active_32  Active_36 
+ 685  689  1  0.595  1250  ; Active_33  Active_37 
+ 685  747  1  0.732  1250  ; Active_33  Active_95 
+ 686  690  1  0.603  1250  ; Active_34  Active_38 
+ 687  691  1  0.66  1250  ; Active_35  Active_39 
+ 688  692  1  0.602  1250  ; Active_36  Active_40 
+ 689  693  1  0.601  1250  ; Active_37  Active_41 
+ 689  747  1  0.875  1250  ; Active_37  Active_95 
+ 690  694  1  0.614  1250  ; Active_38  Active_42 
+ 691  695  1  0.612  1250  ; Active_39  Active_43 
+ 692  696  1  0.587  1250  ; Active_40  Active_44 
+ 692  743  1  0.719  1250  ; Active_40  Active_91 
+ 692  746  1  1.041  1250  ; Active_40  Active_94 
+ 692  931  1  1.011  1250  ; Active_40  Active_313 
+ 693  697  1  0.585  1250  ; Active_41  Active_45 
+ 694  698  1  0.598  1250  ; Active_42  Active_46 
+ 695  699  1  0.612  1250  ; Active_43  Active_47 
+ 695  739  1  0.825  1250  ; Active_43  Active_87 
+ 695  931  1  0.981  1250  ; Active_43  Active_313 
+ 695  935  1  0.745  1250  ; Active_43  Active_317 
+ 696  700  1  0.623  1250  ; Active_44  Active_48 
+ 696  735  1  0.532  1250  ; Active_44  Active_83 
+ 696  739  1  0.711  1250  ; Active_44  Active_87 
+ 696  740  1  0.75  1250  ; Active_44  Active_88 
+ 697  701  1  0.588  1250  ; Active_45  Active_49 
+ 698  702  1  0.572  1250  ; Active_46  Active_50 
+ 699  703  1  0.59  1250  ; Active_47  Active_51 
+ 699  731  1  0.652  1250  ; Active_47  Active_79 
+ 699  734  1  0.738  1250  ; Active_47  Active_82 
+ 699  735  1  0.563  1250  ; Active_47  Active_83 
+ 699  739  1  0.986  1250  ; Active_47  Active_87 
+ 699  934  1  0.907  1250  ; Active_47  Active_316 
+ 699  937  1  0.611  1250  ; Active_47  Active_319 
+ 699  938  1  0.542  1250  ; Active_47  Active_320 
+ 700  704  1  0.574  1250  ; Active_48  Active_52 
+ 700  732  1  0.622  1250  ; Active_48  Active_80 
+ 700  735  1  0.617  1250  ; Active_48  Active_83 
+ 701  705  1  0.576  1250  ; Active_49  Active_53 
+ 702  706  1  0.614  1250  ; Active_50  Active_54 
+ 702  941  1  0.68  1250  ; Active_50  Active_323 
+ 703  707  1  0.607  1250  ; Active_51  Active_55 
+ 703  728  1  0.539  1250  ; Active_51  Active_76 
+ 703  731  1  0.676  1250  ; Active_51  Active_79 
+ 703  732  1  0.633  1250  ; Active_51  Active_80 
+ 703  937  1  0.851  1250  ; Active_51  Active_319 
+ 703  941  1  0.784  1250  ; Active_51  Active_323 
+ 704  708  1  0.582  1250  ; Active_52  Active_56 
+ 704  732  1  0.791  1250  ; Active_52  Active_80 
+ 705  709  1  0.57  1250  ; Active_53  Active_57 
+ 705  954  1  0.756  1250  ; Active_53  Active_336 
+ 705  957  1  0.873  1250  ; Active_53  Active_339 
+ 706  710  1  0.61  1250  ; Active_54  Active_58 
+ 706  728  1  0.726  1250  ; Active_54  Active_76 
+ 706  941  1  0.822  1250  ; Active_54  Active_323 
+ 706  945  1  0.866  1250  ; Active_54  Active_327 
+ 706  950  1  0.851  1250  ; Active_54  Active_332 
+ 706  954  1  0.835  1250  ; Active_54  Active_336 
+ 707  711  1  0.616  1250  ; Active_55  Active_59 
+ 707  728  1  0.74  1250  ; Active_55  Active_76 
+ 707  729  1  0.863  1250  ; Active_55  Active_77 
+ 707  732  1  1.055  1250  ; Active_55  Active_80 
+ 708  712  1  0.594  1250  ; Active_56  Active_60 
+ 709  713  1  0.534  1250  ; Active_57  Active_61 
+ 709  954  1  0.728  1250  ; Active_57  Active_336 
+ 709  957  1  0.883  1250  ; Active_57  Active_339 
+ 710  716  1  0.563  1250  ; Active_58  Active_64 
+ 710  717  1  0.738  1250  ; Active_58  Active_65 
+ 710  724  1  1.009  1250  ; Active_58  Active_72 
+ 710  725  1  0.889  1250  ; Active_58  Active_73 
+ 710  950  1  0.909  1250  ; Active_58  Active_332 
+ 713  717  1  0.752  1250  ; Active_61  Active_65 
+ 713  953  1  0.773  1250  ; Active_61  Active_335 
+ 713  956  1  1.088  1250  ; Active_61  Active_338 
+ 715  949  1  0.72  1250  ; Active_63  Active_331 
+ 716  721  1  0.651  1250  ; Active_64  Active_69 
+ 716  949  1  0.779  1250  ; Active_64  Active_331 
+ 716  950  1  0.823  1250  ; Active_64  Active_332 
+ 716  953  1  0.98  1250  ; Active_64  Active_335 
+ 717  722  1  0.762  1250  ; Active_65  Active_70 
+ 718  722  1  0.661  1250  ; Active_66  Active_70 
+ 719  799  1  0.725  1250  ; Active_67  Active_147 
+ 719  802  1  0.787  1250  ; Active_67  Active_150 
+ 720  782  1  0.851  1250  ; Active_68  Active_130 
+ 721  725  1  0.62  1250  ; Active_69  Active_73 
+ 722  726  1  0.621  1250  ; Active_70  Active_74 
+ 722  806  1  0.887  1250  ; Active_70  Active_154 
+ 723  727  1  0.623  1250  ; Active_71  Active_75 
+ 723  775  1  0.715  1250  ; Active_71  Active_123 
+ 723  778  1  0.789  1250  ; Active_71  Active_126 
+ 723  779  1  0.767  1250  ; Active_71  Active_127 
+ 723  782  1  1.023  1250  ; Active_71  Active_130 
+ 723  802  1  0.821  1250  ; Active_71  Active_150 
+ 723  805  1  0.882  1250  ; Active_71  Active_153 
+ 723  806  1  0.788  1250  ; Active_71  Active_154 
+ 724  728  1  0.606  1250  ; Active_72  Active_76 
+ 724  779  1  0.888  1250  ; Active_72  Active_127 
+ 724  944  1  0.841  1250  ; Active_72  Active_326 
+ 724  945  1  0.898  1250  ; Active_72  Active_327 
+ 725  729  1  0.612  1250  ; Active_73  Active_77 
+ 726  730  1  0.605  1250  ; Active_74  Active_78 
+ 726  775  1  0.746  1250  ; Active_74  Active_123 
+ 726  806  1  0.789  1250  ; Active_74  Active_154 
+ 726  810  1  1.0  1250  ; Active_74  Active_158 
+ 727  731  1  0.6  1250  ; Active_75  Active_79 
+ 727  772  1  0.637  1250  ; Active_75  Active_120 
+ 727  775  1  0.689  1250  ; Active_75  Active_123 
+ 727  776  1  0.841  1250  ; Active_75  Active_124 
+ 727  779  1  1.072  1250  ; Active_75  Active_127 
+ 727  940  1  0.828  1250  ; Active_75  Active_322 
+ 727  944  1  1.053  1250  ; Active_75  Active_326 
+ 728  732  1  0.6  1250  ; Active_76  Active_80 
+ 729  733  1  0.638  1250  ; Active_77  Active_81 
+ 730  734  1  0.662  1250  ; Active_78  Active_82 
+ 730  768  1  0.56  1250  ; Active_78  Active_116 
+ 730  771  1  0.638  1250  ; Active_78  Active_119 
+ 730  772  1  0.657  1250  ; Active_78  Active_120 
+ 730  810  1  1.026  1250  ; Active_78  Active_158 
+ 731  735  1  0.663  1250  ; Active_79  Active_83 
+ 731  772  1  0.796  1250  ; Active_79  Active_120 
+ 731  937  1  0.544  1250  ; Active_79  Active_319 
+ 731  940  1  0.912  1250  ; Active_79  Active_322 
+ 732  736  1  0.625  1250  ; Active_80  Active_84 
+ 733  737  1  0.567  1250  ; Active_81  Active_85 
+ 733  738  1  0.674  1250  ; Active_81  Active_86 
+ 733  764  1  0.772  1250  ; Active_81  Active_112 
+ 733  768  1  0.725  1250  ; Active_81  Active_116 
+ 734  738  1  0.499  1250  ; Active_82  Active_86 
+ 734  739  1  0.583  1250  ; Active_82  Active_87 
+ 734  740  1  0.808  1250  ; Active_82  Active_88 
+ 734  768  1  0.719  1250  ; Active_82  Active_116 
+ 734  769  1  0.913  1250  ; Active_82  Active_117 
+ 734  934  1  0.772  1250  ; Active_82  Active_316 
+ 734  937  1  0.794  1250  ; Active_82  Active_319 
+ 735  739  1  0.532  1250  ; Active_83  Active_87 
+ 735  740  1  0.661  1250  ; Active_83  Active_88 
+ 736  740  1  0.605  1250  ; Active_84  Active_88 
+ 737  741  1  0.598  1250  ; Active_85  Active_89 
+ 737  764  1  0.788  1250  ; Active_85  Active_112 
+ 738  742  1  0.599  1250  ; Active_86  Active_90 
+ 738  761  1  0.693  1250  ; Active_86  Active_109 
+ 738  764  1  0.731  1250  ; Active_86  Active_112 
+ 738  765  1  0.688  1250  ; Active_86  Active_113 
+ 738  768  1  0.951  1250  ; Active_86  Active_116 
+ 738  934  1  0.956  1250  ; Active_86  Active_316 
+ 739  743  1  0.604  1250  ; Active_87  Active_91 
+ 739  931  1  0.888  1250  ; Active_87  Active_313 
+ 739  934  1  0.85  1250  ; Active_87  Active_316 
+ 740  744  1  0.61  1250  ; Active_88  Active_92 
+ 741  745  1  0.591  1250  ; Active_89  Active_93 
+ 741  753  1  0.969  1250  ; Active_89  Active_101 
+ 741  757  1  1.078  1250  ; Active_89  Active_105 
+ 741  761  1  0.875  1250  ; Active_89  Active_109 
+ 742  746  1  0.617  1250  ; Active_90  Active_94 
+ 742  761  1  0.994  1250  ; Active_90  Active_109 
+ 742  931  1  0.984  1250  ; Active_90  Active_313 
+ 743  747  1  0.614  1250  ; Active_91  Active_95 
+ 743  931  1  1.071  1250  ; Active_91  Active_313 
+ 744  748  1  0.601  1250  ; Active_92  Active_96 
+ 745  749  1  0.559  1250  ; Active_93  Active_97 
+ 745  750  1  0.493  1250  ; Active_93  Active_98 
+ 745  751  1  0.702  1250  ; Active_93  Active_99 
+ 745  843  1  0.874  1250  ; Active_93  Active_191 
+ 746  927  1  1.049  1250  ; Active_94  Active_309 
+ 748  752  1  0.895  1250  ; Active_96  Active_100 
+ 751  757  1  0.975  1250  ; Active_99  Active_105 
+ 751  758  1  0.893  1250  ; Active_99  Active_106 
+ 751  841  1  0.406  1250  ; Active_99  Active_189 
+ 751  843  1  0.6  1250  ; Active_99  Active_191 
+ 753  757  1  0.559  1250  ; Active_101  Active_105 
+ 753  758  1  0.67  1250  ; Active_101  Active_106 
+ 754  758  1  0.56  1250  ; Active_102  Active_106 
+ 754  840  1  0.474  1250  ; Active_102  Active_188 
+ 755  759  1  0.617  1250  ; Active_103  Active_107 
+ 755  837  1  0.756  1250  ; Active_103  Active_185 
+ 755  838  1  0.784  1250  ; Active_103  Active_186 
+ 755  839  1  0.682  1250  ; Active_103  Active_187 
+ 755  840  1  0.477  1250  ; Active_103  Active_188 
+ 756  760  1  0.618  1250  ; Active_104  Active_108 
+ 757  761  1  0.589  1250  ; Active_105  Active_109 
+ 758  762  1  0.605  1250  ; Active_106  Active_110 
+ 758  843  1  0.726  1250  ; Active_106  Active_191 
+ 759  763  1  0.606  1250  ; Active_107  Active_111 
+ 759  822  1  0.782  1250  ; Active_107  Active_170 
+ 760  764  1  0.617  1250  ; Active_108  Active_112 
+ 761  765  1  0.611  1250  ; Active_109  Active_113 
+ 761  843  1  1.02  1250  ; Active_109  Active_191 
+ 762  766  1  0.628  1250  ; Active_110  Active_114 
+ 762  821  1  0.846  1250  ; Active_110  Active_169 
+ 762  845  1  0.968  1250  ; Active_110  Active_193 
+ 763  767  1  0.606  1250  ; Active_111  Active_115 
+ 763  817  1  0.591  1250  ; Active_111  Active_165 
+ 763  818  1  0.612  1250  ; Active_111  Active_166 
+ 763  821  1  0.768  1250  ; Active_111  Active_169 
+ 763  822  1  0.933  1250  ; Active_111  Active_170 
+ 764  768  1  0.601  1250  ; Active_112  Active_116 
+ 764  818  1  0.837  1250  ; Active_112  Active_166 
+ 765  769  1  0.62  1250  ; Active_113  Active_117 
+ 765  934  1  1.042  1250  ; Active_113  Active_316 
+ 766  770  1  0.606  1250  ; Active_114  Active_118 
+ 766  817  1  0.638  1250  ; Active_114  Active_165 
+ 766  821  1  1.053  1250  ; Active_114  Active_169 
+ 767  771  1  0.593  1250  ; Active_115  Active_119 
+ 767  810  1  0.795  1250  ; Active_115  Active_158 
+ 767  813  1  0.558  1250  ; Active_115  Active_161 
+ 767  814  1  0.661  1250  ; Active_115  Active_162 
+ 767  817  1  0.694  1250  ; Active_115  Active_165 
+ 767  818  1  0.863  1250  ; Active_115  Active_166 
+ 768  772  1  0.594  1250  ; Active_116  Active_120 
+ 769  773  1  0.615  1250  ; Active_117  Active_121 
+ 769  904  1  0.998  1250  ; Active_117  Active_286 
+ 770  774  1  0.58  1250  ; Active_118  Active_122 
+ 770  813  1  0.605  1250  ; Active_118  Active_161 
+ 770  816  1  0.879  1250  ; Active_118  Active_164 
+ 770  859  1  0.534  1250  ; Active_118  Active_207 
+ 771  775  1  0.584  1250  ; Active_119  Active_123 
+ 771  809  1  0.66  1250  ; Active_119  Active_157 
+ 771  810  1  0.703  1250  ; Active_119  Active_158 
+ 771  813  1  0.693  1250  ; Active_119  Active_161 
+ 772  776  1  0.619  1250  ; Active_120  Active_124 
+ 773  777  1  0.623  1250  ; Active_121  Active_125 
+ 773  859  1  0.651  1250  ; Active_121  Active_207 
+ 773  860  1  0.69  1250  ; Active_121  Active_208 
+ 773  863  1  0.705  1250  ; Active_121  Active_211 
+ 773  900  1  0.888  1250  ; Active_121  Active_282 
+ 773  904  1  0.989  1250  ; Active_121  Active_286 
+ 774  778  1  0.618  1250  ; Active_122  Active_126 
+ 774  809  1  0.716  1250  ; Active_122  Active_157 
+ 774  813  1  0.949  1250  ; Active_122  Active_161 
+ 774  858  1  0.879  1250  ; Active_122  Active_206 
+ 774  863  1  0.683  1250  ; Active_122  Active_211 
+ 775  779  1  0.619  1250  ; Active_123  Active_127 
+ 775  809  1  0.806  1250  ; Active_123  Active_157 
+ 776  780  1  0.613  1250  ; Active_124  Active_128 
+ 776  867  1  0.86  1250  ; Active_124  Active_215 
+ 776  900  1  0.961  1250  ; Active_124  Active_282 
+ 776  940  1  1.018  1250  ; Active_124  Active_322 
+ 776  944  1  1.096  1250  ; Active_124  Active_326 
+ 777  781  1  0.617  1250  ; Active_125  Active_129 
+ 777  863  1  0.613  1250  ; Active_125  Active_211 
+ 777  866  1  0.726  1250  ; Active_125  Active_214 
+ 777  867  1  0.684  1250  ; Active_125  Active_215 
+ 778  782  1  0.616  1250  ; Active_126  Active_130 
+ 778  805  1  0.859  1250  ; Active_126  Active_153 
+ 778  809  1  1.007  1250  ; Active_126  Active_157 
+ 779  783  1  0.621  1250  ; Active_127  Active_131 
+ 779  944  1  1.07  1250  ; Active_127  Active_326 
+ 780  784  1  0.604  1250  ; Active_128  Active_132 
+ 780  867  1  0.667  1250  ; Active_128  Active_215 
+ 780  870  1  0.695  1250  ; Active_128  Active_218 
+ 780  871  1  0.781  1250  ; Active_128  Active_219 
+ 781  785  1  0.596  1250  ; Active_129  Active_133 
+ 781  866  1  0.861  1250  ; Active_129  Active_214 
+ 782  786  1  0.607  1250  ; Active_130  Active_134 
+ 782  793  1  0.875  1250  ; Active_130  Active_141 
+ 783  787  1  0.603  1250  ; Active_131  Active_135 
+ 783  871  1  0.85  1250  ; Active_131  Active_219 
+ 784  788  1  0.561  1250  ; Active_132  Active_136 
+ 784  870  1  0.657  1250  ; Active_132  Active_218 
+ 784  873  1  0.778  1250  ; Active_132  Active_221 
+ 784  874  1  0.716  1250  ; Active_132  Active_222 
+ 785  789  1  0.45  1250  ; Active_133  Active_137 
+ 785  793  1  0.657  1250  ; Active_133  Active_141 
+ 785  797  1  0.98  1250  ; Active_133  Active_145 
+ 786  790  1  0.492  1250  ; Active_134  Active_138 
+ 786  793  1  0.645  1250  ; Active_134  Active_141 
+ 787  874  1  0.706  1250  ; Active_135  Active_222 
+ 787  877  1  0.77  1250  ; Active_135  Active_225 
+ 788  873  1  0.855  1250  ; Active_136  Active_221 
+ 789  793  1  0.597  1250  ; Active_137  Active_141 
+ 790  794  1  0.728  1250  ; Active_138  Active_142 
+ 791  795  1  0.705  1250  ; Active_139  Active_143 
+ 792  796  1  0.568  1250  ; Active_140  Active_144 
+ 793  797  1  0.516  1250  ; Active_141  Active_145 
+ 796  801  1  0.869  1250  ; Active_144  Active_149 
+ 797  801  1  0.703  1250  ; Active_145  Active_149 
+ 798  802  1  0.567  1250  ; Active_146  Active_150 
+ 799  803  1  0.602  1250  ; Active_147  Active_151 
+ 800  804  1  0.586  1250  ; Active_148  Active_152 
+ 801  805  1  0.613  1250  ; Active_149  Active_153 
+ 802  806  1  0.626  1250  ; Active_150  Active_154 
+ 803  807  1  0.603  1250  ; Active_151  Active_155 
+ 804  808  1  0.589  1250  ; Active_152  Active_156 
+ 805  809  1  0.607  1250  ; Active_153  Active_157 
+ 806  810  1  0.619  1250  ; Active_154  Active_158 
+ 807  811  1  0.588  1250  ; Active_155  Active_159 
+ 808  812  1  0.599  1250  ; Active_156  Active_160 
+ 809  813  1  0.588  1250  ; Active_157  Active_161 
+ 810  814  1  0.593  1250  ; Active_158  Active_162 
+ 811  815  1  0.596  1250  ; Active_159  Active_163 
+ 812  816  1  0.598  1250  ; Active_160  Active_164 
+ 813  817  1  0.62  1250  ; Active_161  Active_165 
+ 814  818  1  0.535  1250  ; Active_162  Active_166 
+ 814  819  1  0.671  1250  ; Active_162  Active_167 
+ 815  819  1  0.551  1250  ; Active_163  Active_167 
+ 815  820  1  0.699  1250  ; Active_163  Active_168 
+ 816  820  1  0.631  1250  ; Active_164  Active_168 
+ 816  851  1  0.928  1250  ; Active_164  Active_199 
+ 817  821  1  0.584  1250  ; Active_165  Active_169 
+ 818  822  1  0.576  1250  ; Active_166  Active_170 
+ 819  823  1  0.588  1250  ; Active_167  Active_171 
+ 820  824  1  0.556  1250  ; Active_168  Active_172 
+ 820  825  1  0.513  1250  ; Active_168  Active_173 
+ 820  851  1  0.945  1250  ; Active_168  Active_199 
+ 821  826  1  0.654  1250  ; Active_169  Active_174 
+ 825  848  1  0.799  1250  ; Active_173  Active_196 
+ 826  845  1  0.968  1250  ; Active_174  Active_193 
+ 826  846  1  0.64  1250  ; Active_174  Active_194 
+ 826  847  1  0.577  1250  ; Active_174  Active_195 
+ 826  848  1  0.562  1250  ; Active_174  Active_196 
+ 826  851  1  0.674  1250  ; Active_174  Active_199 
+ 827  837  1  0.976  1250  ; Active_175  Active_185 
+ 828  834  1  0.736  1250  ; Active_176  Active_182 
+ 828  837  1  0.974  1250  ; Active_176  Active_185 
+ 829  834  1  0.722  1250  ; Active_177  Active_182 
+ 829  846  1  0.913  1250  ; Active_177  Active_194 
+ 829  848  1  0.87  1250  ; Active_177  Active_196 
+ 830  834  1  0.596  1250  ; Active_178  Active_182 
+ 830  846  1  0.918  1250  ; Active_178  Active_194 
+ 831  835  1  0.62  1250  ; Active_179  Active_183 
+ 832  836  1  0.62  1250  ; Active_180  Active_184 
+ 833  837  1  0.59  1250  ; Active_181  Active_185 
+ 833  846  1  0.745  1250  ; Active_181  Active_194 
+ 834  838  1  0.582  1250  ; Active_182  Active_186 
+ 835  839  1  0.559  1250  ; Active_183  Active_187 
+ 836  842  1  0.477  1250  ; Active_184  Active_190 
+ 836  843  1  0.687  1250  ; Active_184  Active_191 
+ 836  844  1  0.661  1250  ; Active_184  Active_192 
+ 837  846  1  0.948  1250  ; Active_185  Active_194 
+ 845  926  1  0.994  1250  ; Active_193  Active_308 
+ 847  851  1  0.675  1250  ; Active_195  Active_199 
+ 847  852  1  0.723  1250  ; Active_195  Active_200 
+ 848  852  1  0.604  1250  ; Active_196  Active_200 
+ 849  853  1  0.619  1250  ; Active_197  Active_201 
+ 849  915  1  0.659  1250  ; Active_197  Active_297 
+ 850  854  1  0.654  1250  ; Active_198  Active_202 
+ 851  855  1  0.564  1250  ; Active_199  Active_203 
+ 852  856  1  0.573  1250  ; Active_200  Active_204 
+ 852  912  1  0.768  1250  ; Active_200  Active_294 
+ 852  915  1  0.828  1250  ; Active_200  Active_297 
+ 853  857  1  0.595  1250  ; Active_201  Active_205 
+ 853  912  1  0.791  1250  ; Active_201  Active_294 
+ 853  915  1  0.92  1250  ; Active_201  Active_297 
+ 854  858  1  0.584  1250  ; Active_202  Active_206 
+ 855  859  1  0.582  1250  ; Active_203  Active_207 
+ 856  860  1  0.533  1250  ; Active_204  Active_208 
+ 856  861  1  0.643  1250  ; Active_204  Active_209 
+ 856  908  1  0.686  1250  ; Active_204  Active_290 
+ 856  911  1  0.866  1250  ; Active_204  Active_293 
+ 856  912  1  0.934  1250  ; Active_204  Active_294 
+ 857  861  1  0.472  1250  ; Active_205  Active_209 
+ 857  862  1  0.594  1250  ; Active_205  Active_210 
+ 858  862  1  0.605  1250  ; Active_206  Active_210 
+ 858  863  1  0.754  1250  ; Active_206  Active_211 
+ 859  863  1  0.72  1250  ; Active_207  Active_211 
+ 859  908  1  0.912  1250  ; Active_207  Active_290 
+ 860  864  1  0.606  1250  ; Active_208  Active_212 
+ 860  900  1  1.003  1250  ; Active_208  Active_282 
+ 860  904  1  0.824  1250  ; Active_208  Active_286 
+ 860  905  1  0.88  1250  ; Active_208  Active_287 
+ 860  908  1  0.793  1250  ; Active_208  Active_290 
+ 861  865  1  0.618  1250  ; Active_209  Active_213 
+ 861  908  1  0.891  1250  ; Active_209  Active_290 
+ 861  909  1  1.026  1250  ; Active_209  Active_291 
+ 862  866  1  0.612  1250  ; Active_210  Active_214 
+ 863  867  1  0.591  1250  ; Active_211  Active_215 
+ 864  868  1  0.604  1250  ; Active_212  Active_216 
+ 864  900  1  0.922  1250  ; Active_212  Active_282 
+ 864  905  1  1.053  1250  ; Active_212  Active_287 
+ 865  869  1  0.615  1250  ; Active_213  Active_217 
+ 866  870  1  0.596  1250  ; Active_214  Active_218 
+ 867  871  1  0.585  1250  ; Active_215  Active_219 
+ 867  897  1  0.89  1250  ; Active_215  Active_279 
+ 867  900  1  1.065  1250  ; Active_215  Active_282 
+ 868  872  1  0.582  1250  ; Active_216  Active_220 
+ 868  897  1  0.915  1250  ; Active_216  Active_279 
+ 869  873  1  0.613  1250  ; Active_217  Active_221 
+ 870  874  1  0.608  1250  ; Active_218  Active_222 
+ 871  875  1  0.595  1250  ; Active_219  Active_223 
+ 871  893  1  0.801  1250  ; Active_219  Active_275 
+ 871  896  1  0.984  1250  ; Active_219  Active_278 
+ 871  897  1  0.962  1250  ; Active_219  Active_279 
+ 872  876  1  0.616  1250  ; Active_220  Active_224 
+ 873  877  1  0.624  1250  ; Active_221  Active_225 
+ 874  878  1  0.624  1250  ; Active_222  Active_226 
+ 874  893  1  1.018  1250  ; Active_222  Active_275 
+ 875  879  1  0.611  1250  ; Active_223  Active_227 
+ 875  890  1  0.853  1250  ; Active_223  Active_272 
+ 875  893  1  0.942  1250  ; Active_223  Active_275 
+ 876  880  1  0.613  1250  ; Active_224  Active_228 
+ 877  881  1  0.614  1250  ; Active_225  Active_229 
+ 878  882  1  0.609  1250  ; Active_226  Active_230 
+ 882  885  1  0.912  1250  ; Active_230  Active_267 
+ 882  886  1  0.885  1250  ; Active_230  Active_268 
+ 882  889  1  1.07  1250  ; Active_230  Active_271 
+ 885  889  1  0.688  1250  ; Active_267  Active_271 
+ 886  890  1  0.628  1250  ; Active_268  Active_272 
+ 887  891  1  0.617  1250  ; Active_269  Active_273 
+ 889  893  1  0.715  1250  ; Active_271  Active_275 
+ 890  894  1  0.618  1250  ; Active_272  Active_276 
+ 891  895  1  0.622  1250  ; Active_273  Active_277 
+ 892  896  1  0.597  1250  ; Active_274  Active_278 
+ 893  897  1  0.58  1250  ; Active_275  Active_279 
+ 894  898  1  0.553  1250  ; Active_276  Active_280 
+ 895  899  1  0.578  1250  ; Active_277  Active_281 
+ 895  943  1  0.78  1250  ; Active_277  Active_325 
+ 896  900  1  0.648  1250  ; Active_278  Active_282 
+ 896  943  1  0.717  1250  ; Active_278  Active_325 
+ 896  944  1  0.953  1250  ; Active_278  Active_326 
+ 897  901  1  0.601  1250  ; Active_279  Active_283 
+ 898  902  1  0.601  1250  ; Active_280  Active_284 
+ 899  903  1  0.622  1250  ; Active_281  Active_285 
+ 899  936  1  0.711  1250  ; Active_281  Active_318 
+ 899  939  1  0.797  1250  ; Active_281  Active_321 
+ 899  943  1  0.934  1250  ; Active_281  Active_325 
+ 900  904  1  0.611  1250  ; Active_282  Active_286 
+ 900  936  1  0.765  1250  ; Active_282  Active_318 
+ 901  905  1  0.548  1250  ; Active_283  Active_287 
+ 901  906  1  0.78  1250  ; Active_283  Active_288 
+ 902  906  1  0.667  1250  ; Active_284  Active_288 
+ 902  932  1  0.726  1250  ; Active_284  Active_314 
+ 903  932  1  0.48  1250  ; Active_285  Active_314 
+ 903  933  1  0.464  1250  ; Active_285  Active_315 
+ 903  936  1  0.761  1250  ; Active_285  Active_318 
+ 904  908  1  0.599  1250  ; Active_286  Active_290 
+ 904  930  1  0.745  1250  ; Active_286  Active_312 
+ 904  933  1  0.588  1250  ; Active_286  Active_315 
+ 904  934  1  0.886  1250  ; Active_286  Active_316 
+ 904  936  1  0.944  1250  ; Active_286  Active_318 
+ 905  909  1  0.586  1250  ; Active_287  Active_291 
+ 906  910  1  0.601  1250  ; Active_288  Active_292 
+ 906  929  1  0.654  1250  ; Active_288  Active_311 
+ 907  911  1  0.626  1250  ; Active_289  Active_293 
+ 907  926  1  0.695  1250  ; Active_289  Active_308 
+ 907  929  1  0.593  1250  ; Active_289  Active_311 
+ 907  930  1  0.708  1250  ; Active_289  Active_312 
+ 908  912  1  0.678  1250  ; Active_290  Active_294 
+ 909  913  1  0.617  1250  ; Active_291  Active_295 
+ 910  914  1  0.604  1250  ; Active_292  Active_296 
+ 910  921  1  0.883  1250  ; Active_292  Active_303 
+ 910  925  1  0.863  1250  ; Active_292  Active_307 
+ 910  926  1  0.793  1250  ; Active_292  Active_308 
+ 910  929  1  0.944  1250  ; Active_292  Active_311 
+ 911  915  1  0.608  1250  ; Active_293  Active_297 
+ 911  926  1  0.904  1250  ; Active_293  Active_308 
+ 912  916  1  0.576  1250  ; Active_294  Active_298 
+ 913  917  1  0.459  1250  ; Active_295  Active_299 
+ 913  920  1  0.721  1250  ; Active_295  Active_302 
+ 913  921  1  0.804  1250  ; Active_295  Active_303 
+ 914  918  1  0.574  1250  ; Active_296  Active_300 
+ 914  921  1  0.725  1250  ; Active_296  Active_303 
+ 921  925  1  0.8  1250  ; Active_303  Active_307 
+ 922  926  1  0.671  1250  ; Active_304  Active_308 
+ 923  927  1  0.671  1250  ; Active_305  Active_309 
+ 924  928  1  0.601  1250  ; Active_306  Active_310 
+ 925  929  1  0.59  1250  ; Active_307  Active_311 
+ 926  930  1  0.604  1250  ; Active_308  Active_312 
+ 927  931  1  0.615  1250  ; Active_309  Active_313 
+ 928  932  1  0.616  1250  ; Active_310  Active_314 
+ 929  933  1  0.614  1250  ; Active_311  Active_315 
+ 930  934  1  0.621  1250  ; Active_312  Active_316 
+ 931  935  1  0.639  1250  ; Active_313  Active_317 
+ 935  939  1  0.635  1250  ; Active_317  Active_321 
+ 936  940  1  0.62  1250  ; Active_318  Active_322 
+ 937  941  1  0.767  1250  ; Active_319  Active_323 
+ 939  943  1  0.599  1250  ; Active_321  Active_325 
+ 940  944  1  0.577  1250  ; Active_322  Active_326 
+ 941  945  1  0.528  1250  ; Active_323  Active_327 
+ 942  946  1  0.688  1250  ; Active_324  Active_328 
+ 945  950  1  0.593  1250  ; Active_327  Active_332 
+ 945  954  1  0.985  1250  ; Active_327  Active_336 
+ 947  951  1  0.592  1250  ; Active_329  Active_333 
+ 948  952  1  0.655  1250  ; Active_330  Active_334 
+ 949  953  1  0.592  1250  ; Active_331  Active_335 
+ 950  954  1  0.588  1250  ; Active_332  Active_336 
+ 951  955  1  0.616  1250  ; Active_333  Active_337 
+ 952  956  1  0.606  1250  ; Active_334  Active_338 
+ 953  957  1  0.663  1250  ; Active_335  Active_339 
+ 954  958  1  0.666  1250  ; Active_336  Active_340 
+ 955  959  1  0.597  1250  ; Active_337  Active_341 
+ 688  746  1  0.862  1250  ; Active_36  Active_94 
+ 688  747  1  0.879  1250  ; Active_36  Active_95 
+ 695  934  1  0.848  1250  ; Active_43  Active_316 
+ 696  743  1  1.014  1250  ; Active_44  Active_91 
+ 700  736  1  0.814  1250  ; Active_48  Active_84 
+ 705  958  1  1.074  1250  ; Active_53  Active_340 
+ 707  725  1  0.71  1250  ; Active_55  Active_73 
+ 710  722  1  0.956  1250  ; Active_58  Active_70 
+ 711  717  1  0.896  1250  ; Active_59  Active_65 
+ 712  957  1  0.993  1250  ; Active_60  Active_339 
+ 722  799  1  0.964  1250  ; Active_70  Active_147 
+ 722  802  1  0.787  1250  ; Active_70  Active_150 
+ 737  760  1  0.976  1250  ; Active_85  Active_108 
+ 741  751  1  0.974  1250  ; Active_89  Active_99 
+ 750  841  1  0.689  1250  ; Active_98  Active_189 
+ 756  840  1  0.784  1250  ; Active_104  Active_188 
+ 759  824  1  1.091  1250  ; Active_107  Active_172 
+ 760  818  1  0.837  1250  ; Active_108  Active_166 
+ 760  822  1  0.901  1250  ; Active_108  Active_170 
+ 769  934  1  0.892  1250  ; Active_117  Active_316 
+ 770  812  1  0.811  1250  ; Active_118  Active_160 
+ 770  858  1  0.779  1250  ; Active_118  Active_206 
+ 772  936  1  0.903  1250  ; Active_120  Active_318 
+ 772  937  1  0.864  1250  ; Active_120  Active_319 
+ 772  940  1  1.033  1250  ; Active_120  Active_322 
+ 775  806  1  0.852  1250  ; Active_123  Active_154 
+ 775  810  1  1.02  1250  ; Active_123  Active_158 
+ 778  806  1  0.946  1250  ; Active_126  Active_154 
+ 780  866  1  0.796  1250  ; Active_128  Active_214 
+ 781  870  1  0.765  1250  ; Active_129  Active_218 
+ 783  874  1  0.821  1250  ; Active_131  Active_222 
+ 785  796  1  1.018  1250  ; Active_133  Active_144 
+ 788  792  1  0.84  1250  ; Active_136  Active_140 
+ 812  858  1  0.903  1250  ; Active_160  Active_206 
+ 816  855  1  0.729  1250  ; Active_164  Active_203 
+ 819  825  1  0.807  1250  ; Active_167  Active_173 
+ 824  828  1  0.715  1250  ; Active_172  Active_176 
+ 827  848  1  0.701  1250  ; Active_175  Active_196 
+ 845  923  1  0.998  1250  ; Active_193  Active_305 
+ 860  909  1  1.015  1250  ; Active_208  Active_291 
+ 861  905  1  0.958  1250  ; Active_209  Active_287 
+ 875  889  1  0.798  1250  ; Active_223  Active_271 
+ 878  889  1  0.785  1250  ; Active_226  Active_271 
+ 879  886  1  0.831  1250  ; Active_227  Active_268 
+ 884  888  1  0.741  1250  ; Active_266  Active_270 
+ 906  932  1  0.897  1250  ; Active_288  Active_314 
+ 921  926  1  0.91  1250  ; Active_303  Active_308 
+ 933  937  1  0.756  1250  ; Active_315  Active_319 
+ 941  946  1  0.782  1250  ; Active_323  Active_328 
+ 682  681  1  1.  1     ; Active_1  Active_0 --> added for vmd 
+ 683  682  1  1.  1     ; Active_2  Active_1 --> added for vmd 
+ 684  683  1  1.  1     ; Active_3  Active_2 --> added for vmd 
+ 685  684  1  1.  1     ; Active_4  Active_3 --> added for vmd 
+ 686  685  1  1.  1     ; Active_5  Active_4 --> added for vmd 
+ 687  686  1  1.  1     ; Active_6  Active_5 --> added for vmd 
+ 688  687  1  1.  1     ; Active_7  Active_6 --> added for vmd 
+ 689  688  1  1.  1     ; Active_8  Active_7 --> added for vmd 
+ 690  689  1  1.  1     ; Active_9  Active_8 --> added for vmd 
+ 691  690  1  1.  1     ; Active_10  Active_9 --> added for vmd 
+ 692  691  1  1.  1     ; Active_11  Active_10 --> added for vmd 
+ 693  692  1  1.  1     ; Active_12  Active_11 --> added for vmd 
+ 694  693  1  1.  1     ; Active_13  Active_12 --> added for vmd 
+ 695  694  1  1.  1     ; Active_14  Active_13 --> added for vmd 
+ 696  695  1  1.  1     ; Active_15  Active_14 --> added for vmd 
+ 697  696  1  1.  1     ; Active_16  Active_15 --> added for vmd 
+ 698  697  1  1.  1     ; Active_17  Active_16 --> added for vmd 
+ 699  698  1  1.  1     ; Active_18  Active_17 --> added for vmd 
+ 700  699  1  1.  1     ; Active_19  Active_18 --> added for vmd 
+ 701  700  1  1.  1     ; Active_20  Active_19 --> added for vmd 
+ 702  701  1  1.  1     ; Active_21  Active_20 --> added for vmd 
+ 703  702  1  1.  1     ; Active_22  Active_21 --> added for vmd 
+ 704  703  1  1.  1     ; Active_23  Active_22 --> added for vmd 
+ 705  704  1  1.  1     ; Active_24  Active_23 --> added for vmd 
+ 706  705  1  1.  1     ; Active_25  Active_24 --> added for vmd 
+ 707  706  1  1.  1     ; Active_26  Active_25 --> added for vmd 
+ 708  707  1  1.  1     ; Active_27  Active_26 --> added for vmd 
+ 709  708  1  1.  1     ; Active_28  Active_27 --> added for vmd 
+ 710  709  1  1.  1     ; Active_29  Active_28 --> added for vmd 
+ 711  710  1  1.  1     ; Active_30  Active_29 --> added for vmd 
+ 743  742  1  1.  1     ; Active_62  Active_61 --> added for vmd 
+ 912  911  1  1.  1     ; Active_231  Active_230 --> added for vmd 
+ 913  912  1  1.  1     ; Active_232  Active_231 --> added for vmd 
+ 914  913  1  1.  1     ; Active_233  Active_232 --> added for vmd 
+ 915  914  1  1.  1     ; Active_234  Active_233 --> added for vmd 
+ 916  915  1  1.  1     ; Active_235  Active_234 --> added for vmd 
+ 917  916  1  1.  1     ; Active_236  Active_235 --> added for vmd 
+ 918  917  1  1.  1     ; Active_237  Active_236 --> added for vmd 
+ 919  918  1  1.  1     ; Active_238  Active_237 --> added for vmd 
+ 920  919  1  1.  1     ; Active_239  Active_238 --> added for vmd 
+ 921  920  1  1.  1     ; Active_240  Active_239 --> added for vmd 
+ 922  921  1  1.  1     ; Active_241  Active_240 --> added for vmd 
+ 923  922  1  1.  1     ; Active_242  Active_241 --> added for vmd 
+ 924  923  1  1.  1     ; Active_243  Active_242 --> added for vmd 
+ 925  924  1  1.  1     ; Active_244  Active_243 --> added for vmd 
+ 926  925  1  1.  1     ; Active_245  Active_244 --> added for vmd 
+ 927  926  1  1.  1     ; Active_246  Active_245 --> added for vmd 
+ 928  927  1  1.  1     ; Active_247  Active_246 --> added for vmd 
+ 929  928  1  1.  1     ; Active_248  Active_247 --> added for vmd 
+ 930  929  1  1.  1     ; Active_249  Active_248 --> added for vmd 
+ 931  930  1  1.  1     ; Active_250  Active_249 --> added for vmd 
+ 932  931  1  1.  1     ; Active_251  Active_250 --> added for vmd 
+ 933  932  1  1.  1     ; Active_252  Active_251 --> added for vmd 
+ 934  933  1  1.  1     ; Active_253  Active_252 --> added for vmd 
+ 935  934  1  1.  1     ; Active_254  Active_253 --> added for vmd 
+ 936  935  1  1.  1     ; Active_255  Active_254 --> added for vmd 
+ 937  936  1  1.  1     ; Active_256  Active_255 --> added for vmd 
+ 938  937  1  1.  1     ; Active_257  Active_256 --> added for vmd 
+ 939  938  1  1.  1     ; Active_258  Active_257 --> added for vmd 
+ 940  939  1  1.  1     ; Active_259  Active_258 --> added for vmd 
+ 941  940  1  1.  1     ; Active_260  Active_259 --> added for vmd 
+ 942  941  1  1.  1     ; Active_261  Active_260 --> added for vmd 
+ 943  942  1  1.  1     ; Active_262  Active_261 --> added for vmd 
+ 944  943  1  1.  1     ; Active_263  Active_262 --> added for vmd 
+ 945  944  1  1.  1     ; Active_264  Active_263 --> added for vmd 
+ 946  945  1  1.  1     ; Active_265  Active_264 --> added for vmd 
