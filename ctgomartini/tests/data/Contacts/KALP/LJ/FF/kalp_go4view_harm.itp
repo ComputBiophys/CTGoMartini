@@ -1,0 +1,21 @@
+; Go bonds as harmonic bonds between the virtual particles: 
+; OV + symmetric rCSU contacts 
+ 51  55  1  0.632  1250  ; kalp_1  kalp_5 
+ 52  56  1  0.631  1250  ; kalp_2  kalp_6 
+ 53  57  1  0.629  1250  ; kalp_3  kalp_7 
+ 54  58  1  0.63  1250  ; kalp_4  kalp_8 
+ 55  59  1  0.629  1250  ; kalp_5  kalp_9 
+ 56  60  1  0.63  1250  ; kalp_6  kalp_10 
+ 57  61  1  0.629  1250  ; kalp_7  kalp_11 
+ 58  62  1  0.63  1250  ; kalp_8  kalp_12 
+ 59  63  1  0.629  1250  ; kalp_9  kalp_13 
+ 60  64  1  0.63  1250  ; kalp_10  kalp_14 
+ 61  65  1  0.629  1250  ; kalp_11  kalp_15 
+ 62  66  1  0.63  1250  ; kalp_12  kalp_16 
+ 63  67  1  0.629  1250  ; kalp_13  kalp_17 
+ 64  68  1  0.63  1250  ; kalp_14  kalp_18 
+ 65  69  1  0.629  1250  ; kalp_15  kalp_19 
+ 66  70  1  0.63  1250  ; kalp_16  kalp_20 
+ 67  71  1  0.629  1250  ; kalp_17  kalp_21 
+ 68  72  1  0.631  1250  ; kalp_18  kalp_22 
+ 69  73  1  0.633  1250  ; kalp_19  kalp_23 

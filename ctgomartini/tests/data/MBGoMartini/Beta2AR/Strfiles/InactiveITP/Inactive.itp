@@ -1,0 +1,4422 @@
+; This file was generated using the following command:
+; /home/ys/anaconda3/envs/ys/bin/martinize2 -f 2RH1_clean.pdb -o system.top -x Protein_Inactive_cg.pdb -dssp dssp -p backbone -ff martini3001 -govs-include -govs-moltype Inactive -cys auto -scfix
+; martinize with vermouth 0.7.2
+; The following sequence of secondary structure 
+; was used for the full system:
+; CHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHCGGGCSHHHHHHHHHHHHHHHIIIIIHHHHHHHHHHTSCCSHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHSSSTTSCSSCHHHHHHHHHHHHHHHHHHHHHHHHTTTTCCCSHHHHHHHHCTTCCCCCCCHHHHHHHHIIIIIHHHHHHHHHHHHHHHHHHHHCCCHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHSTTSSCHHHHHHHHHHHHHGGGTHHHHGGGSHHHHHHHHHHTC
+
+; Pleas cite the following papers:
+; Souza, P C T; Alessandri, R; Barnoud, J; Thallmair, S; Faustino, I; Grünewald, F; Patmanidis, I; Abdizadeh, H; Bruininks, B M H; Wassenaar, T A; Kroon, P C; Melcr, J; Nieto, V; Corradi, V; Khan, H M; Domański, J; Javanainen, M; Martinez-Seara, H; Reuter, N; Best, R B; Vattulainen, I; Monticelli, L; Periole, X; Tieleman, D P; de Vries, A H; Marrink, S J;  Nature Methods 2021; 10.1038/s41592-021-01098-3
+
+[ moleculetype ]
+Inactive 1
+
+[ atoms ]
+  1 Q5            30 GLU BB    1    1     
+  2 Q5n           30 GLU SC1   2 -1.0     
+  3 SP2           31 VAL BB    3  0.0     
+  4 SC3           31 VAL SC1   4  0.0     
+  5 P2            32 TRP BB    5  0.0     
+  6 TC4           32 TRP SC1   6  0.0 36.0
+  7 TN6d          32 TRP SC2   7  0.0 36.0
+  8 TC5           32 TRP SC3   8  0.0  0.0
+  9 TC5           32 TRP SC4   9  0.0 36.0
+ 10 TC5           32 TRP SC5  10  0.0 36.0
+ 11 SP2           33 VAL BB   11  0.0     
+ 12 SC3           33 VAL SC1  12  0.0     
+ 13 SP2           34 VAL BB   13  0.0     
+ 14 SC3           34 VAL SC1  14  0.0     
+ 15 SP1           35 GLY BB   15  0.0     
+ 16 P2            36 MET BB   16  0.0     
+ 17 C6            36 MET SC1  17  0.0     
+ 18 SP1           37 GLY BB   18  0.0     
+ 19 P2            38 ILE BB   19  0.0     
+ 20 SC2           38 ILE SC1  20  0.0     
+ 21 SP2           39 VAL BB   21  0.0     
+ 22 SC3           39 VAL SC1  22  0.0     
+ 23 P2            40 MET BB   23  0.0     
+ 24 C6            40 MET SC1  24  0.0     
+ 25 P2            41 SER BB   25  0.0     
+ 26 TP1           41 SER SC1  26  0.0     
+ 27 P2            42 LEU BB   27  0.0     
+ 28 SC2           42 LEU SC1  28  0.0     
+ 29 P2            43 ILE BB   29  0.0     
+ 30 SC2           43 ILE SC1  30  0.0     
+ 31 SP2           44 VAL BB   31  0.0     
+ 32 SC3           44 VAL SC1  32  0.0     
+ 33 P2            45 LEU BB   33  0.0     
+ 34 SC2           45 LEU SC1  34  0.0     
+ 35 SP2           46 ALA BB   35  0.0     
+ 36 TC3           46 ALA SC1  36  0.0     
+ 37 P2            47 ILE BB   37  0.0     
+ 38 SC2           47 ILE SC1  38  0.0     
+ 39 SP2           48 VAL BB   39  0.0     
+ 40 SC3           48 VAL SC1  40  0.0     
+ 41 P2            49 PHE BB   41  0.0     
+ 42 SC4           49 PHE SC1  42  0.0     
+ 43 TC5           49 PHE SC2  43  0.0     
+ 44 TC5           49 PHE SC3  44  0.0     
+ 45 SP1           50 GLY BB   45  0.0     
+ 46 P2            51 ASN BB   46  0.0     
+ 47 SP5           51 ASN SC1  47  0.0     
+ 48 SP2           52 VAL BB   48  0.0     
+ 49 SC3           52 VAL SC1  49  0.0     
+ 50 P2            53 LEU BB   50  0.0     
+ 51 SC2           53 LEU SC1  51  0.0     
+ 52 SP2           54 VAL BB   52  0.0     
+ 53 SC3           54 VAL SC1  53  0.0     
+ 54 P2            55 ILE BB   54  0.0     
+ 55 SC2           55 ILE SC1  55  0.0     
+ 56 P2            56 THR BB   56  0.0     
+ 57 SP1           56 THR SC1  57  0.0     
+ 58 SP2           57 ALA BB   58  0.0     
+ 59 TC3           57 ALA SC1  59  0.0     
+ 60 P2            58 ILE BB   60  0.0     
+ 61 SC2           58 ILE SC1  61  0.0     
+ 62 SP2           59 ALA BB   62  0.0     
+ 63 TC3           59 ALA SC1  63  0.0     
+ 64 P2            60 LYS BB   64  0.0     
+ 65 SC3           60 LYS SC1  65  0.0     
+ 66 SQ4p          60 LYS SC2  66  1.0     
+ 67 P2            61 PHE BB   67  0.0     
+ 68 SC4           61 PHE SC1  68  0.0     
+ 69 TC5           61 PHE SC2  69  0.0     
+ 70 TC5           61 PHE SC3  70  0.0     
+ 71 P2            62 GLU BB   71  0.0     
+ 72 Q5n           62 GLU SC1  72 -1.0     
+ 73 P2            63 ARG BB   73  0.0     
+ 74 SC3           63 ARG SC1  74  0.0     
+ 75 SQ3p          63 ARG SC2  75  1.0     
+ 76 P2            64 LEU BB   76  0.0     
+ 77 SC2           64 LEU SC1  77  0.0     
+ 78 P2            65 GLN BB   78  0.0     
+ 79 P5            65 GLN SC1  79  0.0     
+ 80 P2            66 THR BB   80  0.0     
+ 81 SP1           66 THR SC1  81  0.0     
+ 82 SP2           67 VAL BB   82  0.0     
+ 83 SC3           67 VAL SC1  83  0.0     
+ 84 P2            68 THR BB   84  0.0     
+ 85 SP1           68 THR SC1  85  0.0     
+ 86 P2            69 ASN BB   86  0.0     
+ 87 SP5           69 ASN SC1  87  0.0     
+ 88 P2            70 TYR BB   88  0.0     
+ 89 TC4           70 TYR SC1  89  0.0     
+ 90 TC5           70 TYR SC2  90  0.0     
+ 91 TC5           70 TYR SC3  91  0.0     
+ 92 TN6           70 TYR SC4  92  0.0     
+ 93 P2            71 PHE BB   93  0.0     
+ 94 SC4           71 PHE SC1  94  0.0     
+ 95 TC5           71 PHE SC2  95  0.0     
+ 96 TC5           71 PHE SC3  96  0.0     
+ 97 P2            72 ILE BB   97  0.0     
+ 98 SC2           72 ILE SC1  98  0.0     
+ 99 P2            73 THR BB   99  0.0     
+100 SP1           73 THR SC1 100  0.0     
+101 P2            74 SER BB  101  0.0     
+102 TP1           74 SER SC1 102  0.0     
+103 P2            75 LEU BB  103  0.0     
+104 SC2           75 LEU SC1 104  0.0     
+105 SP2           76 ALA BB  105  0.0     
+106 TC3           76 ALA SC1 106  0.0     
+107 P2            77 CYS BB  107  0.0     
+108 TC6           77 CYS SC1 108  0.0     
+109 SP2           78 ALA BB  109  0.0     
+110 TC3           78 ALA SC1 110  0.0     
+111 P2            79 ASP BB  111  0.0     
+112 SQ5n          79 ASP SC1 112 -1.0     
+113 P2            80 LEU BB  113  0.0     
+114 SC2           80 LEU SC1 114  0.0     
+115 SP2           81 VAL BB  115  0.0     
+116 SC3           81 VAL SC1 116  0.0     
+117 P2            82 MET BB  117  0.0     
+118 C6            82 MET SC1 118  0.0     
+119 SP1           83 GLY BB  119  0.0     
+120 P2            84 LEU BB  120  0.0     
+121 SC2           84 LEU SC1 121  0.0     
+122 SP2           85 ALA BB  122  0.0     
+123 TC3           85 ALA SC1 123  0.0     
+124 SP2           86 VAL BB  124  0.0     
+125 SC3           86 VAL SC1 125  0.0     
+126 SP2           87 VAL BB  126  0.0     
+127 SC3           87 VAL SC1 127  0.0     
+128 SP2a          88 PRO BB  128  0.0     
+129 SC3           88 PRO SC1 129  0.0     
+130 P2            89 PHE BB  130  0.0     
+131 SC4           89 PHE SC1 131  0.0     
+132 TC5           89 PHE SC2 132  0.0     
+133 TC5           89 PHE SC3 133  0.0     
+134 SP1           90 GLY BB  134  0.0     
+135 SP2           91 ALA BB  135  0.0     
+136 TC3           91 ALA SC1 136  0.0     
+137 SP2           92 ALA BB  137  0.0     
+138 TC3           92 ALA SC1 138  0.0     
+139 P2            93 HIS BB  139  0.0     
+140 TC4           93 HIS SC1 140  0.0     
+141 TN6d          93 HIS SC2 141  0.0     
+142 TN5a          93 HIS SC3 142  0.0     
+143 P2            94 ILE BB  143  0.0     
+144 SC2           94 ILE SC1 144  0.0     
+145 P2            95 LEU BB  145  0.0     
+146 SC2           95 LEU SC1 146  0.0     
+147 P2            96 MET BB  147  0.0     
+148 C6            96 MET SC1 148  0.0     
+149 P2            97 LYS BB  149  0.0     
+150 SC3           97 LYS SC1 150  0.0     
+151 SQ4p          97 LYS SC2 151  1.0     
+152 P2            98 MET BB  152  0.0     
+153 C6            98 MET SC1 153  0.0     
+154 P2            99 TRP BB  154  0.0     
+155 TC4           99 TRP SC1 155  0.0 36.0
+156 TN6d          99 TRP SC2 156  0.0 36.0
+157 TC5           99 TRP SC3 157  0.0  0.0
+158 TC5           99 TRP SC4 158  0.0 36.0
+159 TC5           99 TRP SC5 159  0.0 36.0
+160 P2           100 THR BB  160  0.0     
+161 SP1          100 THR SC1 161  0.0     
+162 P2           101 PHE BB  162  0.0     
+163 SC4          101 PHE SC1 163  0.0     
+164 TC5          101 PHE SC2 164  0.0     
+165 TC5          101 PHE SC3 165  0.0     
+166 SP1          102 GLY BB  166  0.0     
+167 P2           103 ASN BB  167  0.0     
+168 SP5          103 ASN SC1 168  0.0     
+169 P2           104 PHE BB  169  0.0     
+170 SC4          104 PHE SC1 170  0.0     
+171 TC5          104 PHE SC2 171  0.0     
+172 TC5          104 PHE SC3 172  0.0     
+173 P2           105 TRP BB  173  0.0     
+174 TC4          105 TRP SC1 174  0.0 36.0
+175 TN6d         105 TRP SC2 175  0.0 36.0
+176 TC5          105 TRP SC3 176  0.0  0.0
+177 TC5          105 TRP SC4 177  0.0 36.0
+178 TC5          105 TRP SC5 178  0.0 36.0
+179 P2           106 CYS BB  179  0.0     
+180 TC6          106 CYS SC1 180  0.0     
+181 P2           107 GLU BB  181  0.0     
+182 Q5n          107 GLU SC1 182 -1.0     
+183 P2           108 PHE BB  183  0.0     
+184 SC4          108 PHE SC1 184  0.0     
+185 TC5          108 PHE SC2 185  0.0     
+186 TC5          108 PHE SC3 186  0.0     
+187 P2           109 TRP BB  187  0.0     
+188 TC4          109 TRP SC1 188  0.0 36.0
+189 TN6d         109 TRP SC2 189  0.0 36.0
+190 TC5          109 TRP SC3 190  0.0  0.0
+191 TC5          109 TRP SC4 191  0.0 36.0
+192 TC5          109 TRP SC5 192  0.0 36.0
+193 P2           110 THR BB  193  0.0     
+194 SP1          110 THR SC1 194  0.0     
+195 P2           111 SER BB  195  0.0     
+196 TP1          111 SER SC1 196  0.0     
+197 P2           112 ILE BB  197  0.0     
+198 SC2          112 ILE SC1 198  0.0     
+199 P2           113 ASP BB  199  0.0     
+200 SQ5n         113 ASP SC1 200 -1.0     
+201 SP2          114 VAL BB  201  0.0     
+202 SC3          114 VAL SC1 202  0.0     
+203 P2           115 LEU BB  203  0.0     
+204 SC2          115 LEU SC1 204  0.0     
+205 P2           116 CYS BB  205  0.0     
+206 TC6          116 CYS SC1 206  0.0     
+207 SP2          117 VAL BB  207  0.0     
+208 SC3          117 VAL SC1 208  0.0     
+209 P2           118 THR BB  209  0.0     
+210 SP1          118 THR SC1 210  0.0     
+211 SP2          119 ALA BB  211  0.0     
+212 TC3          119 ALA SC1 212  0.0     
+213 P2           120 SER BB  213  0.0     
+214 TP1          120 SER SC1 214  0.0     
+215 P2           121 ILE BB  215  0.0     
+216 SC2          121 ILE SC1 216  0.0     
+217 P2           122 GLU BB  217  0.0     
+218 Q5n          122 GLU SC1 218 -1.0     
+219 P2           123 THR BB  219  0.0     
+220 SP1          123 THR SC1 220  0.0     
+221 P2           124 LEU BB  221  0.0     
+222 SC2          124 LEU SC1 222  0.0     
+223 P2           125 CYS BB  223  0.0     
+224 TC6          125 CYS SC1 224  0.0     
+225 SP2          126 VAL BB  225  0.0     
+226 SC3          126 VAL SC1 226  0.0     
+227 P2           127 ILE BB  227  0.0     
+228 SC2          127 ILE SC1 228  0.0     
+229 SP2          128 ALA BB  229  0.0     
+230 TC3          128 ALA SC1 230  0.0     
+231 SP2          129 VAL BB  231  0.0     
+232 SC3          129 VAL SC1 232  0.0     
+233 P2           130 ASP BB  233  0.0     
+234 SQ5n         130 ASP SC1 234 -1.0     
+235 P2           131 ARG BB  235  0.0     
+236 SC3          131 ARG SC1 236  0.0     
+237 SQ3p         131 ARG SC2 237  1.0     
+238 P2           132 TYR BB  238  0.0     
+239 TC4          132 TYR SC1 239  0.0     
+240 TC5          132 TYR SC2 240  0.0     
+241 TC5          132 TYR SC3 241  0.0     
+242 TN6          132 TYR SC4 242  0.0     
+243 P2           133 PHE BB  243  0.0     
+244 SC4          133 PHE SC1 244  0.0     
+245 TC5          133 PHE SC2 245  0.0     
+246 TC5          133 PHE SC3 246  0.0     
+247 SP2          134 ALA BB  247  0.0     
+248 TC3          134 ALA SC1 248  0.0     
+249 P2           135 ILE BB  249  0.0     
+250 SC2          135 ILE SC1 250  0.0     
+251 P2           136 THR BB  251  0.0     
+252 SP1          136 THR SC1 252  0.0     
+253 P2           137 SER BB  253  0.0     
+254 TP1          137 SER SC1 254  0.0     
+255 SP2a         138 PRO BB  255  0.0     
+256 SC3          138 PRO SC1 256  0.0     
+257 P2           139 PHE BB  257  0.0     
+258 SC4          139 PHE SC1 258  0.0     
+259 TC5          139 PHE SC2 259  0.0     
+260 TC5          139 PHE SC3 260  0.0     
+261 P2           140 LYS BB  261  0.0     
+262 SC3          140 LYS SC1 262  0.0     
+263 SQ4p         140 LYS SC2 263  1.0     
+264 P2           141 TYR BB  264  0.0     
+265 TC4          141 TYR SC1 265  0.0     
+266 TC5          141 TYR SC2 266  0.0     
+267 TC5          141 TYR SC3 267  0.0     
+268 TN6          141 TYR SC4 268  0.0     
+269 P2           142 GLN BB  269  0.0     
+270 P5           142 GLN SC1 270  0.0     
+271 P2           143 SER BB  271  0.0     
+272 TP1          143 SER SC1 272  0.0     
+273 P2           144 LEU BB  273  0.0     
+274 SC2          144 LEU SC1 274  0.0     
+275 P2           145 LEU BB  275  0.0     
+276 SC2          145 LEU SC1 276  0.0     
+277 P2           146 THR BB  277  0.0     
+278 SP1          146 THR SC1 278  0.0     
+279 P2           147 LYS BB  279  0.0     
+280 SC3          147 LYS SC1 280  0.0     
+281 SQ4p         147 LYS SC2 281  1.0     
+282 P2           148 ASN BB  282  0.0     
+283 SP5          148 ASN SC1 283  0.0     
+284 P2           149 LYS BB  284  0.0     
+285 SC3          149 LYS SC1 285  0.0     
+286 SQ4p         149 LYS SC2 286  1.0     
+287 SP2          150 ALA BB  287  0.0     
+288 TC3          150 ALA SC1 288  0.0     
+289 P2           151 ARG BB  289  0.0     
+290 SC3          151 ARG SC1 290  0.0     
+291 SQ3p         151 ARG SC2 291  1.0     
+292 SP2          152 VAL BB  292  0.0     
+293 SC3          152 VAL SC1 293  0.0     
+294 P2           153 ILE BB  294  0.0     
+295 SC2          153 ILE SC1 295  0.0     
+296 P2           154 ILE BB  296  0.0     
+297 SC2          154 ILE SC1 297  0.0     
+298 P2           155 LEU BB  298  0.0     
+299 SC2          155 LEU SC1 299  0.0     
+300 P2           156 MET BB  300  0.0     
+301 C6           156 MET SC1 301  0.0     
+302 SP2          157 VAL BB  302  0.0     
+303 SC3          157 VAL SC1 303  0.0     
+304 P2           158 TRP BB  304  0.0     
+305 TC4          158 TRP SC1 305  0.0 36.0
+306 TN6d         158 TRP SC2 306  0.0 36.0
+307 TC5          158 TRP SC3 307  0.0  0.0
+308 TC5          158 TRP SC4 308  0.0 36.0
+309 TC5          158 TRP SC5 309  0.0 36.0
+310 P2           159 ILE BB  310  0.0     
+311 SC2          159 ILE SC1 311  0.0     
+312 SP2          160 VAL BB  312  0.0     
+313 SC3          160 VAL SC1 313  0.0     
+314 P2           161 SER BB  314  0.0     
+315 TP1          161 SER SC1 315  0.0     
+316 SP1          162 GLY BB  316  0.0     
+317 P2           163 LEU BB  317  0.0     
+318 SC2          163 LEU SC1 318  0.0     
+319 P2           164 THR BB  319  0.0     
+320 SP1          164 THR SC1 320  0.0     
+321 P2           165 SER BB  321  0.0     
+322 TP1          165 SER SC1 322  0.0     
+323 P2           166 PHE BB  323  0.0     
+324 SC4          166 PHE SC1 324  0.0     
+325 TC5          166 PHE SC2 325  0.0     
+326 TC5          166 PHE SC3 326  0.0     
+327 P2           167 LEU BB  327  0.0     
+328 SC2          167 LEU SC1 328  0.0     
+329 SP2a         168 PRO BB  329  0.0     
+330 SC3          168 PRO SC1 330  0.0     
+331 P2           169 ILE BB  331  0.0     
+332 SC2          169 ILE SC1 332  0.0     
+333 P2           170 GLN BB  333  0.0     
+334 P5           170 GLN SC1 334  0.0     
+335 P2           171 MET BB  335  0.0     
+336 C6           171 MET SC1 336  0.0     
+337 P2           172 HIS BB  337  0.0     
+338 TC4          172 HIS SC1 338  0.0     
+339 TN6d         172 HIS SC2 339  0.0     
+340 TN5a         172 HIS SC3 340  0.0     
+341 P2           173 TRP BB  341  0.0     
+342 TC4          173 TRP SC1 342  0.0 36.0
+343 TN6d         173 TRP SC2 343  0.0 36.0
+344 TC5          173 TRP SC3 344  0.0  0.0
+345 TC5          173 TRP SC4 345  0.0 36.0
+346 TC5          173 TRP SC5 346  0.0 36.0
+347 P2           174 TYR BB  347  0.0     
+348 TC4          174 TYR SC1 348  0.0     
+349 TC5          174 TYR SC2 349  0.0     
+350 TC5          174 TYR SC3 350  0.0     
+351 TN6          174 TYR SC4 351  0.0     
+352 P2           175 ARG BB  352  0.0     
+353 SC3          175 ARG SC1 353  0.0     
+354 SQ3p         175 ARG SC2 354  1.0     
+355 SP2          176 ALA BB  355  0.0     
+356 TC3          176 ALA SC1 356  0.0     
+357 P2           177 THR BB  357  0.0     
+358 SP1          177 THR SC1 358  0.0     
+359 P2           178 HIS BB  359  0.0     
+360 TC4          178 HIS SC1 360  0.0     
+361 TN6d         178 HIS SC2 361  0.0     
+362 TN5a         178 HIS SC3 362  0.0     
+363 P2           179 GLN BB  363  0.0     
+364 P5           179 GLN SC1 364  0.0     
+365 P2           180 GLU BB  365  0.0     
+366 Q5n          180 GLU SC1 366 -1.0     
+367 SP2          181 ALA BB  367  0.0     
+368 TC3          181 ALA SC1 368  0.0     
+369 P2           182 ILE BB  369  0.0     
+370 SC2          182 ILE SC1 370  0.0     
+371 P2           183 ASN BB  371  0.0     
+372 SP5          183 ASN SC1 372  0.0     
+373 P2           184 CYS BB  373  0.0     
+374 TC6          184 CYS SC1 374  0.0     
+375 P2           185 TYR BB  375  0.0     
+376 TC4          185 TYR SC1 376  0.0     
+377 TC5          185 TYR SC2 377  0.0     
+378 TC5          185 TYR SC3 378  0.0     
+379 TN6          185 TYR SC4 379  0.0     
+380 SP2          186 ALA BB  380  0.0     
+381 TC3          186 ALA SC1 381  0.0     
+382 P2           187 GLU BB  382  0.0     
+383 Q5n          187 GLU SC1 383 -1.0     
+384 P2           188 GLU BB  384  0.0     
+385 Q5n          188 GLU SC1 385 -1.0     
+386 P2           189 THR BB  386  0.0     
+387 SP1          189 THR SC1 387  0.0     
+388 P2           190 CYS BB  388  0.0     
+389 TC6          190 CYS SC1 389  0.0     
+390 P2           191 CYS BB  390  0.0     
+391 TC6          191 CYS SC1 391  0.0     
+392 P2           192 ASP BB  392  0.0     
+393 SQ5n         192 ASP SC1 393 -1.0     
+394 P2           193 PHE BB  394  0.0     
+395 SC4          193 PHE SC1 395  0.0     
+396 TC5          193 PHE SC2 396  0.0     
+397 TC5          193 PHE SC3 397  0.0     
+398 P2           194 PHE BB  398  0.0     
+399 SC4          194 PHE SC1 399  0.0     
+400 TC5          194 PHE SC2 400  0.0     
+401 TC5          194 PHE SC3 401  0.0     
+402 P2           195 THR BB  402  0.0     
+403 SP1          195 THR SC1 403  0.0     
+404 P2           196 ASN BB  404  0.0     
+405 SP5          196 ASN SC1 405  0.0     
+406 P2           197 GLN BB  406  0.0     
+407 P5           197 GLN SC1 407  0.0     
+408 SP2          198 ALA BB  408  0.0     
+409 TC3          198 ALA SC1 409  0.0     
+410 P2           199 TYR BB  410  0.0     
+411 TC4          199 TYR SC1 411  0.0     
+412 TC5          199 TYR SC2 412  0.0     
+413 TC5          199 TYR SC3 413  0.0     
+414 TN6          199 TYR SC4 414  0.0     
+415 SP2          200 ALA BB  415  0.0     
+416 TC3          200 ALA SC1 416  0.0     
+417 P2           201 ILE BB  417  0.0     
+418 SC2          201 ILE SC1 418  0.0     
+419 SP2          202 ALA BB  419  0.0     
+420 TC3          202 ALA SC1 420  0.0     
+421 P2           203 SER BB  421  0.0     
+422 TP1          203 SER SC1 422  0.0     
+423 P2           204 SER BB  423  0.0     
+424 TP1          204 SER SC1 424  0.0     
+425 P2           205 ILE BB  425  0.0     
+426 SC2          205 ILE SC1 426  0.0     
+427 SP2          206 VAL BB  427  0.0     
+428 SC3          206 VAL SC1 428  0.0     
+429 P2           207 SER BB  429  0.0     
+430 TP1          207 SER SC1 430  0.0     
+431 P2           208 PHE BB  431  0.0     
+432 SC4          208 PHE SC1 432  0.0     
+433 TC5          208 PHE SC2 433  0.0     
+434 TC5          208 PHE SC3 434  0.0     
+435 P2           209 TYR BB  435  0.0     
+436 TC4          209 TYR SC1 436  0.0     
+437 TC5          209 TYR SC2 437  0.0     
+438 TC5          209 TYR SC3 438  0.0     
+439 TN6          209 TYR SC4 439  0.0     
+440 SP2          210 VAL BB  440  0.0     
+441 SC3          210 VAL SC1 441  0.0     
+442 SP2a         211 PRO BB  442  0.0     
+443 SC3          211 PRO SC1 443  0.0     
+444 P2           212 LEU BB  444  0.0     
+445 SC2          212 LEU SC1 445  0.0     
+446 SP2          213 VAL BB  446  0.0     
+447 SC3          213 VAL SC1 447  0.0     
+448 P2           214 ILE BB  448  0.0     
+449 SC2          214 ILE SC1 449  0.0     
+450 P2           215 MET BB  450  0.0     
+451 C6           215 MET SC1 451  0.0     
+452 SP2          216 VAL BB  452  0.0     
+453 SC3          216 VAL SC1 453  0.0     
+454 P2           217 PHE BB  454  0.0     
+455 SC4          217 PHE SC1 455  0.0     
+456 TC5          217 PHE SC2 456  0.0     
+457 TC5          217 PHE SC3 457  0.0     
+458 SP2          218 VAL BB  458  0.0     
+459 SC3          218 VAL SC1 459  0.0     
+460 P2           219 TYR BB  460  0.0     
+461 TC4          219 TYR SC1 461  0.0     
+462 TC5          219 TYR SC2 462  0.0     
+463 TC5          219 TYR SC3 463  0.0     
+464 TN6          219 TYR SC4 464  0.0     
+465 P2           220 SER BB  465  0.0     
+466 TP1          220 SER SC1 466  0.0     
+467 P2           221 ARG BB  467  0.0     
+468 SC3          221 ARG SC1 468  0.0     
+469 SQ3p         221 ARG SC2 469  1.0     
+470 SP2          222 VAL BB  470  0.0     
+471 SC3          222 VAL SC1 471  0.0     
+472 P2           223 PHE BB  472  0.0     
+473 SC4          223 PHE SC1 473  0.0     
+474 TC5          223 PHE SC2 474  0.0     
+475 TC5          223 PHE SC3 475  0.0     
+476 P2           224 GLN BB  476  0.0     
+477 P5           224 GLN SC1 477  0.0     
+478 P2           225 GLU BB  478  0.0     
+479 Q5n          225 GLU SC1 479 -1.0     
+480 SP2          226 ALA BB  480  0.0     
+481 TC3          226 ALA SC1 481  0.0     
+482 P2           227 LYS BB  482  0.0     
+483 SC3          227 LYS SC1 483  0.0     
+484 SQ4p         227 LYS SC2 484  1.0     
+485 P2           228 ARG BB  485  0.0     
+486 SC3          228 ARG SC1 486  0.0     
+487 SQ3p         228 ARG SC2 487  1.0     
+488 P2           229 GLN BB  488  0.0     
+489 P5           229 GLN SC1 489  0.0     
+490 Q5           230 LEU BB  490   -1     
+491 SC2          230 LEU SC1 491  0.0     
+492 Q5           495 CYS BB  492    1     
+493 TC6          495 CYS SC1 493  0.0     
+494 P2           496 LEU BB  494  0.0     
+495 SC2          496 LEU SC1 495  0.0     
+496 P2           497 LYS BB  496  0.0     
+497 SC3          497 LYS SC1 497  0.0     
+498 SQ4p         497 LYS SC2 498  1.0     
+499 P2           498 GLU BB  499  0.0     
+500 Q5n          498 GLU SC1 500 -1.0     
+501 P2           499 HIS BB  501  0.0     
+502 TC4          499 HIS SC1 502  0.0     
+503 TN6d         499 HIS SC2 503  0.0     
+504 TN5a         499 HIS SC3 504  0.0     
+505 P2           500 LYS BB  505  0.0     
+506 SC3          500 LYS SC1 506  0.0     
+507 SQ4p         500 LYS SC2 507  1.0     
+508 SP2          501 ALA BB  508  0.0     
+509 TC3          501 ALA SC1 509  0.0     
+510 P2           502 LEU BB  510  0.0     
+511 SC2          502 LEU SC1 511  0.0     
+512 P2           503 LYS BB  512  0.0     
+513 SC3          503 LYS SC1 513  0.0     
+514 SQ4p         503 LYS SC2 514  1.0     
+515 P2           504 THR BB  515  0.0     
+516 SP1          504 THR SC1 516  0.0     
+517 P2           505 LEU BB  517  0.0     
+518 SC2          505 LEU SC1 518  0.0     
+519 SP1          506 GLY BB  519  0.0     
+520 P2           507 ILE BB  520  0.0     
+521 SC2          507 ILE SC1 521  0.0     
+522 P2           508 ILE BB  522  0.0     
+523 SC2          508 ILE SC1 523  0.0     
+524 P2           509 MET BB  524  0.0     
+525 C6           509 MET SC1 525  0.0     
+526 SP1          510 GLY BB  526  0.0     
+527 P2           511 THR BB  527  0.0     
+528 SP1          511 THR SC1 528  0.0     
+529 P2           512 PHE BB  529  0.0     
+530 SC4          512 PHE SC1 530  0.0     
+531 TC5          512 PHE SC2 531  0.0     
+532 TC5          512 PHE SC3 532  0.0     
+533 P2           513 THR BB  533  0.0     
+534 SP1          513 THR SC1 534  0.0     
+535 P2           514 LEU BB  535  0.0     
+536 SC2          514 LEU SC1 536  0.0     
+537 P2           515 CYS BB  537  0.0     
+538 TC6          515 CYS SC1 538  0.0     
+539 P2           516 TRP BB  539  0.0     
+540 TC4          516 TRP SC1 540  0.0 36.0
+541 TN6d         516 TRP SC2 541  0.0 36.0
+542 TC5          516 TRP SC3 542  0.0  0.0
+543 TC5          516 TRP SC4 543  0.0 36.0
+544 TC5          516 TRP SC5 544  0.0 36.0
+545 P2           517 LEU BB  545  0.0     
+546 SC2          517 LEU SC1 546  0.0     
+547 SP2a         518 PRO BB  547  0.0     
+548 SC3          518 PRO SC1 548  0.0     
+549 P2           519 PHE BB  549  0.0     
+550 SC4          519 PHE SC1 550  0.0     
+551 TC5          519 PHE SC2 551  0.0     
+552 TC5          519 PHE SC3 552  0.0     
+553 P2           520 PHE BB  553  0.0     
+554 SC4          520 PHE SC1 554  0.0     
+555 TC5          520 PHE SC2 555  0.0     
+556 TC5          520 PHE SC3 556  0.0     
+557 P2           521 ILE BB  557  0.0     
+558 SC2          521 ILE SC1 558  0.0     
+559 SP2          522 VAL BB  559  0.0     
+560 SC3          522 VAL SC1 560  0.0     
+561 P2           523 ASN BB  561  0.0     
+562 SP5          523 ASN SC1 562  0.0     
+563 P2           524 ILE BB  563  0.0     
+564 SC2          524 ILE SC1 564  0.0     
+565 SP2          525 VAL BB  565  0.0     
+566 SC3          525 VAL SC1 566  0.0     
+567 P2           526 HIS BB  567  0.0     
+568 TC4          526 HIS SC1 568  0.0     
+569 TN6d         526 HIS SC2 569  0.0     
+570 TN5a         526 HIS SC3 570  0.0     
+571 SP2          527 VAL BB  571  0.0     
+572 SC3          527 VAL SC1 572  0.0     
+573 P2           528 ILE BB  573  0.0     
+574 SC2          528 ILE SC1 574  0.0     
+575 P2           529 GLN BB  575  0.0     
+576 P5           529 GLN SC1 576  0.0     
+577 P2           530 ASP BB  577  0.0     
+578 SQ5n         530 ASP SC1 578 -1.0     
+579 P2           531 ASN BB  579  0.0     
+580 SP5          531 ASN SC1 580  0.0     
+581 P2           532 LEU BB  581  0.0     
+582 SC2          532 LEU SC1 582  0.0     
+583 P2           533 ILE BB  583  0.0     
+584 SC2          533 ILE SC1 584  0.0     
+585 P2           534 ARG BB  585  0.0     
+586 SC3          534 ARG SC1 586  0.0     
+587 SQ3p         534 ARG SC2 587  1.0     
+588 P2           535 LYS BB  588  0.0     
+589 SC3          535 LYS SC1 589  0.0     
+590 SQ4p         535 LYS SC2 590  1.0     
+591 P2           536 GLU BB  591  0.0     
+592 Q5n          536 GLU SC1 592 -1.0     
+593 SP2          537 VAL BB  593  0.0     
+594 SC3          537 VAL SC1 594  0.0     
+595 P2           538 TYR BB  595  0.0     
+596 TC4          538 TYR SC1 596  0.0     
+597 TC5          538 TYR SC2 597  0.0     
+598 TC5          538 TYR SC3 598  0.0     
+599 TN6          538 TYR SC4 599  0.0     
+600 P2           539 ILE BB  600  0.0     
+601 SC2          539 ILE SC1 601  0.0     
+602 P2           540 LEU BB  602  0.0     
+603 SC2          540 LEU SC1 603  0.0     
+604 P2           541 LEU BB  604  0.0     
+605 SC2          541 LEU SC1 605  0.0     
+606 P2           542 ASN BB  606  0.0     
+607 SP5          542 ASN SC1 607  0.0     
+608 P2           543 TRP BB  608  0.0     
+609 TC4          543 TRP SC1 609  0.0 36.0
+610 TN6d         543 TRP SC2 610  0.0 36.0
+611 TC5          543 TRP SC3 611  0.0  0.0
+612 TC5          543 TRP SC4 612  0.0 36.0
+613 TC5          543 TRP SC5 613  0.0 36.0
+614 P2           544 ILE BB  614  0.0     
+615 SC2          544 ILE SC1 615  0.0     
+616 SP1          545 GLY BB  616  0.0     
+617 P2           546 TYR BB  617  0.0     
+618 TC4          546 TYR SC1 618  0.0     
+619 TC5          546 TYR SC2 619  0.0     
+620 TC5          546 TYR SC3 620  0.0     
+621 TN6          546 TYR SC4 621  0.0     
+622 SP2          547 VAL BB  622  0.0     
+623 SC3          547 VAL SC1 623  0.0     
+624 P2           548 ASN BB  624  0.0     
+625 SP5          548 ASN SC1 625  0.0     
+626 P2           549 SER BB  626  0.0     
+627 TP1          549 SER SC1 627  0.0     
+628 SP1          550 GLY BB  628  0.0     
+629 P2           551 PHE BB  629  0.0     
+630 SC4          551 PHE SC1 630  0.0     
+631 TC5          551 PHE SC2 631  0.0     
+632 TC5          551 PHE SC3 632  0.0     
+633 P2           552 ASN BB  633  0.0     
+634 SP5          552 ASN SC1 634  0.0     
+635 SP2a         553 PRO BB  635  0.0     
+636 SC3          553 PRO SC1 636  0.0     
+637 P2           554 LEU BB  637  0.0     
+638 SC2          554 LEU SC1 638  0.0     
+639 P2           555 ILE BB  639  0.0     
+640 SC2          555 ILE SC1 640  0.0     
+641 P2           556 TYR BB  641  0.0     
+642 TC4          556 TYR SC1 642  0.0     
+643 TC5          556 TYR SC2 643  0.0     
+644 TC5          556 TYR SC3 644  0.0     
+645 TN6          556 TYR SC4 645  0.0     
+646 P2           557 CYS BB  646  0.0     
+647 TC6          557 CYS SC1 647  0.0     
+648 P2           558 ARG BB  648  0.0     
+649 SC3          558 ARG SC1 649  0.0     
+650 SQ3p         558 ARG SC2 650  1.0     
+651 P2           559 SER BB  651  0.0     
+652 TP1          559 SER SC1 652  0.0     
+653 SP2a         560 PRO BB  653  0.0     
+654 SC3          560 PRO SC1 654  0.0     
+655 P2           561 ASP BB  655  0.0     
+656 SQ5n         561 ASP SC1 656 -1.0     
+657 P2           562 PHE BB  657  0.0     
+658 SC4          562 PHE SC1 658  0.0     
+659 TC5          562 PHE SC2 659  0.0     
+660 TC5          562 PHE SC3 660  0.0     
+661 P2           563 ARG BB  661  0.0     
+662 SC3          563 ARG SC1 662  0.0     
+663 SQ3p         563 ARG SC2 663  1.0     
+664 P2           564 ILE BB  664  0.0     
+665 SC2          564 ILE SC1 665  0.0     
+666 SP2          565 ALA BB  666  0.0     
+667 TC3          565 ALA SC1 667  0.0     
+668 P2           566 PHE BB  668  0.0     
+669 SC4          566 PHE SC1 669  0.0     
+670 TC5          566 PHE SC2 670  0.0     
+671 TC5          566 PHE SC3 671  0.0     
+672 P2           567 GLN BB  672  0.0     
+673 P5           567 GLN SC1 673  0.0     
+674 P2           568 GLU BB  674  0.0     
+675 Q5n          568 GLU SC1 675 -1.0     
+676 P2           569 LEU BB  676  0.0     
+677 SC2          569 LEU SC1 677  0.0     
+678 P2           570 LEU BB  678  0.0     
+679 SC2          570 LEU SC1 679  0.0     
+680 Q5           571 CYS BB  680   -1     
+681 TC6          571 CYS SC1 681  0.0     
+682 Inactive_30   30 GLU CA  682    0     
+683 Inactive_31   31 VAL CA  683    0     
+684 Inactive_32   32 TRP CA  684    0     
+685 Inactive_33   33 VAL CA  685    0     
+686 Inactive_34   34 VAL CA  686    0     
+687 Inactive_35   35 GLY CA  687    0     
+688 Inactive_36   36 MET CA  688    0     
+689 Inactive_37   37 GLY CA  689    0     
+690 Inactive_38   38 ILE CA  690    0     
+691 Inactive_39   39 VAL CA  691    0     
+692 Inactive_40   40 MET CA  692    0     
+693 Inactive_41   41 SER CA  693    0     
+694 Inactive_42   42 LEU CA  694    0     
+695 Inactive_43   43 ILE CA  695    0     
+696 Inactive_44   44 VAL CA  696    0     
+697 Inactive_45   45 LEU CA  697    0     
+698 Inactive_46   46 ALA CA  698    0     
+699 Inactive_47   47 ILE CA  699    0     
+700 Inactive_48   48 VAL CA  700    0     
+701 Inactive_49   49 PHE CA  701    0     
+702 Inactive_50   50 GLY CA  702    0     
+703 Inactive_51   51 ASN CA  703    0     
+704 Inactive_52   52 VAL CA  704    0     
+705 Inactive_53   53 LEU CA  705    0     
+706 Inactive_54   54 VAL CA  706    0     
+707 Inactive_55   55 ILE CA  707    0     
+708 Inactive_56   56 THR CA  708    0     
+709 Inactive_57   57 ALA CA  709    0     
+710 Inactive_58   58 ILE CA  710    0     
+711 Inactive_59   59 ALA CA  711    0     
+712 Inactive_60   60 LYS CA  712    0     
+713 Inactive_61   61 PHE CA  713    0     
+714 Inactive_62   62 GLU CA  714    0     
+715 Inactive_63   63 ARG CA  715    0     
+716 Inactive_64   64 LEU CA  716    0     
+717 Inactive_65   65 GLN CA  717    0     
+718 Inactive_66   66 THR CA  718    0     
+719 Inactive_67   67 VAL CA  719    0     
+720 Inactive_68   68 THR CA  720    0     
+721 Inactive_69   69 ASN CA  721    0     
+722 Inactive_70   70 TYR CA  722    0     
+723 Inactive_71   71 PHE CA  723    0     
+724 Inactive_72   72 ILE CA  724    0     
+725 Inactive_73   73 THR CA  725    0     
+726 Inactive_74   74 SER CA  726    0     
+727 Inactive_75   75 LEU CA  727    0     
+728 Inactive_76   76 ALA CA  728    0     
+729 Inactive_77   77 CYS CA  729    0     
+730 Inactive_78   78 ALA CA  730    0     
+731 Inactive_79   79 ASP CA  731    0     
+732 Inactive_80   80 LEU CA  732    0     
+733 Inactive_81   81 VAL CA  733    0     
+734 Inactive_82   82 MET CA  734    0     
+735 Inactive_83   83 GLY CA  735    0     
+736 Inactive_84   84 LEU CA  736    0     
+737 Inactive_85   85 ALA CA  737    0     
+738 Inactive_86   86 VAL CA  738    0     
+739 Inactive_87   87 VAL CA  739    0     
+740 Inactive_88   88 PRO CA  740    0     
+741 Inactive_89   89 PHE CA  741    0     
+742 Inactive_90   90 GLY CA  742    0     
+743 Inactive_91   91 ALA CA  743    0     
+744 Inactive_92   92 ALA CA  744    0     
+745 Inactive_93   93 HIS CA  745    0     
+746 Inactive_94   94 ILE CA  746    0     
+747 Inactive_95   95 LEU CA  747    0     
+748 Inactive_96   96 MET CA  748    0     
+749 Inactive_97   97 LYS CA  749    0     
+750 Inactive_98   98 MET CA  750    0     
+751 Inactive_99   99 TRP CA  751    0     
+752 Inactive_100 100 THR CA  752    0     
+753 Inactive_101 101 PHE CA  753    0     
+754 Inactive_102 102 GLY CA  754    0     
+755 Inactive_103 103 ASN CA  755    0     
+756 Inactive_104 104 PHE CA  756    0     
+757 Inactive_105 105 TRP CA  757    0     
+758 Inactive_106 106 CYS CA  758    0     
+759 Inactive_107 107 GLU CA  759    0     
+760 Inactive_108 108 PHE CA  760    0     
+761 Inactive_109 109 TRP CA  761    0     
+762 Inactive_110 110 THR CA  762    0     
+763 Inactive_111 111 SER CA  763    0     
+764 Inactive_112 112 ILE CA  764    0     
+765 Inactive_113 113 ASP CA  765    0     
+766 Inactive_114 114 VAL CA  766    0     
+767 Inactive_115 115 LEU CA  767    0     
+768 Inactive_116 116 CYS CA  768    0     
+769 Inactive_117 117 VAL CA  769    0     
+770 Inactive_118 118 THR CA  770    0     
+771 Inactive_119 119 ALA CA  771    0     
+772 Inactive_120 120 SER CA  772    0     
+773 Inactive_121 121 ILE CA  773    0     
+774 Inactive_122 122 GLU CA  774    0     
+775 Inactive_123 123 THR CA  775    0     
+776 Inactive_124 124 LEU CA  776    0     
+777 Inactive_125 125 CYS CA  777    0     
+778 Inactive_126 126 VAL CA  778    0     
+779 Inactive_127 127 ILE CA  779    0     
+780 Inactive_128 128 ALA CA  780    0     
+781 Inactive_129 129 VAL CA  781    0     
+782 Inactive_130 130 ASP CA  782    0     
+783 Inactive_131 131 ARG CA  783    0     
+784 Inactive_132 132 TYR CA  784    0     
+785 Inactive_133 133 PHE CA  785    0     
+786 Inactive_134 134 ALA CA  786    0     
+787 Inactive_135 135 ILE CA  787    0     
+788 Inactive_136 136 THR CA  788    0     
+789 Inactive_137 137 SER CA  789    0     
+790 Inactive_138 138 PRO CA  790    0     
+791 Inactive_139 139 PHE CA  791    0     
+792 Inactive_140 140 LYS CA  792    0     
+793 Inactive_141 141 TYR CA  793    0     
+794 Inactive_142 142 GLN CA  794    0     
+795 Inactive_143 143 SER CA  795    0     
+796 Inactive_144 144 LEU CA  796    0     
+797 Inactive_145 145 LEU CA  797    0     
+798 Inactive_146 146 THR CA  798    0     
+799 Inactive_147 147 LYS CA  799    0     
+800 Inactive_148 148 ASN CA  800    0     
+801 Inactive_149 149 LYS CA  801    0     
+802 Inactive_150 150 ALA CA  802    0     
+803 Inactive_151 151 ARG CA  803    0     
+804 Inactive_152 152 VAL CA  804    0     
+805 Inactive_153 153 ILE CA  805    0     
+806 Inactive_154 154 ILE CA  806    0     
+807 Inactive_155 155 LEU CA  807    0     
+808 Inactive_156 156 MET CA  808    0     
+809 Inactive_157 157 VAL CA  809    0     
+810 Inactive_158 158 TRP CA  810    0     
+811 Inactive_159 159 ILE CA  811    0     
+812 Inactive_160 160 VAL CA  812    0     
+813 Inactive_161 161 SER CA  813    0     
+814 Inactive_162 162 GLY CA  814    0     
+815 Inactive_163 163 LEU CA  815    0     
+816 Inactive_164 164 THR CA  816    0     
+817 Inactive_165 165 SER CA  817    0     
+818 Inactive_166 166 PHE CA  818    0     
+819 Inactive_167 167 LEU CA  819    0     
+820 Inactive_168 168 PRO CA  820    0     
+821 Inactive_169 169 ILE CA  821    0     
+822 Inactive_170 170 GLN CA  822    0     
+823 Inactive_171 171 MET CA  823    0     
+824 Inactive_172 172 HIS CA  824    0     
+825 Inactive_173 173 TRP CA  825    0     
+826 Inactive_174 174 TYR CA  826    0     
+827 Inactive_175 175 ARG CA  827    0     
+828 Inactive_176 176 ALA CA  828    0     
+829 Inactive_177 177 THR CA  829    0     
+830 Inactive_178 178 HIS CA  830    0     
+831 Inactive_179 179 GLN CA  831    0     
+832 Inactive_180 180 GLU CA  832    0     
+833 Inactive_181 181 ALA CA  833    0     
+834 Inactive_182 182 ILE CA  834    0     
+835 Inactive_183 183 ASN CA  835    0     
+836 Inactive_184 184 CYS CA  836    0     
+837 Inactive_185 185 TYR CA  837    0     
+838 Inactive_186 186 ALA CA  838    0     
+839 Inactive_187 187 GLU CA  839    0     
+840 Inactive_188 188 GLU CA  840    0     
+841 Inactive_189 189 THR CA  841    0     
+842 Inactive_190 190 CYS CA  842    0     
+843 Inactive_191 191 CYS CA  843    0     
+844 Inactive_192 192 ASP CA  844    0     
+845 Inactive_193 193 PHE CA  845    0     
+846 Inactive_194 194 PHE CA  846    0     
+847 Inactive_195 195 THR CA  847    0     
+848 Inactive_196 196 ASN CA  848    0     
+849 Inactive_197 197 GLN CA  849    0     
+850 Inactive_198 198 ALA CA  850    0     
+851 Inactive_199 199 TYR CA  851    0     
+852 Inactive_200 200 ALA CA  852    0     
+853 Inactive_201 201 ILE CA  853    0     
+854 Inactive_202 202 ALA CA  854    0     
+855 Inactive_203 203 SER CA  855    0     
+856 Inactive_204 204 SER CA  856    0     
+857 Inactive_205 205 ILE CA  857    0     
+858 Inactive_206 206 VAL CA  858    0     
+859 Inactive_207 207 SER CA  859    0     
+860 Inactive_208 208 PHE CA  860    0     
+861 Inactive_209 209 TYR CA  861    0     
+862 Inactive_210 210 VAL CA  862    0     
+863 Inactive_211 211 PRO CA  863    0     
+864 Inactive_212 212 LEU CA  864    0     
+865 Inactive_213 213 VAL CA  865    0     
+866 Inactive_214 214 ILE CA  866    0     
+867 Inactive_215 215 MET CA  867    0     
+868 Inactive_216 216 VAL CA  868    0     
+869 Inactive_217 217 PHE CA  869    0     
+870 Inactive_218 218 VAL CA  870    0     
+871 Inactive_219 219 TYR CA  871    0     
+872 Inactive_220 220 SER CA  872    0     
+873 Inactive_221 221 ARG CA  873    0     
+874 Inactive_222 222 VAL CA  874    0     
+875 Inactive_223 223 PHE CA  875    0     
+876 Inactive_224 224 GLN CA  876    0     
+877 Inactive_225 225 GLU CA  877    0     
+878 Inactive_226 226 ALA CA  878    0     
+879 Inactive_227 227 LYS CA  879    0     
+880 Inactive_228 228 ARG CA  880    0     
+881 Inactive_229 229 GLN CA  881    0     
+882 Inactive_230 230 LEU CA  882    0     
+883 Inactive_495 495 CYS CA  883    0     
+884 Inactive_496 496 LEU CA  884    0     
+885 Inactive_497 497 LYS CA  885    0     
+886 Inactive_498 498 GLU CA  886    0     
+887 Inactive_499 499 HIS CA  887    0     
+888 Inactive_500 500 LYS CA  888    0     
+889 Inactive_501 501 ALA CA  889    0     
+890 Inactive_502 502 LEU CA  890    0     
+891 Inactive_503 503 LYS CA  891    0     
+892 Inactive_504 504 THR CA  892    0     
+893 Inactive_505 505 LEU CA  893    0     
+894 Inactive_506 506 GLY CA  894    0     
+895 Inactive_507 507 ILE CA  895    0     
+896 Inactive_508 508 ILE CA  896    0     
+897 Inactive_509 509 MET CA  897    0     
+898 Inactive_510 510 GLY CA  898    0     
+899 Inactive_511 511 THR CA  899    0     
+900 Inactive_512 512 PHE CA  900    0     
+901 Inactive_513 513 THR CA  901    0     
+902 Inactive_514 514 LEU CA  902    0     
+903 Inactive_515 515 CYS CA  903    0     
+904 Inactive_516 516 TRP CA  904    0     
+905 Inactive_517 517 LEU CA  905    0     
+906 Inactive_518 518 PRO CA  906    0     
+907 Inactive_519 519 PHE CA  907    0     
+908 Inactive_520 520 PHE CA  908    0     
+909 Inactive_521 521 ILE CA  909    0     
+910 Inactive_522 522 VAL CA  910    0     
+911 Inactive_523 523 ASN CA  911    0     
+912 Inactive_524 524 ILE CA  912    0     
+913 Inactive_525 525 VAL CA  913    0     
+914 Inactive_526 526 HIS CA  914    0     
+915 Inactive_527 527 VAL CA  915    0     
+916 Inactive_528 528 ILE CA  916    0     
+917 Inactive_529 529 GLN CA  917    0     
+918 Inactive_530 530 ASP CA  918    0     
+919 Inactive_531 531 ASN CA  919    0     
+920 Inactive_532 532 LEU CA  920    0     
+921 Inactive_533 533 ILE CA  921    0     
+922 Inactive_534 534 ARG CA  922    0     
+923 Inactive_535 535 LYS CA  923    0     
+924 Inactive_536 536 GLU CA  924    0     
+925 Inactive_537 537 VAL CA  925    0     
+926 Inactive_538 538 TYR CA  926    0     
+927 Inactive_539 539 ILE CA  927    0     
+928 Inactive_540 540 LEU CA  928    0     
+929 Inactive_541 541 LEU CA  929    0     
+930 Inactive_542 542 ASN CA  930    0     
+931 Inactive_543 543 TRP CA  931    0     
+932 Inactive_544 544 ILE CA  932    0     
+933 Inactive_545 545 GLY CA  933    0     
+934 Inactive_546 546 TYR CA  934    0     
+935 Inactive_547 547 VAL CA  935    0     
+936 Inactive_548 548 ASN CA  936    0     
+937 Inactive_549 549 SER CA  937    0     
+938 Inactive_550 550 GLY CA  938    0     
+939 Inactive_551 551 PHE CA  939    0     
+940 Inactive_552 552 ASN CA  940    0     
+941 Inactive_553 553 PRO CA  941    0     
+942 Inactive_554 554 LEU CA  942    0     
+943 Inactive_555 555 ILE CA  943    0     
+944 Inactive_556 556 TYR CA  944    0     
+945 Inactive_557 557 CYS CA  945    0     
+946 Inactive_558 558 ARG CA  946    0     
+947 Inactive_559 559 SER CA  947    0     
+948 Inactive_560 560 PRO CA  948    0     
+949 Inactive_561 561 ASP CA  949    0     
+950 Inactive_562 562 PHE CA  950    0     
+951 Inactive_563 563 ARG CA  951    0     
+952 Inactive_564 564 ILE CA  952    0     
+953 Inactive_565 565 ALA CA  953    0     
+954 Inactive_566 566 PHE CA  954    0     
+955 Inactive_567 567 GLN CA  955    0     
+956 Inactive_568 568 GLU CA  956    0     
+957 Inactive_569 569 LEU CA  957    0     
+958 Inactive_570 570 LEU CA  958    0     
+959 Inactive_571 571 CYS CA  959    0     
+
+[ position_restraints ]
+#ifdef POSRES
+  1 1 1000 1000 1000
+  3 1 1000 1000 1000
+  5 1 1000 1000 1000
+ 11 1 1000 1000 1000
+ 13 1 1000 1000 1000
+ 15 1 1000 1000 1000
+ 16 1 1000 1000 1000
+ 18 1 1000 1000 1000
+ 19 1 1000 1000 1000
+ 21 1 1000 1000 1000
+ 23 1 1000 1000 1000
+ 25 1 1000 1000 1000
+ 27 1 1000 1000 1000
+ 29 1 1000 1000 1000
+ 31 1 1000 1000 1000
+ 33 1 1000 1000 1000
+ 35 1 1000 1000 1000
+ 37 1 1000 1000 1000
+ 39 1 1000 1000 1000
+ 41 1 1000 1000 1000
+ 45 1 1000 1000 1000
+ 46 1 1000 1000 1000
+ 48 1 1000 1000 1000
+ 50 1 1000 1000 1000
+ 52 1 1000 1000 1000
+ 54 1 1000 1000 1000
+ 56 1 1000 1000 1000
+ 58 1 1000 1000 1000
+ 60 1 1000 1000 1000
+ 62 1 1000 1000 1000
+ 64 1 1000 1000 1000
+ 67 1 1000 1000 1000
+ 71 1 1000 1000 1000
+ 73 1 1000 1000 1000
+ 76 1 1000 1000 1000
+ 78 1 1000 1000 1000
+ 80 1 1000 1000 1000
+ 82 1 1000 1000 1000
+ 84 1 1000 1000 1000
+ 86 1 1000 1000 1000
+ 88 1 1000 1000 1000
+ 93 1 1000 1000 1000
+ 97 1 1000 1000 1000
+ 99 1 1000 1000 1000
+101 1 1000 1000 1000
+103 1 1000 1000 1000
+105 1 1000 1000 1000
+107 1 1000 1000 1000
+109 1 1000 1000 1000
+111 1 1000 1000 1000
+113 1 1000 1000 1000
+115 1 1000 1000 1000
+117 1 1000 1000 1000
+119 1 1000 1000 1000
+120 1 1000 1000 1000
+122 1 1000 1000 1000
+124 1 1000 1000 1000
+126 1 1000 1000 1000
+128 1 1000 1000 1000
+130 1 1000 1000 1000
+134 1 1000 1000 1000
+135 1 1000 1000 1000
+137 1 1000 1000 1000
+139 1 1000 1000 1000
+143 1 1000 1000 1000
+145 1 1000 1000 1000
+147 1 1000 1000 1000
+149 1 1000 1000 1000
+152 1 1000 1000 1000
+154 1 1000 1000 1000
+160 1 1000 1000 1000
+162 1 1000 1000 1000
+166 1 1000 1000 1000
+167 1 1000 1000 1000
+169 1 1000 1000 1000
+173 1 1000 1000 1000
+179 1 1000 1000 1000
+181 1 1000 1000 1000
+183 1 1000 1000 1000
+187 1 1000 1000 1000
+193 1 1000 1000 1000
+195 1 1000 1000 1000
+197 1 1000 1000 1000
+199 1 1000 1000 1000
+201 1 1000 1000 1000
+203 1 1000 1000 1000
+205 1 1000 1000 1000
+207 1 1000 1000 1000
+209 1 1000 1000 1000
+211 1 1000 1000 1000
+213 1 1000 1000 1000
+215 1 1000 1000 1000
+217 1 1000 1000 1000
+219 1 1000 1000 1000
+221 1 1000 1000 1000
+223 1 1000 1000 1000
+225 1 1000 1000 1000
+227 1 1000 1000 1000
+229 1 1000 1000 1000
+231 1 1000 1000 1000
+233 1 1000 1000 1000
+235 1 1000 1000 1000
+238 1 1000 1000 1000
+243 1 1000 1000 1000
+247 1 1000 1000 1000
+249 1 1000 1000 1000
+251 1 1000 1000 1000
+253 1 1000 1000 1000
+255 1 1000 1000 1000
+257 1 1000 1000 1000
+261 1 1000 1000 1000
+264 1 1000 1000 1000
+269 1 1000 1000 1000
+271 1 1000 1000 1000
+273 1 1000 1000 1000
+275 1 1000 1000 1000
+277 1 1000 1000 1000
+279 1 1000 1000 1000
+282 1 1000 1000 1000
+284 1 1000 1000 1000
+287 1 1000 1000 1000
+289 1 1000 1000 1000
+292 1 1000 1000 1000
+294 1 1000 1000 1000
+296 1 1000 1000 1000
+298 1 1000 1000 1000
+300 1 1000 1000 1000
+302 1 1000 1000 1000
+304 1 1000 1000 1000
+310 1 1000 1000 1000
+312 1 1000 1000 1000
+314 1 1000 1000 1000
+316 1 1000 1000 1000
+317 1 1000 1000 1000
+319 1 1000 1000 1000
+321 1 1000 1000 1000
+323 1 1000 1000 1000
+327 1 1000 1000 1000
+329 1 1000 1000 1000
+331 1 1000 1000 1000
+333 1 1000 1000 1000
+335 1 1000 1000 1000
+337 1 1000 1000 1000
+341 1 1000 1000 1000
+347 1 1000 1000 1000
+352 1 1000 1000 1000
+355 1 1000 1000 1000
+357 1 1000 1000 1000
+359 1 1000 1000 1000
+363 1 1000 1000 1000
+365 1 1000 1000 1000
+367 1 1000 1000 1000
+369 1 1000 1000 1000
+371 1 1000 1000 1000
+373 1 1000 1000 1000
+375 1 1000 1000 1000
+380 1 1000 1000 1000
+382 1 1000 1000 1000
+384 1 1000 1000 1000
+386 1 1000 1000 1000
+388 1 1000 1000 1000
+390 1 1000 1000 1000
+392 1 1000 1000 1000
+394 1 1000 1000 1000
+398 1 1000 1000 1000
+402 1 1000 1000 1000
+404 1 1000 1000 1000
+406 1 1000 1000 1000
+408 1 1000 1000 1000
+410 1 1000 1000 1000
+415 1 1000 1000 1000
+417 1 1000 1000 1000
+419 1 1000 1000 1000
+421 1 1000 1000 1000
+423 1 1000 1000 1000
+425 1 1000 1000 1000
+427 1 1000 1000 1000
+429 1 1000 1000 1000
+431 1 1000 1000 1000
+435 1 1000 1000 1000
+440 1 1000 1000 1000
+442 1 1000 1000 1000
+444 1 1000 1000 1000
+446 1 1000 1000 1000
+448 1 1000 1000 1000
+450 1 1000 1000 1000
+452 1 1000 1000 1000
+454 1 1000 1000 1000
+458 1 1000 1000 1000
+460 1 1000 1000 1000
+465 1 1000 1000 1000
+467 1 1000 1000 1000
+470 1 1000 1000 1000
+472 1 1000 1000 1000
+476 1 1000 1000 1000
+478 1 1000 1000 1000
+480 1 1000 1000 1000
+482 1 1000 1000 1000
+485 1 1000 1000 1000
+488 1 1000 1000 1000
+490 1 1000 1000 1000
+492 1 1000 1000 1000
+494 1 1000 1000 1000
+496 1 1000 1000 1000
+499 1 1000 1000 1000
+501 1 1000 1000 1000
+505 1 1000 1000 1000
+508 1 1000 1000 1000
+510 1 1000 1000 1000
+512 1 1000 1000 1000
+515 1 1000 1000 1000
+517 1 1000 1000 1000
+519 1 1000 1000 1000
+520 1 1000 1000 1000
+522 1 1000 1000 1000
+524 1 1000 1000 1000
+526 1 1000 1000 1000
+527 1 1000 1000 1000
+529 1 1000 1000 1000
+533 1 1000 1000 1000
+535 1 1000 1000 1000
+537 1 1000 1000 1000
+539 1 1000 1000 1000
+545 1 1000 1000 1000
+547 1 1000 1000 1000
+549 1 1000 1000 1000
+553 1 1000 1000 1000
+557 1 1000 1000 1000
+559 1 1000 1000 1000
+561 1 1000 1000 1000
+563 1 1000 1000 1000
+565 1 1000 1000 1000
+567 1 1000 1000 1000
+571 1 1000 1000 1000
+573 1 1000 1000 1000
+575 1 1000 1000 1000
+577 1 1000 1000 1000
+579 1 1000 1000 1000
+581 1 1000 1000 1000
+583 1 1000 1000 1000
+585 1 1000 1000 1000
+588 1 1000 1000 1000
+591 1 1000 1000 1000
+593 1 1000 1000 1000
+595 1 1000 1000 1000
+600 1 1000 1000 1000
+602 1 1000 1000 1000
+604 1 1000 1000 1000
+606 1 1000 1000 1000
+608 1 1000 1000 1000
+614 1 1000 1000 1000
+616 1 1000 1000 1000
+617 1 1000 1000 1000
+622 1 1000 1000 1000
+624 1 1000 1000 1000
+626 1 1000 1000 1000
+628 1 1000 1000 1000
+629 1 1000 1000 1000
+633 1 1000 1000 1000
+635 1 1000 1000 1000
+637 1 1000 1000 1000
+639 1 1000 1000 1000
+641 1 1000 1000 1000
+646 1 1000 1000 1000
+648 1 1000 1000 1000
+651 1 1000 1000 1000
+653 1 1000 1000 1000
+655 1 1000 1000 1000
+657 1 1000 1000 1000
+661 1 1000 1000 1000
+664 1 1000 1000 1000
+666 1 1000 1000 1000
+668 1 1000 1000 1000
+672 1 1000 1000 1000
+674 1 1000 1000 1000
+676 1 1000 1000 1000
+678 1 1000 1000 1000
+680 1 1000 1000 1000
+#endif
+
+[ bonds ]
+; Backbone bonds
+ 78  80 1 0.350 4000
+149 152 1 0.350 4000
+152 154 1 0.350 4000
+154 160 1 0.350 4000
+160 162 1 0.350 4000
+253 255 1 0.350 4000
+255 257 1 0.350 4000
+257 261 1 0.350 4000
+261 264 1 0.350 4000
+264 269 1 0.350 4000
+269 271 1 0.350 4000
+271 273 1 0.350 4000
+273 275 1 0.350 4000
+275 277 1 0.350 4000
+335 337 1 0.350 4000
+337 341 1 0.350 4000
+341 347 1 0.350 4000
+347 352 1 0.350 4000
+352 355 1 0.350 4000
+355 357 1 0.350 4000
+357 359 1 0.350 4000
+382 384 1 0.350 4000
+384 386 1 0.350 4000
+386 388 1 0.350 4000
+388 390 1 0.350 4000
+390 392 1 0.350 4000
+392 394 1 0.350 4000
+394 398 1 0.350 4000
+398 402 1 0.350 4000
+402 404 1 0.350 4000
+492 494 1 0.350 4000
+575 577 1 0.350 4000
+577 579 1 0.350 4000
+579 581 1 0.350 4000
+581 583 1 0.350 4000
+583 585 1 0.350 4000
+678 680 1 0.350 4000
+
+; Side chain bonds
+  1   2 1 0.400 5000
+  5   6 1 0.315 5000
+ 16  17 1 0.40 2500
+ 23  24 1 0.40 2500
+ 25  26 1 0.287 7500
+ 27  28 1 0.363 7500
+ 33  34 1 0.363 7500
+ 41  42 1 0.325 7500
+ 46  47 1 0.352 5000
+ 50  51 1 0.363 7500
+ 64  65 1 0.330 5000
+ 65  66 1 0.360 5000
+ 67  68 1 0.325 7500
+ 71  72 1 0.400 5000
+ 73  74 1 0.330 5000
+ 74  75 1 0.380 5000
+ 76  77 1 0.363 7500
+ 78  79 1 0.400 5000
+ 86  87 1 0.352 5000
+ 88  89 1 0.325 5000
+ 93  94 1 0.325 7500
+101 102 1 0.287 7500
+103 104 1 0.363 7500
+107 108 1 0.341 7500
+111 112 1 0.352 7500
+113 114 1 0.363 7500
+117 118 1 0.40 2500
+120 121 1 0.363 7500
+128 129 1 0.330 7500
+130 131 1 0.325 7500
+139 140 1 0.336 7500
+145 146 1 0.363 7500
+147 148 1 0.40 2500
+149 150 1 0.330 5000
+150 151 1 0.360 5000
+152 153 1 0.40 2500
+154 155 1 0.315 5000
+162 163 1 0.325 7500
+167 168 1 0.352 5000
+169 170 1 0.325 7500
+173 174 1 0.315 5000
+179 180 1 0.341 7500
+181 182 1 0.400 5000
+183 184 1 0.325 7500
+187 188 1 0.315 5000
+195 196 1 0.287 7500
+199 200 1 0.352 7500
+203 204 1 0.363 7500
+205 206 1 0.341 7500
+213 214 1 0.287 7500
+217 218 1 0.400 5000
+221 222 1 0.363 7500
+223 224 1 0.341 7500
+233 234 1 0.352 7500
+235 236 1 0.330 5000
+236 237 1 0.380 5000
+238 239 1 0.325 5000
+243 244 1 0.325 7500
+253 254 1 0.287 7500
+255 256 1 0.330 7500
+257 258 1 0.325 7500
+261 262 1 0.330 5000
+262 263 1 0.360 5000
+264 265 1 0.325 5000
+269 270 1 0.400 5000
+271 272 1 0.287 7500
+273 274 1 0.363 7500
+275 276 1 0.363 7500
+279 280 1 0.330 5000
+280 281 1 0.360 5000
+282 283 1 0.352 5000
+284 285 1 0.330 5000
+285 286 1 0.360 5000
+289 290 1 0.330 5000
+290 291 1 0.380 5000
+298 299 1 0.363 7500
+300 301 1 0.40 2500
+304 305 1 0.315 5000
+314 315 1 0.287 7500
+317 318 1 0.363 7500
+321 322 1 0.287 7500
+323 324 1 0.325 7500
+327 328 1 0.363 7500
+329 330 1 0.330 7500
+333 334 1 0.400 5000
+335 336 1 0.40 2500
+337 338 1 0.336 7500
+341 342 1 0.315 5000
+347 348 1 0.325 5000
+352 353 1 0.330 5000
+353 354 1 0.380 5000
+359 360 1 0.336 7500
+363 364 1 0.400 5000
+365 366 1 0.400 5000
+371 372 1 0.352 5000
+373 374 1 0.341 7500
+375 376 1 0.325 5000
+382 383 1 0.400 5000
+384 385 1 0.400 5000
+388 389 1 0.341 7500
+390 391 1 0.341 7500
+392 393 1 0.352 7500
+394 395 1 0.325 7500
+398 399 1 0.325 7500
+404 405 1 0.352 5000
+406 407 1 0.400 5000
+410 411 1 0.325 5000
+421 422 1 0.287 7500
+423 424 1 0.287 7500
+429 430 1 0.287 7500
+431 432 1 0.325 7500
+435 436 1 0.325 5000
+442 443 1 0.330 7500
+444 445 1 0.363 7500
+450 451 1 0.40 2500
+454 455 1 0.325 7500
+460 461 1 0.325 5000
+465 466 1 0.287 7500
+467 468 1 0.330 5000
+468 469 1 0.380 5000
+472 473 1 0.325 7500
+476 477 1 0.400 5000
+478 479 1 0.400 5000
+482 483 1 0.330 5000
+483 484 1 0.360 5000
+485 486 1 0.330 5000
+486 487 1 0.380 5000
+488 489 1 0.400 5000
+490 491 1 0.363 7500
+492 493 1 0.341 7500
+494 495 1 0.363 7500
+496 497 1 0.330 5000
+497 498 1 0.360 5000
+499 500 1 0.400 5000
+501 502 1 0.336 7500
+505 506 1 0.330 5000
+506 507 1 0.360 5000
+510 511 1 0.363 7500
+512 513 1 0.330 5000
+513 514 1 0.360 5000
+517 518 1 0.363 7500
+524 525 1 0.40 2500
+529 530 1 0.325 7500
+535 536 1 0.363 7500
+537 538 1 0.341 7500
+539 540 1 0.315 5000
+545 546 1 0.363 7500
+547 548 1 0.330 7500
+549 550 1 0.325 7500
+553 554 1 0.325 7500
+561 562 1 0.352 5000
+567 568 1 0.336 7500
+575 576 1 0.400 5000
+577 578 1 0.352 7500
+579 580 1 0.352 5000
+581 582 1 0.363 7500
+585 586 1 0.330 5000
+586 587 1 0.380 5000
+588 589 1 0.330 5000
+589 590 1 0.360 5000
+591 592 1 0.400 5000
+595 596 1 0.325 5000
+602 603 1 0.363 7500
+604 605 1 0.363 7500
+606 607 1 0.352 5000
+608 609 1 0.315 5000
+617 618 1 0.325 5000
+624 625 1 0.352 5000
+626 627 1 0.287 7500
+629 630 1 0.325 7500
+633 634 1 0.352 5000
+635 636 1 0.330 7500
+637 638 1 0.363 7500
+641 642 1 0.325 5000
+646 647 1 0.341 7500
+648 649 1 0.330 5000
+649 650 1 0.380 5000
+651 652 1 0.287 7500
+653 654 1 0.330 7500
+655 656 1 0.352 7500
+657 658 1 0.325 7500
+661 662 1 0.330 5000
+662 663 1 0.380 5000
+668 669 1 0.325 7500
+672 673 1 0.400 5000
+674 675 1 0.400 5000
+676 677 1 0.363 7500
+678 679 1 0.363 7500
+680 681 1 0.341 7500
+
+#ifdef FLEXIBLE
+; Side chain bonds
+  3   4 1 0.292 1000000
+  6   7 1 0.335 1000000
+  7  10 1 0.412 1000000
+  9  10 1 0.293 1000000
+  6   9 1 0.404 1000000
+  7   9 1 0.470 1000000
+ 11  12 1 0.292 1000000
+ 13  14 1 0.292 1000000
+ 19  20 1 0.341 1000000
+ 21  22 1 0.292 1000000
+ 29  30 1 0.341 1000000
+ 31  32 1 0.292 1000000
+ 35  36 1 0.270 1000000
+ 37  38 1 0.341 1000000
+ 39  40 1 0.292 1000000
+ 42  43 1 0.340 1000000
+ 42  44 1 0.340 1000000
+ 43  44 1 0.290 1000000
+ 48  49 1 0.292 1000000
+ 52  53 1 0.292 1000000
+ 54  55 1 0.341 1000000
+ 56  57 1 0.305 1000000
+ 58  59 1 0.270 1000000
+ 60  61 1 0.341 1000000
+ 62  63 1 0.270 1000000
+ 68  69 1 0.340 1000000
+ 68  70 1 0.340 1000000
+ 69  70 1 0.290 1000000
+ 80  81 1 0.305 1000000
+ 82  83 1 0.292 1000000
+ 84  85 1 0.305 1000000
+ 89  90 1 0.300 1000000
+ 89  91 1 0.300 1000000
+ 90  92 1 0.285 1000000
+ 91  92 1 0.285 1000000
+ 90  91 1 0.300 1000000
+ 94  95 1 0.340 1000000
+ 94  96 1 0.340 1000000
+ 95  96 1 0.290 1000000
+ 97  98 1 0.341 1000000
+ 99 100 1 0.305 1000000
+105 106 1 0.270 1000000
+109 110 1 0.270 1000000
+115 116 1 0.292 1000000
+122 123 1 0.270 1000000
+124 125 1 0.292 1000000
+126 127 1 0.292 1000000
+131 132 1 0.340 1000000
+131 133 1 0.340 1000000
+132 133 1 0.290 1000000
+135 136 1 0.270 1000000
+137 138 1 0.270 1000000
+140 141 1 0.320 1000000
+140 142 1 0.300 1000000
+141 142 1 0.270 1000000
+143 144 1 0.341 1000000
+155 156 1 0.335 1000000
+156 159 1 0.412 1000000
+158 159 1 0.293 1000000
+155 158 1 0.404 1000000
+156 158 1 0.470 1000000
+160 161 1 0.305 1000000
+163 164 1 0.340 1000000
+163 165 1 0.340 1000000
+164 165 1 0.290 1000000
+170 171 1 0.340 1000000
+170 172 1 0.340 1000000
+171 172 1 0.290 1000000
+174 175 1 0.335 1000000
+175 178 1 0.412 1000000
+177 178 1 0.293 1000000
+174 177 1 0.404 1000000
+175 177 1 0.470 1000000
+184 185 1 0.340 1000000
+184 186 1 0.340 1000000
+185 186 1 0.290 1000000
+188 189 1 0.335 1000000
+189 192 1 0.412 1000000
+191 192 1 0.293 1000000
+188 191 1 0.404 1000000
+189 191 1 0.470 1000000
+193 194 1 0.305 1000000
+197 198 1 0.341 1000000
+201 202 1 0.292 1000000
+207 208 1 0.292 1000000
+209 210 1 0.305 1000000
+211 212 1 0.270 1000000
+215 216 1 0.341 1000000
+219 220 1 0.305 1000000
+225 226 1 0.292 1000000
+227 228 1 0.341 1000000
+229 230 1 0.270 1000000
+231 232 1 0.292 1000000
+239 240 1 0.300 1000000
+239 241 1 0.300 1000000
+240 242 1 0.285 1000000
+241 242 1 0.285 1000000
+240 241 1 0.300 1000000
+244 245 1 0.340 1000000
+244 246 1 0.340 1000000
+245 246 1 0.290 1000000
+247 248 1 0.270 1000000
+249 250 1 0.341 1000000
+251 252 1 0.305 1000000
+258 259 1 0.340 1000000
+258 260 1 0.340 1000000
+259 260 1 0.290 1000000
+265 266 1 0.300 1000000
+265 267 1 0.300 1000000
+266 268 1 0.285 1000000
+267 268 1 0.285 1000000
+266 267 1 0.300 1000000
+277 278 1 0.305 1000000
+287 288 1 0.270 1000000
+292 293 1 0.292 1000000
+294 295 1 0.341 1000000
+296 297 1 0.341 1000000
+302 303 1 0.292 1000000
+305 306 1 0.335 1000000
+306 309 1 0.412 1000000
+308 309 1 0.293 1000000
+305 308 1 0.404 1000000
+306 308 1 0.470 1000000
+310 311 1 0.341 1000000
+312 313 1 0.292 1000000
+319 320 1 0.305 1000000
+324 325 1 0.340 1000000
+324 326 1 0.340 1000000
+325 326 1 0.290 1000000
+331 332 1 0.341 1000000
+338 339 1 0.320 1000000
+338 340 1 0.300 1000000
+339 340 1 0.270 1000000
+342 343 1 0.335 1000000
+343 346 1 0.412 1000000
+345 346 1 0.293 1000000
+342 345 1 0.404 1000000
+343 345 1 0.470 1000000
+348 349 1 0.300 1000000
+348 350 1 0.300 1000000
+349 351 1 0.285 1000000
+350 351 1 0.285 1000000
+349 350 1 0.300 1000000
+355 356 1 0.270 1000000
+357 358 1 0.305 1000000
+360 361 1 0.320 1000000
+360 362 1 0.300 1000000
+361 362 1 0.270 1000000
+367 368 1 0.270 1000000
+369 370 1 0.341 1000000
+376 377 1 0.300 1000000
+376 378 1 0.300 1000000
+377 379 1 0.285 1000000
+378 379 1 0.285 1000000
+377 378 1 0.300 1000000
+380 381 1 0.270 1000000
+386 387 1 0.305 1000000
+395 396 1 0.340 1000000
+395 397 1 0.340 1000000
+396 397 1 0.290 1000000
+399 400 1 0.340 1000000
+399 401 1 0.340 1000000
+400 401 1 0.290 1000000
+402 403 1 0.305 1000000
+408 409 1 0.270 1000000
+411 412 1 0.300 1000000
+411 413 1 0.300 1000000
+412 414 1 0.285 1000000
+413 414 1 0.285 1000000
+412 413 1 0.300 1000000
+415 416 1 0.270 1000000
+417 418 1 0.341 1000000
+419 420 1 0.270 1000000
+425 426 1 0.341 1000000
+427 428 1 0.292 1000000
+432 433 1 0.340 1000000
+432 434 1 0.340 1000000
+433 434 1 0.290 1000000
+436 437 1 0.300 1000000
+436 438 1 0.300 1000000
+437 439 1 0.285 1000000
+438 439 1 0.285 1000000
+437 438 1 0.300 1000000
+440 441 1 0.292 1000000
+446 447 1 0.292 1000000
+448 449 1 0.341 1000000
+452 453 1 0.292 1000000
+455 456 1 0.340 1000000
+455 457 1 0.340 1000000
+456 457 1 0.290 1000000
+458 459 1 0.292 1000000
+461 462 1 0.300 1000000
+461 463 1 0.300 1000000
+462 464 1 0.285 1000000
+463 464 1 0.285 1000000
+462 463 1 0.300 1000000
+470 471 1 0.292 1000000
+473 474 1 0.340 1000000
+473 475 1 0.340 1000000
+474 475 1 0.290 1000000
+480 481 1 0.270 1000000
+502 503 1 0.320 1000000
+502 504 1 0.300 1000000
+503 504 1 0.270 1000000
+508 509 1 0.270 1000000
+515 516 1 0.305 1000000
+520 521 1 0.341 1000000
+522 523 1 0.341 1000000
+527 528 1 0.305 1000000
+530 531 1 0.340 1000000
+530 532 1 0.340 1000000
+531 532 1 0.290 1000000
+533 534 1 0.305 1000000
+540 541 1 0.335 1000000
+541 544 1 0.412 1000000
+543 544 1 0.293 1000000
+540 543 1 0.404 1000000
+541 543 1 0.470 1000000
+550 551 1 0.340 1000000
+550 552 1 0.340 1000000
+551 552 1 0.290 1000000
+554 555 1 0.340 1000000
+554 556 1 0.340 1000000
+555 556 1 0.290 1000000
+557 558 1 0.341 1000000
+559 560 1 0.292 1000000
+563 564 1 0.341 1000000
+565 566 1 0.292 1000000
+568 569 1 0.320 1000000
+568 570 1 0.300 1000000
+569 570 1 0.270 1000000
+571 572 1 0.292 1000000
+573 574 1 0.341 1000000
+583 584 1 0.341 1000000
+593 594 1 0.292 1000000
+596 597 1 0.300 1000000
+596 598 1 0.300 1000000
+597 599 1 0.285 1000000
+598 599 1 0.285 1000000
+597 598 1 0.300 1000000
+600 601 1 0.341 1000000
+609 610 1 0.335 1000000
+610 613 1 0.412 1000000
+612 613 1 0.293 1000000
+609 612 1 0.404 1000000
+610 612 1 0.470 1000000
+614 615 1 0.341 1000000
+618 619 1 0.300 1000000
+618 620 1 0.300 1000000
+619 621 1 0.285 1000000
+620 621 1 0.285 1000000
+619 620 1 0.300 1000000
+622 623 1 0.292 1000000
+630 631 1 0.340 1000000
+630 632 1 0.340 1000000
+631 632 1 0.290 1000000
+639 640 1 0.341 1000000
+642 643 1 0.300 1000000
+642 644 1 0.300 1000000
+643 645 1 0.285 1000000
+644 645 1 0.285 1000000
+643 644 1 0.300 1000000
+658 659 1 0.340 1000000
+658 660 1 0.340 1000000
+659 660 1 0.290 1000000
+664 665 1 0.341 1000000
+666 667 1 0.270 1000000
+669 670 1 0.340 1000000
+669 671 1 0.340 1000000
+670 671 1 0.290 1000000
+#endif
+
+[ constraints ]
+180 391 1 0.24 ; Disulfide bridge
+374 389 1 0.24 ; Disulfide bridge
+
+; Backbone bonds
+  1   3 1 0.33
+  3   5 1 0.310
+  5  11 1 0.310
+ 11  13 1 0.310
+ 13  15 1 0.310
+ 15  16 1 0.310
+ 16  18 1 0.310
+ 18  19 1 0.310
+ 19  21 1 0.310
+ 21  23 1 0.310
+ 23  25 1 0.310
+ 25  27 1 0.310
+ 27  29 1 0.310
+ 29  31 1 0.310
+ 31  33 1 0.310
+ 33  35 1 0.310
+ 35  37 1 0.310
+ 37  39 1 0.310
+ 39  41 1 0.310
+ 41  45 1 0.310
+ 45  46 1 0.310
+ 46  48 1 0.310
+ 48  50 1 0.310
+ 50  52 1 0.310
+ 52  54 1 0.310
+ 54  56 1 0.310
+ 56  58 1 0.310
+ 58  60 1 0.310
+ 60  62 1 0.310
+ 62  64 1 0.310
+ 64  67 1 0.33
+ 67  71 1 0.33
+ 71  73 1 0.310
+ 73  76 1 0.310
+ 76  78 1 0.33
+ 80  82 1 0.33
+ 82  84 1 0.310
+ 84  86 1 0.310
+ 86  88 1 0.310
+ 88  93 1 0.310
+ 93  97 1 0.310
+ 97  99 1 0.310
+ 99 101 1 0.310
+101 103 1 0.310
+103 105 1 0.310
+105 107 1 0.310
+107 109 1 0.310
+109 111 1 0.310
+111 113 1 0.310
+113 115 1 0.310
+115 117 1 0.310
+117 119 1 0.310
+119 120 1 0.310
+120 122 1 0.310
+122 124 1 0.310
+124 126 1 0.310
+126 128 1 0.310
+128 130 1 0.310
+130 134 1 0.310
+134 135 1 0.310
+135 137 1 0.310
+137 139 1 0.310
+139 143 1 0.310
+143 145 1 0.310
+145 147 1 0.310
+147 149 1 0.33
+162 166 1 0.33
+166 167 1 0.310
+167 169 1 0.310
+169 173 1 0.310
+173 179 1 0.310
+179 181 1 0.310
+181 183 1 0.310
+183 187 1 0.310
+187 193 1 0.310
+193 195 1 0.310
+195 197 1 0.310
+197 199 1 0.310
+199 201 1 0.310
+201 203 1 0.310
+203 205 1 0.310
+205 207 1 0.310
+207 209 1 0.310
+209 211 1 0.310
+211 213 1 0.310
+213 215 1 0.310
+215 217 1 0.310
+217 219 1 0.310
+219 221 1 0.310
+221 223 1 0.310
+223 225 1 0.310
+225 227 1 0.310
+227 229 1 0.310
+229 231 1 0.310
+231 233 1 0.310
+233 235 1 0.310
+235 238 1 0.310
+238 243 1 0.310
+243 247 1 0.310
+247 249 1 0.310
+249 251 1 0.310
+251 253 1 0.33
+277 279 1 0.33
+279 282 1 0.310
+282 284 1 0.310
+284 287 1 0.310
+287 289 1 0.310
+289 292 1 0.310
+292 294 1 0.310
+294 296 1 0.310
+296 298 1 0.310
+298 300 1 0.310
+300 302 1 0.310
+302 304 1 0.310
+304 310 1 0.310
+310 312 1 0.310
+312 314 1 0.310
+314 316 1 0.310
+316 317 1 0.310
+317 319 1 0.310
+319 321 1 0.310
+321 323 1 0.310
+323 327 1 0.310
+327 329 1 0.310
+329 331 1 0.310
+331 333 1 0.310
+333 335 1 0.33
+359 363 1 0.33
+363 365 1 0.310
+365 367 1 0.310
+367 369 1 0.310
+369 371 1 0.310
+371 373 1 0.310
+373 375 1 0.310
+375 380 1 0.310
+380 382 1 0.33
+404 406 1 0.33
+406 408 1 0.310
+408 410 1 0.310
+410 415 1 0.310
+415 417 1 0.310
+417 419 1 0.310
+419 421 1 0.310
+421 423 1 0.310
+423 425 1 0.310
+425 427 1 0.310
+427 429 1 0.310
+429 431 1 0.310
+431 435 1 0.310
+435 440 1 0.310
+440 442 1 0.310
+442 444 1 0.310
+444 446 1 0.310
+446 448 1 0.310
+448 450 1 0.310
+450 452 1 0.310
+452 454 1 0.310
+454 458 1 0.310
+458 460 1 0.310
+460 465 1 0.310
+465 467 1 0.310
+467 470 1 0.310
+470 472 1 0.310
+472 476 1 0.310
+476 478 1 0.310
+478 480 1 0.310
+480 482 1 0.310
+482 485 1 0.310
+485 488 1 0.310
+488 490 1 0.33
+494 496 1 0.33
+496 499 1 0.310
+499 501 1 0.310
+501 505 1 0.310
+505 508 1 0.310
+508 510 1 0.310
+510 512 1 0.310
+512 515 1 0.310
+515 517 1 0.310
+517 519 1 0.310
+519 520 1 0.310
+520 522 1 0.310
+522 524 1 0.310
+524 526 1 0.310
+526 527 1 0.310
+527 529 1 0.310
+529 533 1 0.310
+533 535 1 0.310
+535 537 1 0.310
+537 539 1 0.310
+539 545 1 0.310
+545 547 1 0.310
+547 549 1 0.310
+549 553 1 0.310
+553 557 1 0.310
+557 559 1 0.310
+559 561 1 0.310
+561 563 1 0.310
+563 565 1 0.310
+565 567 1 0.310
+567 571 1 0.310
+571 573 1 0.310
+573 575 1 0.33
+585 588 1 0.33
+588 591 1 0.310
+591 593 1 0.310
+593 595 1 0.310
+595 600 1 0.310
+600 602 1 0.310
+602 604 1 0.310
+604 606 1 0.310
+606 608 1 0.310
+608 614 1 0.310
+614 616 1 0.310
+616 617 1 0.310
+617 622 1 0.310
+622 624 1 0.310
+624 626 1 0.310
+626 628 1 0.310
+628 629 1 0.33
+629 633 1 0.33
+633 635 1 0.310
+635 637 1 0.310
+637 639 1 0.310
+639 641 1 0.310
+641 646 1 0.310
+646 648 1 0.310
+648 651 1 0.33
+651 653 1 0.33
+653 655 1 0.310
+655 657 1 0.310
+657 661 1 0.310
+661 664 1 0.310
+664 666 1 0.310
+666 668 1 0.310
+668 672 1 0.310
+672 674 1 0.310
+674 676 1 0.310
+676 678 1 0.33
+
+#ifndef FLEXIBLE
+; Side chain bonds
+  3   4 1 0.292
+  6   7 1 0.335
+  7  10 1 0.412
+  9  10 1 0.293
+  6   9 1 0.404
+  7   9 1 0.470
+ 11  12 1 0.292
+ 13  14 1 0.292
+ 19  20 1 0.341
+ 21  22 1 0.292
+ 29  30 1 0.341
+ 31  32 1 0.292
+ 35  36 1 0.270
+ 37  38 1 0.341
+ 39  40 1 0.292
+ 42  43 1 0.340
+ 42  44 1 0.340
+ 43  44 1 0.290
+ 48  49 1 0.292
+ 52  53 1 0.292
+ 54  55 1 0.341
+ 56  57 1 0.305
+ 58  59 1 0.270
+ 60  61 1 0.341
+ 62  63 1 0.270
+ 68  69 1 0.340
+ 68  70 1 0.340
+ 69  70 1 0.290
+ 80  81 1 0.305
+ 82  83 1 0.292
+ 84  85 1 0.305
+ 89  90 1 0.300
+ 89  91 1 0.300
+ 90  92 1 0.285
+ 91  92 1 0.285
+ 90  91 1 0.300
+ 94  95 1 0.340
+ 94  96 1 0.340
+ 95  96 1 0.290
+ 97  98 1 0.341
+ 99 100 1 0.305
+105 106 1 0.270
+109 110 1 0.270
+115 116 1 0.292
+122 123 1 0.270
+124 125 1 0.292
+126 127 1 0.292
+131 132 1 0.340
+131 133 1 0.340
+132 133 1 0.290
+135 136 1 0.270
+137 138 1 0.270
+140 141 1 0.320
+140 142 1 0.300
+141 142 1 0.270
+143 144 1 0.341
+155 156 1 0.335
+156 159 1 0.412
+158 159 1 0.293
+155 158 1 0.404
+156 158 1 0.470
+160 161 1 0.305
+163 164 1 0.340
+163 165 1 0.340
+164 165 1 0.290
+170 171 1 0.340
+170 172 1 0.340
+171 172 1 0.290
+174 175 1 0.335
+175 178 1 0.412
+177 178 1 0.293
+174 177 1 0.404
+175 177 1 0.470
+184 185 1 0.340
+184 186 1 0.340
+185 186 1 0.290
+188 189 1 0.335
+189 192 1 0.412
+191 192 1 0.293
+188 191 1 0.404
+189 191 1 0.470
+193 194 1 0.305
+197 198 1 0.341
+201 202 1 0.292
+207 208 1 0.292
+209 210 1 0.305
+211 212 1 0.270
+215 216 1 0.341
+219 220 1 0.305
+225 226 1 0.292
+227 228 1 0.341
+229 230 1 0.270
+231 232 1 0.292
+239 240 1 0.300
+239 241 1 0.300
+240 242 1 0.285
+241 242 1 0.285
+240 241 1 0.300
+244 245 1 0.340
+244 246 1 0.340
+245 246 1 0.290
+247 248 1 0.270
+249 250 1 0.341
+251 252 1 0.305
+258 259 1 0.340
+258 260 1 0.340
+259 260 1 0.290
+265 266 1 0.300
+265 267 1 0.300
+266 268 1 0.285
+267 268 1 0.285
+266 267 1 0.300
+277 278 1 0.305
+287 288 1 0.270
+292 293 1 0.292
+294 295 1 0.341
+296 297 1 0.341
+302 303 1 0.292
+305 306 1 0.335
+306 309 1 0.412
+308 309 1 0.293
+305 308 1 0.404
+306 308 1 0.470
+310 311 1 0.341
+312 313 1 0.292
+319 320 1 0.305
+324 325 1 0.340
+324 326 1 0.340
+325 326 1 0.290
+331 332 1 0.341
+338 339 1 0.320
+338 340 1 0.300
+339 340 1 0.270
+342 343 1 0.335
+343 346 1 0.412
+345 346 1 0.293
+342 345 1 0.404
+343 345 1 0.470
+348 349 1 0.300
+348 350 1 0.300
+349 351 1 0.285
+350 351 1 0.285
+349 350 1 0.300
+355 356 1 0.270
+357 358 1 0.305
+360 361 1 0.320
+360 362 1 0.300
+361 362 1 0.270
+367 368 1 0.270
+369 370 1 0.341
+376 377 1 0.300
+376 378 1 0.300
+377 379 1 0.285
+378 379 1 0.285
+377 378 1 0.300
+380 381 1 0.270
+386 387 1 0.305
+395 396 1 0.340
+395 397 1 0.340
+396 397 1 0.290
+399 400 1 0.340
+399 401 1 0.340
+400 401 1 0.290
+402 403 1 0.305
+408 409 1 0.270
+411 412 1 0.300
+411 413 1 0.300
+412 414 1 0.285
+413 414 1 0.285
+412 413 1 0.300
+415 416 1 0.270
+417 418 1 0.341
+419 420 1 0.270
+425 426 1 0.341
+427 428 1 0.292
+432 433 1 0.340
+432 434 1 0.340
+433 434 1 0.290
+436 437 1 0.300
+436 438 1 0.300
+437 439 1 0.285
+438 439 1 0.285
+437 438 1 0.300
+440 441 1 0.292
+446 447 1 0.292
+448 449 1 0.341
+452 453 1 0.292
+455 456 1 0.340
+455 457 1 0.340
+456 457 1 0.290
+458 459 1 0.292
+461 462 1 0.300
+461 463 1 0.300
+462 464 1 0.285
+463 464 1 0.285
+462 463 1 0.300
+470 471 1 0.292
+473 474 1 0.340
+473 475 1 0.340
+474 475 1 0.290
+480 481 1 0.270
+502 503 1 0.320
+502 504 1 0.300
+503 504 1 0.270
+508 509 1 0.270
+515 516 1 0.305
+520 521 1 0.341
+522 523 1 0.341
+527 528 1 0.305
+530 531 1 0.340
+530 532 1 0.340
+531 532 1 0.290
+533 534 1 0.305
+540 541 1 0.335
+541 544 1 0.412
+543 544 1 0.293
+540 543 1 0.404
+541 543 1 0.470
+550 551 1 0.340
+550 552 1 0.340
+551 552 1 0.290
+554 555 1 0.340
+554 556 1 0.340
+555 556 1 0.290
+557 558 1 0.341
+559 560 1 0.292
+563 564 1 0.341
+565 566 1 0.292
+568 569 1 0.320
+568 570 1 0.300
+569 570 1 0.270
+571 572 1 0.292
+573 574 1 0.341
+583 584 1 0.341
+593 594 1 0.292
+596 597 1 0.300
+596 598 1 0.300
+597 599 1 0.285
+598 599 1 0.285
+597 598 1 0.300
+600 601 1 0.341
+609 610 1 0.335
+610 613 1 0.412
+612 613 1 0.293
+609 612 1 0.404
+610 612 1 0.470
+614 615 1 0.341
+618 619 1 0.300
+618 620 1 0.300
+619 621 1 0.285
+620 621 1 0.285
+619 620 1 0.300
+622 623 1 0.292
+630 631 1 0.340
+630 632 1 0.340
+631 632 1 0.290
+639 640 1 0.341
+642 643 1 0.300
+642 644 1 0.300
+643 645 1 0.285
+644 645 1 0.285
+643 644 1 0.300
+658 659 1 0.340
+658 660 1 0.340
+659 660 1 0.290
+664 665 1 0.341
+666 667 1 0.270
+669 670 1 0.340
+669 671 1 0.340
+670 671 1 0.290
+#endif
+
+[ angles ]
+; BBB angles
+  1   3   5 10 127 20
+  3   5  11 2 96 700
+  5  11  13 2 96 700
+ 11  13  15 2 96 700
+ 13  15  16 2 96 700
+ 15  16  18 2 96 700
+ 16  18  19 2 96 700
+ 18  19  21 2 96 700
+ 19  21  23 2 96 700
+ 21  23  25 2 96 700
+ 23  25  27 2 96 700
+ 25  27  29 2 96 700
+ 27  29  31 2 96 700
+ 29  31  33 2 96 700
+ 31  33  35 2 96 700
+ 33  35  37 2 96 700
+ 35  37  39 2 96 700
+ 37  39  41 2 96 700
+ 39  41  45 2 96 700
+ 41  45  46 2 96 700
+ 45  46  48 2 96 700
+ 46  48  50 2 96 700
+ 48  50  52 2 96 700
+ 50  52  54 2 96 700
+ 52  54  56 2 96 700
+ 54  56  58 2 96 700
+ 56  58  60 2 96 700
+ 58  60  62 2 96 700
+ 60  62  64 2 96 700
+ 62  64  67 10 127 20
+ 64  67  71 10 127 20
+ 67  71  73 10 127 20
+ 71  73  76 2 96 700
+ 73  76  78 10 127 20
+ 76  78  80 10 127 20
+ 78  80  82 10 127 20
+ 80  82  84 10 130 20
+ 82  84  86 2 96 700
+ 84  86  88 2 96 700
+ 86  88  93 2 96 700
+ 88  93  97 2 96 700
+ 93  97  99 2 96 700
+ 97  99 101 2 96 700
+ 99 101 103 2 96 700
+101 103 105 2 96 700
+103 105 107 2 96 700
+105 107 109 2 96 700
+107 109 111 2 96 700
+109 111 113 2 96 700
+111 113 115 2 96 700
+113 115 117 2 96 700
+115 117 119 2 96 700
+117 119 120 2 96 700
+119 120 122 2 96 700
+120 122 124 2 96 700
+122 124 126 2 96 700
+124 126 128 2 98 100
+126 128 130 10 98 100
+128 130 134 2 98 100
+130 134 135 2 96 700
+134 135 137 2 96 700
+135 137 139 2 96 700
+137 139 143 2 96 700
+139 143 145 2 96 700
+143 145 147 2 96 700
+145 147 149 10 100 20
+147 149 152 10 100 20
+160 162 166 10 127 20
+162 166 167 10 130 20
+166 167 169 2 96 700
+167 169 173 2 96 700
+169 173 179 2 96 700
+173 179 181 2 96 700
+179 181 183 2 96 700
+181 183 187 2 96 700
+183 187 193 2 96 700
+187 193 195 2 96 700
+193 195 197 2 96 700
+195 197 199 2 96 700
+197 199 201 2 96 700
+199 201 203 2 96 700
+201 203 205 2 96 700
+203 205 207 2 96 700
+205 207 209 2 96 700
+207 209 211 2 96 700
+209 211 213 2 96 700
+211 213 215 2 96 700
+213 215 217 2 96 700
+215 217 219 2 96 700
+217 219 221 2 96 700
+219 221 223 2 96 700
+221 223 225 2 96 700
+223 225 227 2 96 700
+225 227 229 2 96 700
+227 229 231 2 96 700
+229 231 233 2 96 700
+231 233 235 2 96 700
+233 235 238 2 96 700
+235 238 243 2 96 700
+238 243 247 2 96 700
+243 247 249 2 96 700
+247 249 251 2 96 700
+249 251 253 10 130 20
+251 253 255 10 130 20
+275 277 279 10 127 20
+277 279 282 10 127 20
+279 282 284 2 96 700
+282 284 287 2 96 700
+284 287 289 2 96 700
+287 289 292 2 96 700
+289 292 294 2 96 700
+292 294 296 2 96 700
+294 296 298 2 96 700
+296 298 300 2 96 700
+298 300 302 2 96 700
+300 302 304 2 96 700
+302 304 310 2 96 700
+304 310 312 2 96 700
+310 312 314 2 96 700
+312 314 316 2 96 700
+314 316 317 2 96 700
+316 317 319 2 96 700
+317 319 321 2 96 700
+319 321 323 2 96 700
+321 323 327 2 96 700
+323 327 329 2 98 100
+327 329 331 10 98 100
+329 331 333 2 98 100
+331 333 335 10 100 20
+333 335 337 10 100 20
+357 359 363 10 127 20
+359 363 365 10 130 20
+363 365 367 2 96 700
+365 367 369 2 96 700
+367 369 371 2 96 700
+369 371 373 2 96 700
+371 373 375 2 96 700
+373 375 380 2 96 700
+375 380 382 10 127 20
+380 382 384 10 100 20
+402 404 406 10 127 20
+404 406 408 10 127 20
+406 408 410 2 96 700
+408 410 415 2 96 700
+410 415 417 2 96 700
+415 417 419 2 96 700
+417 419 421 2 96 700
+419 421 423 2 96 700
+421 423 425 2 96 700
+423 425 427 2 96 700
+425 427 429 2 96 700
+427 429 431 2 96 700
+429 431 435 2 96 700
+431 435 440 2 96 700
+435 440 442 2 98 100
+440 442 444 10 98 100
+442 444 446 2 98 100
+444 446 448 2 96 700
+446 448 450 2 96 700
+448 450 452 2 96 700
+450 452 454 2 96 700
+452 454 458 2 96 700
+454 458 460 2 96 700
+458 460 465 2 96 700
+460 465 467 2 96 700
+465 467 470 2 96 700
+467 470 472 2 96 700
+470 472 476 2 96 700
+472 476 478 2 96 700
+476 478 480 2 96 700
+478 480 482 2 96 700
+480 482 485 2 96 700
+482 485 488 2 96 700
+485 488 490 10 127 20
+253 255 257 10 130 20
+255 257 261 10 100 20
+149 152 154 10 100 20
+152 154 160 10 127 20
+154 160 162 10 127 20
+257 261 264 10 100 20
+261 264 269 10 100 20
+264 269 271 10 100 20
+269 271 273 10 127 20
+271 273 275 10 127 20
+273 275 277 10 127 20
+355 357 359 10 127 20
+341 347 352 10 100 20
+347 352 355 10 100 20
+352 355 357 10 127 20
+382 384 386 10 100 20
+384 386 388 10 100 20
+386 388 390 10 100 20
+388 390 392 10 127 20
+390 392 394 10 127 20
+392 394 398 10 127 20
+394 398 402 10 127 20
+398 402 404 10 127 20
+335 337 341 10 100 20
+337 341 347 10 100 20
+492 494 496 10 127 20
+494 496 499 10 127 20
+496 499 501 2 96 700
+499 501 505 2 96 700
+501 505 508 2 96 700
+505 508 510 2 96 700
+508 510 512 2 96 700
+510 512 515 2 96 700
+512 515 517 2 96 700
+515 517 519 2 96 700
+517 519 520 2 96 700
+519 520 522 2 96 700
+520 522 524 2 96 700
+522 524 526 2 96 700
+524 526 527 2 96 700
+526 527 529 2 96 700
+527 529 533 2 96 700
+529 533 535 2 96 700
+533 535 537 2 96 700
+535 537 539 2 96 700
+537 539 545 2 96 700
+539 545 547 2 98 100
+545 547 549 10 98 100
+547 549 553 2 98 100
+549 553 557 2 96 700
+553 557 559 2 96 700
+557 559 561 2 96 700
+559 561 563 2 96 700
+561 563 565 2 96 700
+563 565 567 2 96 700
+565 567 571 2 96 700
+567 571 573 2 96 700
+571 573 575 10 130 20
+573 575 577 10 100 20
+583 585 588 10 127 20
+585 588 591 10 127 20
+588 591 593 2 96 700
+591 593 595 2 96 700
+593 595 600 2 96 700
+595 600 602 2 96 700
+600 602 604 2 96 700
+602 604 606 2 96 700
+604 606 608 2 96 700
+606 608 614 2 96 700
+608 614 616 2 96 700
+614 616 617 2 96 700
+616 617 622 2 96 700
+617 622 624 2 96 700
+622 624 626 2 96 700
+624 626 628 2 96 700
+626 628 629 10 100 20
+628 629 633 10 100 20
+629 633 635 10 100 20
+633 635 637 10 98 100
+635 637 639 2 98 100
+637 639 641 2 96 700
+639 641 646 2 96 700
+641 646 648 2 96 700
+646 648 651 10 130 20
+648 651 653 10 130 20
+651 653 655 10 98 100
+653 655 657 2 98 100
+655 657 661 2 96 700
+657 661 664 2 96 700
+661 664 666 2 96 700
+664 666 668 2 96 700
+666 668 672 2 96 700
+668 672 674 2 96 700
+672 674 676 2 96 700
+674 676 678 10 100 20
+676 678 680 10 100 20
+575 577 579 10 100 20
+577 579 581 10 100 20
+579 581 583 10 100 20
+581 583 585 10 127 20
+
+; BBS angles regular martini
+  1   3   4 2 100 25
+  3   5   6 2 100 25
+  5  11  12 2 100 25
+ 11  13  14 2 100 25
+ 15  16  17 2 100 25
+ 18  19  20 2 100 25
+ 19  21  22 2 100 25
+ 21  23  24 2 100 25
+ 23  25  26 2 100 25
+ 25  27  28 2 100 25
+ 27  29  30 2 100 25
+ 29  31  32 2 100 25
+ 31  33  34 2 100 25
+ 33  35  36 2 100 25
+ 35  37  38 2 100 25
+ 37  39  40 2 100 25
+ 39  41  42 2 100 25
+ 45  46  47 2 100 25
+ 46  48  49 2 100 25
+ 48  50  51 2 100 25
+ 50  52  53 2 100 25
+ 52  54  55 2 100 25
+ 54  56  57 2 100 25
+ 56  58  59 2 100 25
+ 58  60  61 2 100 25
+ 60  62  63 2 100 25
+ 62  64  65 2 100 25
+ 64  67  68 2 100 25
+ 67  71  72 2 100 25
+ 71  73  74 2 100 25
+ 73  76  77 2 100 25
+ 76  78  79 2 100 25
+ 78  80  81 2 100 25
+ 80  82  83 2 100 25
+ 82  84  85 2 100 25
+ 84  86  87 2 100 25
+ 86  88  89 2 100 25
+ 88  93  94 2 100 25
+ 93  97  98 2 100 25
+ 97  99 100 2 100 25
+ 99 101 102 2 100 25
+101 103 104 2 100 25
+103 105 106 2 100 25
+105 107 108 2 100 25
+107 109 110 2 100 25
+109 111 112 2 100 25
+111 113 114 2 100 25
+113 115 116 2 100 25
+115 117 118 2 100 25
+119 120 121 2 100 25
+120 122 123 2 100 25
+122 124 125 2 100 25
+124 126 127 2 100 25
+126 128 129 2 100 25
+128 130 131 2 100 25
+134 135 136 2 100 25
+135 137 138 2 100 25
+137 139 140 2 100 25
+139 143 144 2 100 25
+143 145 146 2 100 25
+145 147 148 2 100 25
+147 149 150 2 100 25
+149 152 153 2 100 25
+152 154 155 2 100 25
+154 160 161 2 100 25
+160 162 163 2 100 25
+166 167 168 2 100 25
+167 169 170 2 100 25
+169 173 174 2 100 25
+173 179 180 2 100 25
+179 181 182 2 100 25
+181 183 184 2 100 25
+183 187 188 2 100 25
+187 193 194 2 100 25
+193 195 196 2 100 25
+195 197 198 2 100 25
+197 199 200 2 100 25
+199 201 202 2 100 25
+201 203 204 2 100 25
+203 205 206 2 100 25
+205 207 208 2 100 25
+207 209 210 2 100 25
+209 211 212 2 100 25
+211 213 214 2 100 25
+213 215 216 2 100 25
+215 217 218 2 100 25
+217 219 220 2 100 25
+219 221 222 2 100 25
+221 223 224 2 100 25
+223 225 226 2 100 25
+225 227 228 2 100 25
+227 229 230 2 100 25
+229 231 232 2 100 25
+231 233 234 2 100 25
+233 235 236 2 100 25
+235 238 239 2 100 25
+238 243 244 2 100 25
+243 247 248 2 100 25
+247 249 250 2 100 25
+249 251 252 2 100 25
+251 253 254 2 100 25
+253 255 256 2 100 25
+255 257 258 2 100 25
+257 261 262 2 100 25
+261 264 265 2 100 25
+264 269 270 2 100 25
+269 271 272 2 100 25
+271 273 274 2 100 25
+273 275 276 2 100 25
+275 277 278 2 100 25
+277 279 280 2 100 25
+279 282 283 2 100 25
+282 284 285 2 100 25
+284 287 288 2 100 25
+287 289 290 2 100 25
+289 292 293 2 100 25
+292 294 295 2 100 25
+294 296 297 2 100 25
+296 298 299 2 100 25
+298 300 301 2 100 25
+300 302 303 2 100 25
+302 304 305 2 100 25
+304 310 311 2 100 25
+310 312 313 2 100 25
+312 314 315 2 100 25
+316 317 318 2 100 25
+317 319 320 2 100 25
+319 321 322 2 100 25
+321 323 324 2 100 25
+323 327 328 2 100 25
+327 329 330 2 100 25
+329 331 332 2 100 25
+331 333 334 2 100 25
+333 335 336 2 100 25
+335 337 338 2 100 25
+337 341 342 2 100 25
+341 347 348 2 100 25
+347 352 353 2 100 25
+352 355 356 2 100 25
+355 357 358 2 100 25
+357 359 360 2 100 25
+359 363 364 2 100 25
+363 365 366 2 100 25
+365 367 368 2 100 25
+367 369 370 2 100 25
+369 371 372 2 100 25
+371 373 374 2 100 25
+373 375 376 2 100 25
+375 380 381 2 100 25
+380 382 383 2 100 25
+382 384 385 2 100 25
+384 386 387 2 100 25
+386 388 389 2 100 25
+388 390 391 2 100 25
+390 392 393 2 100 25
+392 394 395 2 100 25
+394 398 399 2 100 25
+398 402 403 2 100 25
+402 404 405 2 100 25
+404 406 407 2 100 25
+406 408 409 2 100 25
+408 410 411 2 100 25
+410 415 416 2 100 25
+415 417 418 2 100 25
+417 419 420 2 100 25
+419 421 422 2 100 25
+421 423 424 2 100 25
+423 425 426 2 100 25
+425 427 428 2 100 25
+427 429 430 2 100 25
+429 431 432 2 100 25
+431 435 436 2 100 25
+435 440 441 2 100 25
+440 442 443 2 100 25
+442 444 445 2 100 25
+444 446 447 2 100 25
+446 448 449 2 100 25
+448 450 451 2 100 25
+450 452 453 2 100 25
+452 454 455 2 100 25
+454 458 459 2 100 25
+458 460 461 2 100 25
+460 465 466 2 100 25
+465 467 468 2 100 25
+467 470 471 2 100 25
+470 472 473 2 100 25
+472 476 477 2 100 25
+476 478 479 2 100 25
+478 480 481 2 100 25
+480 482 483 2 100 25
+482 485 486 2 100 25
+485 488 489 2 100 25
+488 490 491 2 100 25
+492 494 495 2 100 25
+494 496 497 2 100 25
+496 499 500 2 100 25
+499 501 502 2 100 25
+501 505 506 2 100 25
+505 508 509 2 100 25
+508 510 511 2 100 25
+510 512 513 2 100 25
+512 515 516 2 100 25
+515 517 518 2 100 25
+519 520 521 2 100 25
+520 522 523 2 100 25
+522 524 525 2 100 25
+526 527 528 2 100 25
+527 529 530 2 100 25
+529 533 534 2 100 25
+533 535 536 2 100 25
+535 537 538 2 100 25
+537 539 540 2 100 25
+539 545 546 2 100 25
+545 547 548 2 100 25
+547 549 550 2 100 25
+549 553 554 2 100 25
+553 557 558 2 100 25
+557 559 560 2 100 25
+559 561 562 2 100 25
+561 563 564 2 100 25
+563 565 566 2 100 25
+565 567 568 2 100 25
+567 571 572 2 100 25
+571 573 574 2 100 25
+573 575 576 2 100 25
+575 577 578 2 100 25
+577 579 580 2 100 25
+579 581 582 2 100 25
+581 583 584 2 100 25
+583 585 586 2 100 25
+585 588 589 2 100 25
+588 591 592 2 100 25
+591 593 594 2 100 25
+593 595 596 2 100 25
+595 600 601 2 100 25
+600 602 603 2 100 25
+602 604 605 2 100 25
+604 606 607 2 100 25
+606 608 609 2 100 25
+608 614 615 2 100 25
+616 617 618 2 100 25
+617 622 623 2 100 25
+622 624 625 2 100 25
+624 626 627 2 100 25
+628 629 630 2 100 25
+629 633 634 2 100 25
+633 635 636 2 100 25
+635 637 638 2 100 25
+637 639 640 2 100 25
+639 641 642 2 100 25
+641 646 647 2 100 25
+646 648 649 2 100 25
+648 651 652 2 100 25
+651 653 654 2 100 25
+653 655 656 2 100 25
+655 657 658 2 100 25
+657 661 662 2 100 25
+661 664 665 2 100 25
+664 666 667 2 100 25
+666 668 669 2 100 25
+668 672 673 2 100 25
+672 674 675 2 100 25
+674 676 677 2 100 25
+676 678 679 2 100 25
+678 680 681 2 100 25
+
+; First SBB regular martini
+  2   1   3 2 100 25
+493 492 494 2 100 25
+
+; SC-BB-BB and BB-BB-SC scFix
+  2   1   3 10 100 15 ; SC-BB-BB
+  4   3   5 10 100 15 ; SC-BB-BB
+  6   5  11 10 100 15 ; SC-BB-BB
+ 12  11  13 10 100 15 ; SC-BB-BB
+ 14  13  15 10 100 15 ; SC-BB-BB
+ 17  16  18 10 100 15 ; SC-BB-BB
+ 20  19  21 10 100 15 ; SC-BB-BB
+ 22  21  23 10 100 15 ; SC-BB-BB
+ 24  23  25 10 100 15 ; SC-BB-BB
+ 26  25  27 10 100 15 ; SC-BB-BB
+ 28  27  29 10 100 15 ; SC-BB-BB
+ 30  29  31 10 100 15 ; SC-BB-BB
+ 32  31  33 10 100 15 ; SC-BB-BB
+ 34  33  35 10 100 15 ; SC-BB-BB
+ 36  35  37 10 100 15 ; SC-BB-BB
+ 38  37  39 10 100 15 ; SC-BB-BB
+ 40  39  41 10 100 15 ; SC-BB-BB
+ 42  41  45 10 100 15 ; SC-BB-BB
+ 47  46  48 10 100 15 ; SC-BB-BB
+ 49  48  50 10 100 15 ; SC-BB-BB
+ 51  50  52 10 100 15 ; SC-BB-BB
+ 53  52  54 10 100 15 ; SC-BB-BB
+ 55  54  56 10 100 15 ; SC-BB-BB
+ 57  56  58 10 100 15 ; SC-BB-BB
+ 59  58  60 10 100 15 ; SC-BB-BB
+ 61  60  62 10 100 15 ; SC-BB-BB
+ 63  62  64 10 100 15 ; SC-BB-BB
+ 65  64  67 10 100 15 ; SC-BB-BB
+ 68  67  71 10 100 15 ; SC-BB-BB
+ 72  71  73 10 100 15 ; SC-BB-BB
+ 74  73  76 10 100 15 ; SC-BB-BB
+ 77  76  78 10 100 15 ; SC-BB-BB
+ 79  78  80 10 100 15 ; SC-BB-BB
+ 81  80  82 10 100 15 ; SC-BB-BB
+ 83  82  84 10 100 15 ; SC-BB-BB
+ 85  84  86 10 100 15 ; SC-BB-BB
+ 87  86  88 10 100 15 ; SC-BB-BB
+ 89  88  93 10 100 15 ; SC-BB-BB
+ 94  93  97 10 100 15 ; SC-BB-BB
+ 98  97  99 10 100 15 ; SC-BB-BB
+100  99 101 10 100 15 ; SC-BB-BB
+102 101 103 10 100 15 ; SC-BB-BB
+104 103 105 10 100 15 ; SC-BB-BB
+106 105 107 10 100 15 ; SC-BB-BB
+108 107 109 10 100 15 ; SC-BB-BB
+110 109 111 10 100 15 ; SC-BB-BB
+112 111 113 10 100 15 ; SC-BB-BB
+114 113 115 10 100 15 ; SC-BB-BB
+116 115 117 10 100 15 ; SC-BB-BB
+118 117 119 10 100 15 ; SC-BB-BB
+121 120 122 10 100 15 ; SC-BB-BB
+123 122 124 10 100 15 ; SC-BB-BB
+125 124 126 10 100 15 ; SC-BB-BB
+127 126 128 10 100 15 ; SC-BB-BB
+129 128 130 10 100 15 ; SC-BB-BB
+131 130 134 10 100 15 ; SC-BB-BB
+136 135 137 10 100 15 ; SC-BB-BB
+138 137 139 10 100 15 ; SC-BB-BB
+140 139 143 10 100 15 ; SC-BB-BB
+144 143 145 10 100 15 ; SC-BB-BB
+146 145 147 10 100 15 ; SC-BB-BB
+148 147 149 10 100 15 ; SC-BB-BB
+150 149 152 10 100 15 ; SC-BB-BB
+153 152 154 10 100 15 ; SC-BB-BB
+155 154 160 10 100 15 ; SC-BB-BB
+161 160 162 10 100 15 ; SC-BB-BB
+163 162 166 10 100 15 ; SC-BB-BB
+168 167 169 10 100 15 ; SC-BB-BB
+170 169 173 10 100 15 ; SC-BB-BB
+174 173 179 10 100 15 ; SC-BB-BB
+180 179 181 10 100 15 ; SC-BB-BB
+182 181 183 10 100 15 ; SC-BB-BB
+184 183 187 10 100 15 ; SC-BB-BB
+188 187 193 10 100 15 ; SC-BB-BB
+194 193 195 10 100 15 ; SC-BB-BB
+196 195 197 10 100 15 ; SC-BB-BB
+198 197 199 10 100 15 ; SC-BB-BB
+200 199 201 10 100 15 ; SC-BB-BB
+202 201 203 10 100 15 ; SC-BB-BB
+204 203 205 10 100 15 ; SC-BB-BB
+206 205 207 10 100 15 ; SC-BB-BB
+208 207 209 10 100 15 ; SC-BB-BB
+210 209 211 10 100 15 ; SC-BB-BB
+212 211 213 10 100 15 ; SC-BB-BB
+214 213 215 10 100 15 ; SC-BB-BB
+216 215 217 10 100 15 ; SC-BB-BB
+218 217 219 10 100 15 ; SC-BB-BB
+220 219 221 10 100 15 ; SC-BB-BB
+222 221 223 10 100 15 ; SC-BB-BB
+224 223 225 10 100 15 ; SC-BB-BB
+226 225 227 10 100 15 ; SC-BB-BB
+228 227 229 10 100 15 ; SC-BB-BB
+230 229 231 10 100 15 ; SC-BB-BB
+232 231 233 10 100 15 ; SC-BB-BB
+234 233 235 10 100 15 ; SC-BB-BB
+236 235 238 10 100 15 ; SC-BB-BB
+239 238 243 10 100 15 ; SC-BB-BB
+244 243 247 10 100 15 ; SC-BB-BB
+248 247 249 10 100 15 ; SC-BB-BB
+250 249 251 10 100 15 ; SC-BB-BB
+252 251 253 10 100 15 ; SC-BB-BB
+254 253 255 10 100 15 ; SC-BB-BB
+256 255 257 10 100 15 ; SC-BB-BB
+258 257 261 10 100 15 ; SC-BB-BB
+262 261 264 10 100 15 ; SC-BB-BB
+265 264 269 10 100 15 ; SC-BB-BB
+270 269 271 10 100 15 ; SC-BB-BB
+272 271 273 10 100 15 ; SC-BB-BB
+274 273 275 10 100 15 ; SC-BB-BB
+276 275 277 10 100 15 ; SC-BB-BB
+278 277 279 10 100 15 ; SC-BB-BB
+280 279 282 10 100 15 ; SC-BB-BB
+283 282 284 10 100 15 ; SC-BB-BB
+285 284 287 10 100 15 ; SC-BB-BB
+288 287 289 10 100 15 ; SC-BB-BB
+290 289 292 10 100 15 ; SC-BB-BB
+293 292 294 10 100 15 ; SC-BB-BB
+295 294 296 10 100 15 ; SC-BB-BB
+297 296 298 10 100 15 ; SC-BB-BB
+299 298 300 10 100 15 ; SC-BB-BB
+301 300 302 10 100 15 ; SC-BB-BB
+303 302 304 10 100 15 ; SC-BB-BB
+305 304 310 10 100 15 ; SC-BB-BB
+311 310 312 10 100 15 ; SC-BB-BB
+313 312 314 10 100 15 ; SC-BB-BB
+315 314 316 10 100 15 ; SC-BB-BB
+318 317 319 10 100 15 ; SC-BB-BB
+320 319 321 10 100 15 ; SC-BB-BB
+322 321 323 10 100 15 ; SC-BB-BB
+324 323 327 10 100 15 ; SC-BB-BB
+328 327 329 10 100 15 ; SC-BB-BB
+330 329 331 10 100 15 ; SC-BB-BB
+332 331 333 10 100 15 ; SC-BB-BB
+334 333 335 10 100 15 ; SC-BB-BB
+336 335 337 10 100 15 ; SC-BB-BB
+338 337 341 10 100 15 ; SC-BB-BB
+342 341 347 10 100 15 ; SC-BB-BB
+348 347 352 10 100 15 ; SC-BB-BB
+353 352 355 10 100 15 ; SC-BB-BB
+356 355 357 10 100 15 ; SC-BB-BB
+358 357 359 10 100 15 ; SC-BB-BB
+360 359 363 10 100 15 ; SC-BB-BB
+364 363 365 10 100 15 ; SC-BB-BB
+366 365 367 10 100 15 ; SC-BB-BB
+368 367 369 10 100 15 ; SC-BB-BB
+370 369 371 10 100 15 ; SC-BB-BB
+372 371 373 10 100 15 ; SC-BB-BB
+374 373 375 10 100 15 ; SC-BB-BB
+376 375 380 10 100 15 ; SC-BB-BB
+381 380 382 10 100 15 ; SC-BB-BB
+383 382 384 10 100 15 ; SC-BB-BB
+385 384 386 10 100 15 ; SC-BB-BB
+387 386 388 10 100 15 ; SC-BB-BB
+389 388 390 10 100 15 ; SC-BB-BB
+391 390 392 10 100 15 ; SC-BB-BB
+393 392 394 10 100 15 ; SC-BB-BB
+395 394 398 10 100 15 ; SC-BB-BB
+399 398 402 10 100 15 ; SC-BB-BB
+403 402 404 10 100 15 ; SC-BB-BB
+405 404 406 10 100 15 ; SC-BB-BB
+407 406 408 10 100 15 ; SC-BB-BB
+409 408 410 10 100 15 ; SC-BB-BB
+411 410 415 10 100 15 ; SC-BB-BB
+416 415 417 10 100 15 ; SC-BB-BB
+418 417 419 10 100 15 ; SC-BB-BB
+420 419 421 10 100 15 ; SC-BB-BB
+422 421 423 10 100 15 ; SC-BB-BB
+424 423 425 10 100 15 ; SC-BB-BB
+426 425 427 10 100 15 ; SC-BB-BB
+428 427 429 10 100 15 ; SC-BB-BB
+430 429 431 10 100 15 ; SC-BB-BB
+432 431 435 10 100 15 ; SC-BB-BB
+436 435 440 10 100 15 ; SC-BB-BB
+441 440 442 10 100 15 ; SC-BB-BB
+443 442 444 10 100 15 ; SC-BB-BB
+445 444 446 10 100 15 ; SC-BB-BB
+447 446 448 10 100 15 ; SC-BB-BB
+449 448 450 10 100 15 ; SC-BB-BB
+451 450 452 10 100 15 ; SC-BB-BB
+453 452 454 10 100 15 ; SC-BB-BB
+455 454 458 10 100 15 ; SC-BB-BB
+459 458 460 10 100 15 ; SC-BB-BB
+461 460 465 10 100 15 ; SC-BB-BB
+466 465 467 10 100 15 ; SC-BB-BB
+468 467 470 10 100 15 ; SC-BB-BB
+471 470 472 10 100 15 ; SC-BB-BB
+473 472 476 10 100 15 ; SC-BB-BB
+477 476 478 10 100 15 ; SC-BB-BB
+479 478 480 10 100 15 ; SC-BB-BB
+481 480 482 10 100 15 ; SC-BB-BB
+483 482 485 10 100 15 ; SC-BB-BB
+486 485 488 10 100 15 ; SC-BB-BB
+489 488 490 10 100 15 ; SC-BB-BB
+  1   3   4 10 100 15 ; BB-BB-SC
+  3   5   6 10 100 15 ; BB-BB-SC
+  5  11  12 10 100 15 ; BB-BB-SC
+ 11  13  14 10 100 15 ; BB-BB-SC
+ 15  16  17 10 100 15 ; BB-BB-SC
+ 18  19  20 10 100 15 ; BB-BB-SC
+ 19  21  22 10 100 15 ; BB-BB-SC
+ 21  23  24 10 100 15 ; BB-BB-SC
+ 23  25  26 10 100 15 ; BB-BB-SC
+ 25  27  28 10 100 15 ; BB-BB-SC
+ 27  29  30 10 100 15 ; BB-BB-SC
+ 29  31  32 10 100 15 ; BB-BB-SC
+ 31  33  34 10 100 15 ; BB-BB-SC
+ 33  35  36 10 100 15 ; BB-BB-SC
+ 35  37  38 10 100 15 ; BB-BB-SC
+ 37  39  40 10 100 15 ; BB-BB-SC
+ 39  41  42 10 100 15 ; BB-BB-SC
+ 45  46  47 10 100 15 ; BB-BB-SC
+ 46  48  49 10 100 15 ; BB-BB-SC
+ 48  50  51 10 100 15 ; BB-BB-SC
+ 50  52  53 10 100 15 ; BB-BB-SC
+ 52  54  55 10 100 15 ; BB-BB-SC
+ 54  56  57 10 100 15 ; BB-BB-SC
+ 56  58  59 10 100 15 ; BB-BB-SC
+ 58  60  61 10 100 15 ; BB-BB-SC
+ 60  62  63 10 100 15 ; BB-BB-SC
+ 62  64  65 10 100 15 ; BB-BB-SC
+ 64  67  68 10 100 15 ; BB-BB-SC
+ 67  71  72 10 100 15 ; BB-BB-SC
+ 71  73  74 10 100 15 ; BB-BB-SC
+ 73  76  77 10 100 15 ; BB-BB-SC
+ 76  78  79 10 100 15 ; BB-BB-SC
+ 78  80  81 10 100 15 ; BB-BB-SC
+ 80  82  83 10 100 15 ; BB-BB-SC
+ 82  84  85 10 100 15 ; BB-BB-SC
+ 84  86  87 10 100 15 ; BB-BB-SC
+ 86  88  89 10 100 15 ; BB-BB-SC
+ 88  93  94 10 100 15 ; BB-BB-SC
+ 93  97  98 10 100 15 ; BB-BB-SC
+ 97  99 100 10 100 15 ; BB-BB-SC
+ 99 101 102 10 100 15 ; BB-BB-SC
+101 103 104 10 100 15 ; BB-BB-SC
+103 105 106 10 100 15 ; BB-BB-SC
+105 107 108 10 100 15 ; BB-BB-SC
+107 109 110 10 100 15 ; BB-BB-SC
+109 111 112 10 100 15 ; BB-BB-SC
+111 113 114 10 100 15 ; BB-BB-SC
+113 115 116 10 100 15 ; BB-BB-SC
+115 117 118 10 100 15 ; BB-BB-SC
+119 120 121 10 100 15 ; BB-BB-SC
+120 122 123 10 100 15 ; BB-BB-SC
+122 124 125 10 100 15 ; BB-BB-SC
+124 126 127 10 100 15 ; BB-BB-SC
+126 128 129 10 100 15 ; BB-BB-SC
+128 130 131 10 100 15 ; BB-BB-SC
+134 135 136 10 100 15 ; BB-BB-SC
+135 137 138 10 100 15 ; BB-BB-SC
+137 139 140 10 100 15 ; BB-BB-SC
+139 143 144 10 100 15 ; BB-BB-SC
+143 145 146 10 100 15 ; BB-BB-SC
+145 147 148 10 100 15 ; BB-BB-SC
+147 149 150 10 100 15 ; BB-BB-SC
+149 152 153 10 100 15 ; BB-BB-SC
+152 154 155 10 100 15 ; BB-BB-SC
+154 160 161 10 100 15 ; BB-BB-SC
+160 162 163 10 100 15 ; BB-BB-SC
+166 167 168 10 100 15 ; BB-BB-SC
+167 169 170 10 100 15 ; BB-BB-SC
+169 173 174 10 100 15 ; BB-BB-SC
+173 179 180 10 100 15 ; BB-BB-SC
+179 181 182 10 100 15 ; BB-BB-SC
+181 183 184 10 100 15 ; BB-BB-SC
+183 187 188 10 100 15 ; BB-BB-SC
+187 193 194 10 100 15 ; BB-BB-SC
+193 195 196 10 100 15 ; BB-BB-SC
+195 197 198 10 100 15 ; BB-BB-SC
+197 199 200 10 100 15 ; BB-BB-SC
+199 201 202 10 100 15 ; BB-BB-SC
+201 203 204 10 100 15 ; BB-BB-SC
+203 205 206 10 100 15 ; BB-BB-SC
+205 207 208 10 100 15 ; BB-BB-SC
+207 209 210 10 100 15 ; BB-BB-SC
+209 211 212 10 100 15 ; BB-BB-SC
+211 213 214 10 100 15 ; BB-BB-SC
+213 215 216 10 100 15 ; BB-BB-SC
+215 217 218 10 100 15 ; BB-BB-SC
+217 219 220 10 100 15 ; BB-BB-SC
+219 221 222 10 100 15 ; BB-BB-SC
+221 223 224 10 100 15 ; BB-BB-SC
+223 225 226 10 100 15 ; BB-BB-SC
+225 227 228 10 100 15 ; BB-BB-SC
+227 229 230 10 100 15 ; BB-BB-SC
+229 231 232 10 100 15 ; BB-BB-SC
+231 233 234 10 100 15 ; BB-BB-SC
+233 235 236 10 100 15 ; BB-BB-SC
+235 238 239 10 100 15 ; BB-BB-SC
+238 243 244 10 100 15 ; BB-BB-SC
+243 247 248 10 100 15 ; BB-BB-SC
+247 249 250 10 100 15 ; BB-BB-SC
+249 251 252 10 100 15 ; BB-BB-SC
+251 253 254 10 100 15 ; BB-BB-SC
+253 255 256 10 100 15 ; BB-BB-SC
+255 257 258 10 100 15 ; BB-BB-SC
+257 261 262 10 100 15 ; BB-BB-SC
+261 264 265 10 100 15 ; BB-BB-SC
+264 269 270 10 100 15 ; BB-BB-SC
+269 271 272 10 100 15 ; BB-BB-SC
+271 273 274 10 100 15 ; BB-BB-SC
+273 275 276 10 100 15 ; BB-BB-SC
+275 277 278 10 100 15 ; BB-BB-SC
+277 279 280 10 100 15 ; BB-BB-SC
+279 282 283 10 100 15 ; BB-BB-SC
+282 284 285 10 100 15 ; BB-BB-SC
+284 287 288 10 100 15 ; BB-BB-SC
+287 289 290 10 100 15 ; BB-BB-SC
+289 292 293 10 100 15 ; BB-BB-SC
+292 294 295 10 100 15 ; BB-BB-SC
+294 296 297 10 100 15 ; BB-BB-SC
+296 298 299 10 100 15 ; BB-BB-SC
+298 300 301 10 100 15 ; BB-BB-SC
+300 302 303 10 100 15 ; BB-BB-SC
+302 304 305 10 100 15 ; BB-BB-SC
+304 310 311 10 100 15 ; BB-BB-SC
+310 312 313 10 100 15 ; BB-BB-SC
+312 314 315 10 100 15 ; BB-BB-SC
+316 317 318 10 100 15 ; BB-BB-SC
+317 319 320 10 100 15 ; BB-BB-SC
+319 321 322 10 100 15 ; BB-BB-SC
+321 323 324 10 100 15 ; BB-BB-SC
+323 327 328 10 100 15 ; BB-BB-SC
+327 329 330 10 100 15 ; BB-BB-SC
+329 331 332 10 100 15 ; BB-BB-SC
+331 333 334 10 100 15 ; BB-BB-SC
+333 335 336 10 100 15 ; BB-BB-SC
+335 337 338 10 100 15 ; BB-BB-SC
+337 341 342 10 100 15 ; BB-BB-SC
+341 347 348 10 100 15 ; BB-BB-SC
+347 352 353 10 100 15 ; BB-BB-SC
+352 355 356 10 100 15 ; BB-BB-SC
+355 357 358 10 100 15 ; BB-BB-SC
+357 359 360 10 100 15 ; BB-BB-SC
+359 363 364 10 100 15 ; BB-BB-SC
+363 365 366 10 100 15 ; BB-BB-SC
+365 367 368 10 100 15 ; BB-BB-SC
+367 369 370 10 100 15 ; BB-BB-SC
+369 371 372 10 100 15 ; BB-BB-SC
+371 373 374 10 100 15 ; BB-BB-SC
+373 375 376 10 100 15 ; BB-BB-SC
+375 380 381 10 100 15 ; BB-BB-SC
+380 382 383 10 100 15 ; BB-BB-SC
+382 384 385 10 100 15 ; BB-BB-SC
+384 386 387 10 100 15 ; BB-BB-SC
+386 388 389 10 100 15 ; BB-BB-SC
+388 390 391 10 100 15 ; BB-BB-SC
+390 392 393 10 100 15 ; BB-BB-SC
+392 394 395 10 100 15 ; BB-BB-SC
+394 398 399 10 100 15 ; BB-BB-SC
+398 402 403 10 100 15 ; BB-BB-SC
+402 404 405 10 100 15 ; BB-BB-SC
+404 406 407 10 100 15 ; BB-BB-SC
+406 408 409 10 100 15 ; BB-BB-SC
+408 410 411 10 100 15 ; BB-BB-SC
+410 415 416 10 100 15 ; BB-BB-SC
+415 417 418 10 100 15 ; BB-BB-SC
+417 419 420 10 100 15 ; BB-BB-SC
+419 421 422 10 100 15 ; BB-BB-SC
+421 423 424 10 100 15 ; BB-BB-SC
+423 425 426 10 100 15 ; BB-BB-SC
+425 427 428 10 100 15 ; BB-BB-SC
+427 429 430 10 100 15 ; BB-BB-SC
+429 431 432 10 100 15 ; BB-BB-SC
+431 435 436 10 100 15 ; BB-BB-SC
+435 440 441 10 100 15 ; BB-BB-SC
+440 442 443 10 100 15 ; BB-BB-SC
+442 444 445 10 100 15 ; BB-BB-SC
+444 446 447 10 100 15 ; BB-BB-SC
+446 448 449 10 100 15 ; BB-BB-SC
+448 450 451 10 100 15 ; BB-BB-SC
+450 452 453 10 100 15 ; BB-BB-SC
+452 454 455 10 100 15 ; BB-BB-SC
+454 458 459 10 100 15 ; BB-BB-SC
+458 460 461 10 100 15 ; BB-BB-SC
+460 465 466 10 100 15 ; BB-BB-SC
+465 467 468 10 100 15 ; BB-BB-SC
+467 470 471 10 100 15 ; BB-BB-SC
+470 472 473 10 100 15 ; BB-BB-SC
+472 476 477 10 100 15 ; BB-BB-SC
+476 478 479 10 100 15 ; BB-BB-SC
+478 480 481 10 100 15 ; BB-BB-SC
+480 482 483 10 100 15 ; BB-BB-SC
+482 485 486 10 100 15 ; BB-BB-SC
+485 488 489 10 100 15 ; BB-BB-SC
+488 490 491 10 100 15 ; BB-BB-SC
+493 492 494 10 100 15 ; SC-BB-BB
+495 494 496 10 100 15 ; SC-BB-BB
+497 496 499 10 100 15 ; SC-BB-BB
+500 499 501 10 100 15 ; SC-BB-BB
+502 501 505 10 100 15 ; SC-BB-BB
+506 505 508 10 100 15 ; SC-BB-BB
+509 508 510 10 100 15 ; SC-BB-BB
+511 510 512 10 100 15 ; SC-BB-BB
+513 512 515 10 100 15 ; SC-BB-BB
+516 515 517 10 100 15 ; SC-BB-BB
+518 517 519 10 100 15 ; SC-BB-BB
+521 520 522 10 100 15 ; SC-BB-BB
+523 522 524 10 100 15 ; SC-BB-BB
+525 524 526 10 100 15 ; SC-BB-BB
+528 527 529 10 100 15 ; SC-BB-BB
+530 529 533 10 100 15 ; SC-BB-BB
+534 533 535 10 100 15 ; SC-BB-BB
+536 535 537 10 100 15 ; SC-BB-BB
+538 537 539 10 100 15 ; SC-BB-BB
+540 539 545 10 100 15 ; SC-BB-BB
+546 545 547 10 100 15 ; SC-BB-BB
+548 547 549 10 100 15 ; SC-BB-BB
+550 549 553 10 100 15 ; SC-BB-BB
+554 553 557 10 100 15 ; SC-BB-BB
+558 557 559 10 100 15 ; SC-BB-BB
+560 559 561 10 100 15 ; SC-BB-BB
+562 561 563 10 100 15 ; SC-BB-BB
+564 563 565 10 100 15 ; SC-BB-BB
+566 565 567 10 100 15 ; SC-BB-BB
+568 567 571 10 100 15 ; SC-BB-BB
+572 571 573 10 100 15 ; SC-BB-BB
+574 573 575 10 100 15 ; SC-BB-BB
+576 575 577 10 100 15 ; SC-BB-BB
+578 577 579 10 100 15 ; SC-BB-BB
+580 579 581 10 100 15 ; SC-BB-BB
+582 581 583 10 100 15 ; SC-BB-BB
+584 583 585 10 100 15 ; SC-BB-BB
+586 585 588 10 100 15 ; SC-BB-BB
+589 588 591 10 100 15 ; SC-BB-BB
+592 591 593 10 100 15 ; SC-BB-BB
+594 593 595 10 100 15 ; SC-BB-BB
+596 595 600 10 100 15 ; SC-BB-BB
+601 600 602 10 100 15 ; SC-BB-BB
+603 602 604 10 100 15 ; SC-BB-BB
+605 604 606 10 100 15 ; SC-BB-BB
+607 606 608 10 100 15 ; SC-BB-BB
+609 608 614 10 100 15 ; SC-BB-BB
+615 614 616 10 100 15 ; SC-BB-BB
+618 617 622 10 100 15 ; SC-BB-BB
+623 622 624 10 100 15 ; SC-BB-BB
+625 624 626 10 100 15 ; SC-BB-BB
+627 626 628 10 100 15 ; SC-BB-BB
+630 629 633 10 100 15 ; SC-BB-BB
+634 633 635 10 100 15 ; SC-BB-BB
+636 635 637 10 100 15 ; SC-BB-BB
+638 637 639 10 100 15 ; SC-BB-BB
+640 639 641 10 100 15 ; SC-BB-BB
+642 641 646 10 100 15 ; SC-BB-BB
+647 646 648 10 100 15 ; SC-BB-BB
+649 648 651 10 100 15 ; SC-BB-BB
+652 651 653 10 100 15 ; SC-BB-BB
+654 653 655 10 100 15 ; SC-BB-BB
+656 655 657 10 100 15 ; SC-BB-BB
+658 657 661 10 100 15 ; SC-BB-BB
+662 661 664 10 100 15 ; SC-BB-BB
+665 664 666 10 100 15 ; SC-BB-BB
+667 666 668 10 100 15 ; SC-BB-BB
+669 668 672 10 100 15 ; SC-BB-BB
+673 672 674 10 100 15 ; SC-BB-BB
+675 674 676 10 100 15 ; SC-BB-BB
+677 676 678 10 100 15 ; SC-BB-BB
+679 678 680 10 100 15 ; SC-BB-BB
+492 494 495 10 100 15 ; BB-BB-SC
+494 496 497 10 100 15 ; BB-BB-SC
+496 499 500 10 100 15 ; BB-BB-SC
+499 501 502 10 100 15 ; BB-BB-SC
+501 505 506 10 100 15 ; BB-BB-SC
+505 508 509 10 100 15 ; BB-BB-SC
+508 510 511 10 100 15 ; BB-BB-SC
+510 512 513 10 100 15 ; BB-BB-SC
+512 515 516 10 100 15 ; BB-BB-SC
+515 517 518 10 100 15 ; BB-BB-SC
+519 520 521 10 100 15 ; BB-BB-SC
+520 522 523 10 100 15 ; BB-BB-SC
+522 524 525 10 100 15 ; BB-BB-SC
+526 527 528 10 100 15 ; BB-BB-SC
+527 529 530 10 100 15 ; BB-BB-SC
+529 533 534 10 100 15 ; BB-BB-SC
+533 535 536 10 100 15 ; BB-BB-SC
+535 537 538 10 100 15 ; BB-BB-SC
+537 539 540 10 100 15 ; BB-BB-SC
+539 545 546 10 100 15 ; BB-BB-SC
+545 547 548 10 100 15 ; BB-BB-SC
+547 549 550 10 100 15 ; BB-BB-SC
+549 553 554 10 100 15 ; BB-BB-SC
+553 557 558 10 100 15 ; BB-BB-SC
+557 559 560 10 100 15 ; BB-BB-SC
+559 561 562 10 100 15 ; BB-BB-SC
+561 563 564 10 100 15 ; BB-BB-SC
+563 565 566 10 100 15 ; BB-BB-SC
+565 567 568 10 100 15 ; BB-BB-SC
+567 571 572 10 100 15 ; BB-BB-SC
+571 573 574 10 100 15 ; BB-BB-SC
+573 575 576 10 100 15 ; BB-BB-SC
+575 577 578 10 100 15 ; BB-BB-SC
+577 579 580 10 100 15 ; BB-BB-SC
+579 581 582 10 100 15 ; BB-BB-SC
+581 583 584 10 100 15 ; BB-BB-SC
+583 585 586 10 100 15 ; BB-BB-SC
+585 588 589 10 100 15 ; BB-BB-SC
+588 591 592 10 100 15 ; BB-BB-SC
+591 593 594 10 100 15 ; BB-BB-SC
+593 595 596 10 100 15 ; BB-BB-SC
+595 600 601 10 100 15 ; BB-BB-SC
+600 602 603 10 100 15 ; BB-BB-SC
+602 604 605 10 100 15 ; BB-BB-SC
+604 606 607 10 100 15 ; BB-BB-SC
+606 608 609 10 100 15 ; BB-BB-SC
+608 614 615 10 100 15 ; BB-BB-SC
+616 617 618 10 100 15 ; BB-BB-SC
+617 622 623 10 100 15 ; BB-BB-SC
+622 624 625 10 100 15 ; BB-BB-SC
+624 626 627 10 100 15 ; BB-BB-SC
+628 629 630 10 100 15 ; BB-BB-SC
+629 633 634 10 100 15 ; BB-BB-SC
+633 635 636 10 100 15 ; BB-BB-SC
+635 637 638 10 100 15 ; BB-BB-SC
+637 639 640 10 100 15 ; BB-BB-SC
+639 641 642 10 100 15 ; BB-BB-SC
+641 646 647 10 100 15 ; BB-BB-SC
+646 648 649 10 100 15 ; BB-BB-SC
+648 651 652 10 100 15 ; BB-BB-SC
+651 653 654 10 100 15 ; BB-BB-SC
+653 655 656 10 100 15 ; BB-BB-SC
+655 657 658 10 100 15 ; BB-BB-SC
+657 661 662 10 100 15 ; BB-BB-SC
+661 664 665 10 100 15 ; BB-BB-SC
+664 666 667 10 100 15 ; BB-BB-SC
+666 668 669 10 100 15 ; BB-BB-SC
+668 672 673 10 100 15 ; BB-BB-SC
+672 674 675 10 100 15 ; BB-BB-SC
+674 676 677 10 100 15 ; BB-BB-SC
+676 678 679 10 100 15 ; BB-BB-SC
+678 680 681 10 100 15 ; BB-BB-SC
+
+; Side chain angles
+  5   6   7 2 120.000 60.0
+  5   6   9 2 130.000 60.0
+ 41  42  43 2 120.000 50.0
+ 41  42  44 2 120.000 50.0
+ 64  65  66 2 180.000 25.0
+ 67  68  69 2 120.000 50.0
+ 67  68  70 2 120.000 50.0
+ 73  74  75 2 180.000 25.0
+ 88  89  90 2 120.000 60.0
+ 88  89  91 2 120.000 60.0
+ 93  94  95 2 120.000 50.0
+ 93  94  96 2 120.000 50.0
+130 131 132 2 120.000 50.0
+130 131 133 2 120.000 50.0
+139 140 141 2 120.000 50.0
+139 140 142 2 120.000 50.0
+149 150 151 2 180.000 25.0
+154 155 156 2 120.000 60.0
+154 155 158 2 130.000 60.0
+162 163 164 2 120.000 50.0
+162 163 165 2 120.000 50.0
+169 170 171 2 120.000 50.0
+169 170 172 2 120.000 50.0
+173 174 175 2 120.000 60.0
+173 174 177 2 130.000 60.0
+183 184 185 2 120.000 50.0
+183 184 186 2 120.000 50.0
+187 188 189 2 120.000 60.0
+187 188 191 2 130.000 60.0
+235 236 237 2 180.000 25.0
+238 239 240 2 120.000 60.0
+238 239 241 2 120.000 60.0
+243 244 245 2 120.000 50.0
+243 244 246 2 120.000 50.0
+257 258 259 2 120.000 50.0
+257 258 260 2 120.000 50.0
+261 262 263 2 180.000 25.0
+264 265 266 2 120.000 60.0
+264 265 267 2 120.000 60.0
+279 280 281 2 180.000 25.0
+284 285 286 2 180.000 25.0
+289 290 291 2 180.000 25.0
+304 305 306 2 120.000 60.0
+304 305 308 2 130.000 60.0
+323 324 325 2 120.000 50.0
+323 324 326 2 120.000 50.0
+337 338 339 2 120.000 50.0
+337 338 340 2 120.000 50.0
+341 342 343 2 120.000 60.0
+341 342 345 2 130.000 60.0
+347 348 349 2 120.000 60.0
+347 348 350 2 120.000 60.0
+352 353 354 2 180.000 25.0
+359 360 361 2 120.000 50.0
+359 360 362 2 120.000 50.0
+375 376 377 2 120.000 60.0
+375 376 378 2 120.000 60.0
+394 395 396 2 120.000 50.0
+394 395 397 2 120.000 50.0
+398 399 400 2 120.000 50.0
+398 399 401 2 120.000 50.0
+410 411 412 2 120.000 60.0
+410 411 413 2 120.000 60.0
+431 432 433 2 120.000 50.0
+431 432 434 2 120.000 50.0
+435 436 437 2 120.000 60.0
+435 436 438 2 120.000 60.0
+454 455 456 2 120.000 50.0
+454 455 457 2 120.000 50.0
+460 461 462 2 120.000 60.0
+460 461 463 2 120.000 60.0
+467 468 469 2 180.000 25.0
+472 473 474 2 120.000 50.0
+472 473 475 2 120.000 50.0
+482 483 484 2 180.000 25.0
+485 486 487 2 180.000 25.0
+496 497 498 2 180.000 25.0
+501 502 503 2 120.000 50.0
+501 502 504 2 120.000 50.0
+505 506 507 2 180.000 25.0
+512 513 514 2 180.000 25.0
+529 530 531 2 120.000 50.0
+529 530 532 2 120.000 50.0
+539 540 541 2 120.000 60.0
+539 540 543 2 130.000 60.0
+549 550 551 2 120.000 50.0
+549 550 552 2 120.000 50.0
+553 554 555 2 120.000 50.0
+553 554 556 2 120.000 50.0
+567 568 569 2 120.000 50.0
+567 568 570 2 120.000 50.0
+585 586 587 2 180.000 25.0
+588 589 590 2 180.000 25.0
+595 596 597 2 120.000 60.0
+595 596 598 2 120.000 60.0
+608 609 610 2 120.000 60.0
+608 609 612 2 130.000 60.0
+617 618 619 2 120.000 60.0
+617 618 620 2 120.000 60.0
+629 630 631 2 120.000 50.0
+629 630 632 2 120.000 50.0
+641 642 643 2 120.000 60.0
+641 642 644 2 120.000 60.0
+648 649 650 2 180.000 25.0
+657 658 659 2 120.000 50.0
+657 658 660 2 120.000 50.0
+661 662 663 2 180.000 25.0
+668 669 670 2 120.000 50.0
+668 669 671 2 120.000 50.0
+
+[ dihedrals ]
+  3   5  11  13 1 -120 400 1
+  5  11  13  15 1 -120 400 1
+ 11  13  15  16 1 -120 400 1
+ 13  15  16  18 1 -120 400 1
+ 15  16  18  19 1 -120 400 1
+ 16  18  19  21 1 -120 400 1
+ 18  19  21  23 1 -120 400 1
+ 19  21  23  25 1 -120 400 1
+ 21  23  25  27 1 -120 400 1
+ 23  25  27  29 1 -120 400 1
+ 25  27  29  31 1 -120 400 1
+ 27  29  31  33 1 -120 400 1
+ 29  31  33  35 1 -120 400 1
+ 31  33  35  37 1 -120 400 1
+ 33  35  37  39 1 -120 400 1
+ 35  37  39  41 1 -120 400 1
+ 37  39  41  45 1 -120 400 1
+ 39  41  45  46 1 -120 400 1
+ 41  45  46  48 1 -120 400 1
+ 45  46  48  50 1 -120 400 1
+ 46  48  50  52 1 -120 400 1
+ 48  50  52  54 1 -120 400 1
+ 50  52  54  56 1 -120 400 1
+ 52  54  56  58 1 -120 400 1
+ 54  56  58  60 1 -120 400 1
+ 56  58  60  62 1 -120 400 1
+ 58  60  62  64 1 -120 400 1
+ 82  84  86  88 1 -120 400 1
+ 84  86  88  93 1 -120 400 1
+ 86  88  93  97 1 -120 400 1
+ 88  93  97  99 1 -120 400 1
+ 93  97  99 101 1 -120 400 1
+ 97  99 101 103 1 -120 400 1
+ 99 101 103 105 1 -120 400 1
+101 103 105 107 1 -120 400 1
+103 105 107 109 1 -120 400 1
+105 107 109 111 1 -120 400 1
+107 109 111 113 1 -120 400 1
+109 111 113 115 1 -120 400 1
+111 113 115 117 1 -120 400 1
+113 115 117 119 1 -120 400 1
+115 117 119 120 1 -120 400 1
+117 119 120 122 1 -120 400 1
+119 120 122 124 1 -120 400 1
+120 122 124 126 1 -120 400 1
+122 124 126 128 1 -120 400 1
+124 126 128 130 1 -120 400 1
+126 128 130 134 1 -120 400 1
+128 130 134 135 1 -120 400 1
+130 134 135 137 1 -120 400 1
+134 135 137 139 1 -120 400 1
+135 137 139 143 1 -120 400 1
+137 139 143 145 1 -120 400 1
+139 143 145 147 1 -120 400 1
+166 167 169 173 1 -120 400 1
+167 169 173 179 1 -120 400 1
+169 173 179 181 1 -120 400 1
+173 179 181 183 1 -120 400 1
+179 181 183 187 1 -120 400 1
+181 183 187 193 1 -120 400 1
+183 187 193 195 1 -120 400 1
+187 193 195 197 1 -120 400 1
+193 195 197 199 1 -120 400 1
+195 197 199 201 1 -120 400 1
+197 199 201 203 1 -120 400 1
+199 201 203 205 1 -120 400 1
+201 203 205 207 1 -120 400 1
+203 205 207 209 1 -120 400 1
+205 207 209 211 1 -120 400 1
+207 209 211 213 1 -120 400 1
+209 211 213 215 1 -120 400 1
+211 213 215 217 1 -120 400 1
+213 215 217 219 1 -120 400 1
+215 217 219 221 1 -120 400 1
+217 219 221 223 1 -120 400 1
+219 221 223 225 1 -120 400 1
+221 223 225 227 1 -120 400 1
+223 225 227 229 1 -120 400 1
+225 227 229 231 1 -120 400 1
+227 229 231 233 1 -120 400 1
+229 231 233 235 1 -120 400 1
+231 233 235 238 1 -120 400 1
+233 235 238 243 1 -120 400 1
+235 238 243 247 1 -120 400 1
+238 243 247 249 1 -120 400 1
+243 247 249 251 1 -120 400 1
+279 282 284 287 1 -120 400 1
+282 284 287 289 1 -120 400 1
+284 287 289 292 1 -120 400 1
+287 289 292 294 1 -120 400 1
+289 292 294 296 1 -120 400 1
+292 294 296 298 1 -120 400 1
+294 296 298 300 1 -120 400 1
+296 298 300 302 1 -120 400 1
+298 300 302 304 1 -120 400 1
+300 302 304 310 1 -120 400 1
+302 304 310 312 1 -120 400 1
+304 310 312 314 1 -120 400 1
+310 312 314 316 1 -120 400 1
+312 314 316 317 1 -120 400 1
+314 316 317 319 1 -120 400 1
+316 317 319 321 1 -120 400 1
+317 319 321 323 1 -120 400 1
+319 321 323 327 1 -120 400 1
+321 323 327 329 1 -120 400 1
+323 327 329 331 1 -120 400 1
+327 329 331 333 1 -120 400 1
+363 365 367 369 1 -120 400 1
+365 367 369 371 1 -120 400 1
+367 369 371 373 1 -120 400 1
+369 371 373 375 1 -120 400 1
+371 373 375 380 1 -120 400 1
+406 408 410 415 1 -120 400 1
+408 410 415 417 1 -120 400 1
+410 415 417 419 1 -120 400 1
+415 417 419 421 1 -120 400 1
+417 419 421 423 1 -120 400 1
+419 421 423 425 1 -120 400 1
+421 423 425 427 1 -120 400 1
+423 425 427 429 1 -120 400 1
+425 427 429 431 1 -120 400 1
+427 429 431 435 1 -120 400 1
+429 431 435 440 1 -120 400 1
+431 435 440 442 1 -120 400 1
+435 440 442 444 1 -120 400 1
+440 442 444 446 1 -120 400 1
+442 444 446 448 1 -120 400 1
+444 446 448 450 1 -120 400 1
+446 448 450 452 1 -120 400 1
+448 450 452 454 1 -120 400 1
+450 452 454 458 1 -120 400 1
+452 454 458 460 1 -120 400 1
+454 458 460 465 1 -120 400 1
+458 460 465 467 1 -120 400 1
+460 465 467 470 1 -120 400 1
+465 467 470 472 1 -120 400 1
+467 470 472 476 1 -120 400 1
+470 472 476 478 1 -120 400 1
+472 476 478 480 1 -120 400 1
+476 478 480 482 1 -120 400 1
+478 480 482 485 1 -120 400 1
+480 482 485 488 1 -120 400 1
+496 499 501 505 1 -120 400 1
+499 501 505 508 1 -120 400 1
+501 505 508 510 1 -120 400 1
+505 508 510 512 1 -120 400 1
+508 510 512 515 1 -120 400 1
+510 512 515 517 1 -120 400 1
+512 515 517 519 1 -120 400 1
+515 517 519 520 1 -120 400 1
+517 519 520 522 1 -120 400 1
+519 520 522 524 1 -120 400 1
+520 522 524 526 1 -120 400 1
+522 524 526 527 1 -120 400 1
+524 526 527 529 1 -120 400 1
+526 527 529 533 1 -120 400 1
+527 529 533 535 1 -120 400 1
+529 533 535 537 1 -120 400 1
+533 535 537 539 1 -120 400 1
+535 537 539 545 1 -120 400 1
+537 539 545 547 1 -120 400 1
+539 545 547 549 1 -120 400 1
+545 547 549 553 1 -120 400 1
+547 549 553 557 1 -120 400 1
+549 553 557 559 1 -120 400 1
+553 557 559 561 1 -120 400 1
+557 559 561 563 1 -120 400 1
+559 561 563 565 1 -120 400 1
+561 563 565 567 1 -120 400 1
+563 565 567 571 1 -120 400 1
+565 567 571 573 1 -120 400 1
+588 591 593 595 1 -120 400 1
+591 593 595 600 1 -120 400 1
+593 595 600 602 1 -120 400 1
+595 600 602 604 1 -120 400 1
+600 602 604 606 1 -120 400 1
+602 604 606 608 1 -120 400 1
+604 606 608 614 1 -120 400 1
+606 608 614 616 1 -120 400 1
+608 614 616 617 1 -120 400 1
+614 616 617 622 1 -120 400 1
+616 617 622 624 1 -120 400 1
+617 622 624 626 1 -120 400 1
+622 624 626 628 1 -120 400 1
+633 635 637 639 1 -120 400 1
+635 637 639 641 1 -120 400 1
+637 639 641 646 1 -120 400 1
+639 641 646 648 1 -120 400 1
+653 655 657 661 1 -120 400 1
+655 657 661 664 1 -120 400 1
+657 661 664 666 1 -120 400 1
+661 664 666 668 1 -120 400 1
+664 666 668 672 1 -120 400 1
+666 668 672 674 1 -120 400 1
+668 672 674 676 1 -120 400 1
+
+; SC-BB-BB-SC scFix
+  2   1   3   4 1 -151.0 75 1 ; SC-BB-BB-SC
+  4   3   5   6 1 -109.4 75 1 ; SC-BB-BB-SC
+  6   5  11  12 1 -119.4 75 1 ; SC-BB-BB-SC
+ 12  11  13  14 1 -131.4 75 1 ; SC-BB-BB-SC
+ 20  19  21  22 1 -127.4 75 1 ; SC-BB-BB-SC
+ 22  21  23  24 1 -148.3 75 1 ; SC-BB-BB-SC
+ 24  23  25  26 1 -143.3 75 1 ; SC-BB-BB-SC
+ 26  25  27  28 1 -170.3 75 1 ; SC-BB-BB-SC
+ 28  27  29  30 1 -131.0 75 1 ; SC-BB-BB-SC
+ 30  29  31  32 1 -142.8 75 1 ; SC-BB-BB-SC
+ 32  31  33  34 1 -140.0 75 1 ; SC-BB-BB-SC
+ 34  33  35  36 1 -103.5 75 1 ; SC-BB-BB-SC
+ 36  35  37  38 1 -150.5 75 1 ; SC-BB-BB-SC
+ 38  37  39  40 1 -151.2 75 1 ; SC-BB-BB-SC
+ 40  39  41  42 1 -124.4 75 1 ; SC-BB-BB-SC
+ 47  46  48  49 1 -142.9 75 1 ; SC-BB-BB-SC
+ 49  48  50  51 1 -141.3 75 1 ; SC-BB-BB-SC
+ 51  50  52  53 1 -116.5 75 1 ; SC-BB-BB-SC
+ 53  52  54  55 1 -132.7 75 1 ; SC-BB-BB-SC
+ 55  54  56  57 1 -139.1 75 1 ; SC-BB-BB-SC
+ 57  56  58  59 1 -133.5 75 1 ; SC-BB-BB-SC
+ 59  58  60  61 1 -161.0 75 1 ; SC-BB-BB-SC
+ 61  60  62  63 1 -140.6 75 1 ; SC-BB-BB-SC
+ 63  62  64  65 1 -163.1 75 1 ; SC-BB-BB-SC
+ 65  64  67  68 1 179.9 75 1 ; SC-BB-BB-SC
+ 68  67  71  72 1 90.2 75 1 ; SC-BB-BB-SC
+ 72  71  73  74 1 -101.0 75 1 ; SC-BB-BB-SC
+ 74  73  76  77 1 -160.9 75 1 ; SC-BB-BB-SC
+ 77  76  78  79 1 -152.9 75 1 ; SC-BB-BB-SC
+ 79  78  80  81 1 18.4 75 1 ; SC-BB-BB-SC
+ 81  80  82  83 1 84.0 75 1 ; SC-BB-BB-SC
+ 83  82  84  85 1 -122.3 75 1 ; SC-BB-BB-SC
+ 85  84  86  87 1 -158.5 75 1 ; SC-BB-BB-SC
+ 87  86  88  89 1 -135.0 75 1 ; SC-BB-BB-SC
+ 89  88  93  94 1 -156.3 75 1 ; SC-BB-BB-SC
+ 94  93  97  98 1 -163.3 75 1 ; SC-BB-BB-SC
+ 98  97  99 100 1 -129.0 75 1 ; SC-BB-BB-SC
+100  99 101 102 1 -130.1 75 1 ; SC-BB-BB-SC
+102 101 103 104 1 -133.1 75 1 ; SC-BB-BB-SC
+104 103 105 106 1 -116.8 75 1 ; SC-BB-BB-SC
+106 105 107 108 1 -154.4 75 1 ; SC-BB-BB-SC
+108 107 109 110 1 -143.3 75 1 ; SC-BB-BB-SC
+110 109 111 112 1 -171.9 75 1 ; SC-BB-BB-SC
+112 111 113 114 1 -153.6 75 1 ; SC-BB-BB-SC
+114 113 115 116 1 -119.7 75 1 ; SC-BB-BB-SC
+116 115 117 118 1 -144.0 75 1 ; SC-BB-BB-SC
+121 120 122 123 1 -174.0 75 1 ; SC-BB-BB-SC
+123 122 124 125 1 -178.1 75 1 ; SC-BB-BB-SC
+125 124 126 127 1 -141.0 75 1 ; SC-BB-BB-SC
+127 126 128 129 1 -107.0 75 1 ; SC-BB-BB-SC
+129 128 130 131 1 150.0 75 1 ; SC-BB-BB-SC
+136 135 137 138 1 -142.8 75 1 ; SC-BB-BB-SC
+138 137 139 140 1 -136.0 75 1 ; SC-BB-BB-SC
+140 139 143 144 1 -138.4 75 1 ; SC-BB-BB-SC
+144 143 145 146 1 -153.7 75 1 ; SC-BB-BB-SC
+146 145 147 148 1 -174.4 75 1 ; SC-BB-BB-SC
+148 147 149 150 1 2.8 75 1 ; SC-BB-BB-SC
+150 149 152 153 1 100.4 75 1 ; SC-BB-BB-SC
+153 152 154 155 1 7.9 75 1 ; SC-BB-BB-SC
+155 154 160 161 1 47.1 75 1 ; SC-BB-BB-SC
+161 160 162 163 1 -153.7 75 1 ; SC-BB-BB-SC
+168 167 169 170 1 -106.5 75 1 ; SC-BB-BB-SC
+170 169 173 174 1 -137.3 75 1 ; SC-BB-BB-SC
+174 173 179 180 1 -93.4 75 1 ; SC-BB-BB-SC
+180 179 181 182 1 -117.3 75 1 ; SC-BB-BB-SC
+182 181 183 184 1 -136.0 75 1 ; SC-BB-BB-SC
+184 183 187 188 1 -102.4 75 1 ; SC-BB-BB-SC
+188 187 193 194 1 -128.1 75 1 ; SC-BB-BB-SC
+194 193 195 196 1 -138.4 75 1 ; SC-BB-BB-SC
+196 195 197 198 1 -153.6 75 1 ; SC-BB-BB-SC
+198 197 199 200 1 -128.9 75 1 ; SC-BB-BB-SC
+200 199 201 202 1 -130.0 75 1 ; SC-BB-BB-SC
+202 201 203 204 1 -122.7 75 1 ; SC-BB-BB-SC
+204 203 205 206 1 -131.7 75 1 ; SC-BB-BB-SC
+206 205 207 208 1 -154.6 75 1 ; SC-BB-BB-SC
+208 207 209 210 1 -135.5 75 1 ; SC-BB-BB-SC
+210 209 211 212 1 -132.4 75 1 ; SC-BB-BB-SC
+212 211 213 214 1 -137.9 75 1 ; SC-BB-BB-SC
+214 213 215 216 1 -168.3 75 1 ; SC-BB-BB-SC
+216 215 217 218 1 -115.0 75 1 ; SC-BB-BB-SC
+218 217 219 220 1 -141.0 75 1 ; SC-BB-BB-SC
+220 219 221 222 1 -141.7 75 1 ; SC-BB-BB-SC
+222 221 223 224 1 -148.3 75 1 ; SC-BB-BB-SC
+224 223 225 226 1 -113.9 75 1 ; SC-BB-BB-SC
+226 225 227 228 1 -128.6 75 1 ; SC-BB-BB-SC
+228 227 229 230 1 -129.9 75 1 ; SC-BB-BB-SC
+230 229 231 232 1 -155.1 75 1 ; SC-BB-BB-SC
+232 231 233 234 1 -128.6 75 1 ; SC-BB-BB-SC
+234 233 235 236 1 -136.3 75 1 ; SC-BB-BB-SC
+236 235 238 239 1 -117.0 75 1 ; SC-BB-BB-SC
+239 238 243 244 1 -145.6 75 1 ; SC-BB-BB-SC
+244 243 247 248 1 -123.1 75 1 ; SC-BB-BB-SC
+248 247 249 250 1 -159.6 75 1 ; SC-BB-BB-SC
+250 249 251 252 1 -130.7 75 1 ; SC-BB-BB-SC
+252 251 253 254 1 -169.3 75 1 ; SC-BB-BB-SC
+254 253 255 256 1 100.1 75 1 ; SC-BB-BB-SC
+256 255 257 258 1 127.3 75 1 ; SC-BB-BB-SC
+258 257 261 262 1 33.6 75 1 ; SC-BB-BB-SC
+262 261 264 265 1 -128.0 75 1 ; SC-BB-BB-SC
+265 264 269 270 1 -176.1 75 1 ; SC-BB-BB-SC
+270 269 271 272 1 36.6 75 1 ; SC-BB-BB-SC
+272 271 273 274 1 67.9 75 1 ; SC-BB-BB-SC
+274 273 275 276 1 148.4 75 1 ; SC-BB-BB-SC
+276 275 277 278 1 64.9 75 1 ; SC-BB-BB-SC
+278 277 279 280 1 82.8 75 1 ; SC-BB-BB-SC
+280 279 282 283 1 -163.5 75 1 ; SC-BB-BB-SC
+283 282 284 285 1 -137.2 75 1 ; SC-BB-BB-SC
+285 284 287 288 1 -137.8 75 1 ; SC-BB-BB-SC
+288 287 289 290 1 -149.3 75 1 ; SC-BB-BB-SC
+290 289 292 293 1 -155.3 75 1 ; SC-BB-BB-SC
+293 292 294 295 1 -141.5 75 1 ; SC-BB-BB-SC
+295 294 296 297 1 -129.6 75 1 ; SC-BB-BB-SC
+297 296 298 299 1 -136.5 75 1 ; SC-BB-BB-SC
+299 298 300 301 1 -148.8 75 1 ; SC-BB-BB-SC
+301 300 302 303 1 -78.9 75 1 ; SC-BB-BB-SC
+303 302 304 305 1 -147.1 75 1 ; SC-BB-BB-SC
+305 304 310 311 1 -143.3 75 1 ; SC-BB-BB-SC
+311 310 312 313 1 -141.6 75 1 ; SC-BB-BB-SC
+313 312 314 315 1 -136.2 75 1 ; SC-BB-BB-SC
+318 317 319 320 1 -138.0 75 1 ; SC-BB-BB-SC
+320 319 321 322 1 -156.7 75 1 ; SC-BB-BB-SC
+322 321 323 324 1 173.8 75 1 ; SC-BB-BB-SC
+324 323 327 328 1 -123.8 75 1 ; SC-BB-BB-SC
+328 327 329 330 1 -119.6 75 1 ; SC-BB-BB-SC
+330 329 331 332 1 158.8 75 1 ; SC-BB-BB-SC
+332 331 333 334 1 -177.3 75 1 ; SC-BB-BB-SC
+334 333 335 336 1 175.1 75 1 ; SC-BB-BB-SC
+336 335 337 338 1 51.7 75 1 ; SC-BB-BB-SC
+338 337 341 342 1 -18.2 75 1 ; SC-BB-BB-SC
+342 341 347 348 1 -117.3 75 1 ; SC-BB-BB-SC
+348 347 352 353 1 -150.9 75 1 ; SC-BB-BB-SC
+353 352 355 356 1 58.0 75 1 ; SC-BB-BB-SC
+356 355 357 358 1 71.8 75 1 ; SC-BB-BB-SC
+358 357 359 360 1 -152.4 75 1 ; SC-BB-BB-SC
+360 359 363 364 1 51.3 75 1 ; SC-BB-BB-SC
+364 363 365 366 1 -70.6 75 1 ; SC-BB-BB-SC
+366 365 367 368 1 -125.1 75 1 ; SC-BB-BB-SC
+368 367 369 370 1 -141.6 75 1 ; SC-BB-BB-SC
+370 369 371 372 1 -148.2 75 1 ; SC-BB-BB-SC
+372 371 373 374 1 -157.5 75 1 ; SC-BB-BB-SC
+374 373 375 376 1 -108.1 75 1 ; SC-BB-BB-SC
+376 375 380 381 1 -154.9 75 1 ; SC-BB-BB-SC
+381 380 382 383 1 151.4 75 1 ; SC-BB-BB-SC
+383 382 384 385 1 114.9 75 1 ; SC-BB-BB-SC
+385 384 386 387 1 -173.7 75 1 ; SC-BB-BB-SC
+387 386 388 389 1 141.0 75 1 ; SC-BB-BB-SC
+389 388 390 391 1 -15.5 75 1 ; SC-BB-BB-SC
+391 390 392 393 1 -19.0 75 1 ; SC-BB-BB-SC
+393 392 394 395 1 44.9 75 1 ; SC-BB-BB-SC
+395 394 398 399 1 5.7 75 1 ; SC-BB-BB-SC
+399 398 402 403 1 31.7 75 1 ; SC-BB-BB-SC
+403 402 404 405 1 78.2 75 1 ; SC-BB-BB-SC
+405 404 406 407 1 68.9 75 1 ; SC-BB-BB-SC
+407 406 408 409 1 -132.6 75 1 ; SC-BB-BB-SC
+409 408 410 411 1 -149.0 75 1 ; SC-BB-BB-SC
+411 410 415 416 1 -110.2 75 1 ; SC-BB-BB-SC
+416 415 417 418 1 -159.6 75 1 ; SC-BB-BB-SC
+418 417 419 420 1 -134.5 75 1 ; SC-BB-BB-SC
+420 419 421 422 1 -150.2 75 1 ; SC-BB-BB-SC
+422 421 423 424 1 -106.2 75 1 ; SC-BB-BB-SC
+424 423 425 426 1 -163.4 75 1 ; SC-BB-BB-SC
+426 425 427 428 1 -151.1 75 1 ; SC-BB-BB-SC
+428 427 429 430 1 -147.4 75 1 ; SC-BB-BB-SC
+430 429 431 432 1 153.8 75 1 ; SC-BB-BB-SC
+432 431 435 436 1 -136.3 75 1 ; SC-BB-BB-SC
+436 435 440 441 1 -136.3 75 1 ; SC-BB-BB-SC
+441 440 442 443 1 -127.1 75 1 ; SC-BB-BB-SC
+443 442 444 445 1 176.3 75 1 ; SC-BB-BB-SC
+445 444 446 447 1 -122.7 75 1 ; SC-BB-BB-SC
+447 446 448 449 1 -133.9 75 1 ; SC-BB-BB-SC
+449 448 450 451 1 -107.1 75 1 ; SC-BB-BB-SC
+451 450 452 453 1 -136.6 75 1 ; SC-BB-BB-SC
+453 452 454 455 1 -126.6 75 1 ; SC-BB-BB-SC
+455 454 458 459 1 -129.8 75 1 ; SC-BB-BB-SC
+459 458 460 461 1 -157.0 75 1 ; SC-BB-BB-SC
+461 460 465 466 1 -72.4 75 1 ; SC-BB-BB-SC
+466 465 467 468 1 -173.4 75 1 ; SC-BB-BB-SC
+468 467 470 471 1 -124.0 75 1 ; SC-BB-BB-SC
+471 470 472 473 1 -143.1 75 1 ; SC-BB-BB-SC
+473 472 476 477 1 -135.0 75 1 ; SC-BB-BB-SC
+477 476 478 479 1 -180.0 75 1 ; SC-BB-BB-SC
+479 478 480 481 1 -79.6 75 1 ; SC-BB-BB-SC
+481 480 482 483 1 -146.7 75 1 ; SC-BB-BB-SC
+483 482 485 486 1 -124.4 75 1 ; SC-BB-BB-SC
+486 485 488 489 1 -111.0 75 1 ; SC-BB-BB-SC
+489 488 490 491 1 -152.5 75 1 ; SC-BB-BB-SC
+ 13  15  16  17 1 55.9 75 1 ; BB-BB-BB-SC
+ 14  13  15  16 1 6.3 75 1 ; SC-BB-BB-BB
+ 16  18  19  20 1 83.0 75 1 ; BB-BB-BB-SC
+ 17  16  18  19 1 58.3 75 1 ; SC-BB-BB-BB
+ 41  45  46  47 1 72.6 75 1 ; BB-BB-BB-SC
+ 42  41  45  46 1 16.5 75 1 ; SC-BB-BB-BB
+117 119 120 121 1 66.3 75 1 ; BB-BB-BB-SC
+118 117 119 120 1 25.8 75 1 ; SC-BB-BB-BB
+130 134 135 136 1 107.1 75 1 ; BB-BB-BB-SC
+131 130 134 135 1 -4.0 75 1 ; SC-BB-BB-BB
+162 166 167 168 1 -8.4 75 1 ; BB-BB-BB-SC
+163 162 166 167 1 120.7 75 1 ; SC-BB-BB-BB
+314 316 317 318 1 83.9 75 1 ; BB-BB-BB-SC
+315 314 316 317 1 -16.4 75 1 ; SC-BB-BB-BB
+493 492 494 495 1 165.3 75 1 ; SC-BB-BB-SC
+495 494 496 497 1 126.0 75 1 ; SC-BB-BB-SC
+497 496 499 500 1 -133.0 75 1 ; SC-BB-BB-SC
+500 499 501 502 1 167.4 75 1 ; SC-BB-BB-SC
+502 501 505 506 1 -145.0 75 1 ; SC-BB-BB-SC
+506 505 508 509 1 -134.3 75 1 ; SC-BB-BB-SC
+509 508 510 511 1 -153.2 75 1 ; SC-BB-BB-SC
+511 510 512 513 1 -132.9 75 1 ; SC-BB-BB-SC
+513 512 515 516 1 -111.3 75 1 ; SC-BB-BB-SC
+516 515 517 518 1 -150.4 75 1 ; SC-BB-BB-SC
+521 520 522 523 1 -140.7 75 1 ; SC-BB-BB-SC
+523 522 524 525 1 -138.4 75 1 ; SC-BB-BB-SC
+528 527 529 530 1 -133.9 75 1 ; SC-BB-BB-SC
+530 529 533 534 1 -117.8 75 1 ; SC-BB-BB-SC
+534 533 535 536 1 -153.0 75 1 ; SC-BB-BB-SC
+536 535 537 538 1 -156.7 75 1 ; SC-BB-BB-SC
+538 537 539 540 1 173.7 75 1 ; SC-BB-BB-SC
+540 539 545 546 1 -113.6 75 1 ; SC-BB-BB-SC
+546 545 547 548 1 -96.0 75 1 ; SC-BB-BB-SC
+548 547 549 550 1 -175.4 75 1 ; SC-BB-BB-SC
+550 549 553 554 1 -148.7 75 1 ; SC-BB-BB-SC
+554 553 557 558 1 -126.5 75 1 ; SC-BB-BB-SC
+558 557 559 560 1 -146.2 75 1 ; SC-BB-BB-SC
+560 559 561 562 1 -121.5 75 1 ; SC-BB-BB-SC
+562 561 563 564 1 -166.2 75 1 ; SC-BB-BB-SC
+564 563 565 566 1 -133.1 75 1 ; SC-BB-BB-SC
+566 565 567 568 1 -154.1 75 1 ; SC-BB-BB-SC
+568 567 571 572 1 -141.8 75 1 ; SC-BB-BB-SC
+572 571 573 574 1 -150.1 75 1 ; SC-BB-BB-SC
+574 573 575 576 1 72.0 75 1 ; SC-BB-BB-SC
+576 575 577 578 1 35.2 75 1 ; SC-BB-BB-SC
+578 577 579 580 1 -134.3 75 1 ; SC-BB-BB-SC
+580 579 581 582 1 -44.6 75 1 ; SC-BB-BB-SC
+582 581 583 584 1 167.6 75 1 ; SC-BB-BB-SC
+584 583 585 586 1 77.9 75 1 ; SC-BB-BB-SC
+586 585 588 589 1 89.8 75 1 ; SC-BB-BB-SC
+589 588 591 592 1 -120.6 75 1 ; SC-BB-BB-SC
+592 591 593 594 1 -157.5 75 1 ; SC-BB-BB-SC
+594 593 595 596 1 -128.4 75 1 ; SC-BB-BB-SC
+596 595 600 601 1 -127.2 75 1 ; SC-BB-BB-SC
+601 600 602 603 1 -141.0 75 1 ; SC-BB-BB-SC
+603 602 604 605 1 -123.4 75 1 ; SC-BB-BB-SC
+605 604 606 607 1 -154.4 75 1 ; SC-BB-BB-SC
+607 606 608 609 1 -125.0 75 1 ; SC-BB-BB-SC
+609 608 614 615 1 -134.2 75 1 ; SC-BB-BB-SC
+618 617 622 623 1 -141.1 75 1 ; SC-BB-BB-SC
+623 622 624 625 1 -104.1 75 1 ; SC-BB-BB-SC
+625 624 626 627 1 -99.9 75 1 ; SC-BB-BB-SC
+630 629 633 634 1 -134.5 75 1 ; SC-BB-BB-SC
+634 633 635 636 1 -127.2 75 1 ; SC-BB-BB-SC
+636 635 637 638 1 154.2 75 1 ; SC-BB-BB-SC
+638 637 639 640 1 -145.7 75 1 ; SC-BB-BB-SC
+640 639 641 642 1 -146.2 75 1 ; SC-BB-BB-SC
+642 641 646 647 1 -136.4 75 1 ; SC-BB-BB-SC
+647 646 648 649 1 -124.5 75 1 ; SC-BB-BB-SC
+649 648 651 652 1 163.2 75 1 ; SC-BB-BB-SC
+652 651 653 654 1 89.4 75 1 ; SC-BB-BB-SC
+654 653 655 656 1 163.7 75 1 ; SC-BB-BB-SC
+656 655 657 658 1 -172.5 75 1 ; SC-BB-BB-SC
+658 657 661 662 1 -134.5 75 1 ; SC-BB-BB-SC
+662 661 664 665 1 -134.4 75 1 ; SC-BB-BB-SC
+665 664 666 667 1 -126.5 75 1 ; SC-BB-BB-SC
+667 666 668 669 1 -149.4 75 1 ; SC-BB-BB-SC
+669 668 672 673 1 -129.6 75 1 ; SC-BB-BB-SC
+673 672 674 675 1 -137.8 75 1 ; SC-BB-BB-SC
+675 674 676 677 1 -121.8 75 1 ; SC-BB-BB-SC
+677 676 678 679 1 162.7 75 1 ; SC-BB-BB-SC
+679 678 680 681 1 23.6 75 1 ; SC-BB-BB-SC
+517 519 520 521 1 88.9 75 1 ; BB-BB-BB-SC
+518 517 519 520 1 8.5 75 1 ; SC-BB-BB-BB
+524 526 527 528 1 94.5 75 1 ; BB-BB-BB-SC
+525 524 526 527 1 -9.7 75 1 ; SC-BB-BB-BB
+614 616 617 618 1 95.7 75 1 ; BB-BB-BB-SC
+615 614 616 617 1 -2.1 75 1 ; SC-BB-BB-BB
+626 628 629 630 1 96.9 75 1 ; BB-BB-BB-SC
+627 626 628 629 1 -22.1 75 1 ; SC-BB-BB-BB
+
+[ dihedrals ]
+ 10   9   7   6 2 180.0 100.0
+ 92  90  91  89 2 180.0 50.0
+159 158 156 155 2 180.0 100.0
+178 177 175 174 2 180.0 100.0
+192 191 189 188 2 180.0 100.0
+242 240 241 239 2 180.0 50.0
+268 266 267 265 2 180.0 50.0
+309 308 306 305 2 180.0 100.0
+346 345 343 342 2 180.0 100.0
+351 349 350 348 2 180.0 50.0
+379 377 378 376 2 180.0 50.0
+414 412 413 411 2 180.0 50.0
+439 437 438 436 2 180.0 50.0
+464 462 463 461 2 180.0 50.0
+544 543 541 540 2 180.0 100.0
+599 597 598 596 2 180.0 50.0
+613 612 610 609 2 180.0 100.0
+621 619 620 618 2 180.0 50.0
+645 643 644 642 2 180.0 50.0
+
+[ virtual_sitesn ]
+  8 2  10   9   7   6
+157 2 159 158 156 155
+176 2 178 177 175 174
+190 2 192 191 189 188
+307 2 309 308 306 305
+344 2 346 345 343 342
+542 2 544 543 541 540
+611 2 613 612 610 609
+
+; Virtual go site
+682 1   1
+683 1   3
+684 1   5
+685 1  11
+686 1  13
+687 1  15
+688 1  16
+689 1  18
+690 1  19
+691 1  21
+692 1  23
+693 1  25
+694 1  27
+695 1  29
+696 1  31
+697 1  33
+698 1  35
+699 1  37
+700 1  39
+701 1  41
+702 1  45
+703 1  46
+704 1  48
+705 1  50
+706 1  52
+707 1  54
+708 1  56
+709 1  58
+710 1  60
+711 1  62
+712 1  64
+713 1  67
+714 1  71
+715 1  73
+716 1  76
+717 1  78
+718 1  80
+719 1  82
+720 1  84
+721 1  86
+722 1  88
+723 1  93
+724 1  97
+725 1  99
+726 1 101
+727 1 103
+728 1 105
+729 1 107
+730 1 109
+731 1 111
+732 1 113
+733 1 115
+734 1 117
+735 1 119
+736 1 120
+737 1 122
+738 1 124
+739 1 126
+740 1 128
+741 1 130
+742 1 134
+743 1 135
+744 1 137
+745 1 139
+746 1 143
+747 1 145
+748 1 147
+749 1 149
+750 1 152
+751 1 154
+752 1 160
+753 1 162
+754 1 166
+755 1 167
+756 1 169
+757 1 173
+758 1 179
+759 1 181
+760 1 183
+761 1 187
+762 1 193
+763 1 195
+764 1 197
+765 1 199
+766 1 201
+767 1 203
+768 1 205
+769 1 207
+770 1 209
+771 1 211
+772 1 213
+773 1 215
+774 1 217
+775 1 219
+776 1 221
+777 1 223
+778 1 225
+779 1 227
+780 1 229
+781 1 231
+782 1 233
+783 1 235
+784 1 238
+785 1 243
+786 1 247
+787 1 249
+788 1 251
+789 1 253
+790 1 255
+791 1 257
+792 1 261
+793 1 264
+794 1 269
+795 1 271
+796 1 273
+797 1 275
+798 1 277
+799 1 279
+800 1 282
+801 1 284
+802 1 287
+803 1 289
+804 1 292
+805 1 294
+806 1 296
+807 1 298
+808 1 300
+809 1 302
+810 1 304
+811 1 310
+812 1 312
+813 1 314
+814 1 316
+815 1 317
+816 1 319
+817 1 321
+818 1 323
+819 1 327
+820 1 329
+821 1 331
+822 1 333
+823 1 335
+824 1 337
+825 1 341
+826 1 347
+827 1 352
+828 1 355
+829 1 357
+830 1 359
+831 1 363
+832 1 365
+833 1 367
+834 1 369
+835 1 371
+836 1 373
+837 1 375
+838 1 380
+839 1 382
+840 1 384
+841 1 386
+842 1 388
+843 1 390
+844 1 392
+845 1 394
+846 1 398
+847 1 402
+848 1 404
+849 1 406
+850 1 408
+851 1 410
+852 1 415
+853 1 417
+854 1 419
+855 1 421
+856 1 423
+857 1 425
+858 1 427
+859 1 429
+860 1 431
+861 1 435
+862 1 440
+863 1 442
+864 1 444
+865 1 446
+866 1 448
+867 1 450
+868 1 452
+869 1 454
+870 1 458
+871 1 460
+872 1 465
+873 1 467
+874 1 470
+875 1 472
+876 1 476
+877 1 478
+878 1 480
+879 1 482
+880 1 485
+881 1 488
+882 1 490
+883 1 492
+884 1 494
+885 1 496
+886 1 499
+887 1 501
+888 1 505
+889 1 508
+890 1 510
+891 1 512
+892 1 515
+893 1 517
+894 1 519
+895 1 520
+896 1 522
+897 1 524
+898 1 526
+899 1 527
+900 1 529
+901 1 533
+902 1 535
+903 1 537
+904 1 539
+905 1 545
+906 1 547
+907 1 549
+908 1 553
+909 1 557
+910 1 559
+911 1 561
+912 1 563
+913 1 565
+914 1 567
+915 1 571
+916 1 573
+917 1 575
+918 1 577
+919 1 579
+920 1 581
+921 1 583
+922 1 585
+923 1 588
+924 1 591
+925 1 593
+926 1 595
+927 1 600
+928 1 602
+929 1 604
+930 1 606
+931 1 608
+932 1 614
+933 1 616
+934 1 617
+935 1 622
+936 1 624
+937 1 626
+938 1 628
+939 1 629
+940 1 633
+941 1 635
+942 1 637
+943 1 639
+944 1 641
+945 1 646
+946 1 648
+947 1 651
+948 1 653
+949 1 655
+950 1 657
+951 1 661
+952 1 664
+953 1 666
+954 1 668
+955 1 672
+956 1 674
+957 1 676
+958 1 678
+959 1 680
+
+[ exclusions ]
+  5   6   7   8   9  10 
+  6   7   8   9  10 
+  7   8   9  10 
+  8   9  10 
+  9  10 
+ 41  42  43  44 
+ 42  43  44 
+ 43  44 
+ 67  68  69  70 
+ 68  69  70 
+ 69  70 
+ 88  89  90  91  92 
+ 89  90  91  92 
+ 90  91  92 
+ 91  92 
+ 93  94  95  96 
+ 94  95  96 
+ 95  96 
+130 131 132 133 
+131 132 133 
+132 133 
+139 140 141 142 
+140 141 142 
+141 142 
+154 155 156 157 158 159 
+155 156 157 158 159 
+156 157 158 159 
+157 158 159 
+158 159 
+162 163 164 165 
+163 164 165 
+164 165 
+169 170 171 172 
+170 171 172 
+171 172 
+173 174 175 176 177 178 
+174 175 176 177 178 
+175 176 177 178 
+176 177 178 
+177 178 
+183 184 185 186 
+184 185 186 
+185 186 
+187 188 189 190 191 192 
+188 189 190 191 192 
+189 190 191 192 
+190 191 192 
+191 192 
+238 239 240 241 242 
+239 240 241 242 
+240 241 242 
+241 242 
+243 244 245 246 
+244 245 246 
+245 246 
+257 258 259 260 
+258 259 260 
+259 260 
+264 265 266 267 268 
+265 266 267 268 
+266 267 268 
+267 268 
+304 305 306 307 308 309 
+305 306 307 308 309 
+306 307 308 309 
+307 308 309 
+308 309 
+323 324 325 326 
+324 325 326 
+325 326 
+337 338 339 340 
+338 339 340 
+339 340 
+341 342 343 344 345 346 
+342 343 344 345 346 
+343 344 345 346 
+344 345 346 
+345 346 
+347 348 349 350 351 
+348 349 350 351 
+349 350 351 
+350 351 
+359 360 361 362 
+360 361 362 
+361 362 
+375 376 377 378 379 
+376 377 378 379 
+377 378 379 
+378 379 
+394 395 396 397 
+395 396 397 
+396 397 
+398 399 400 401 
+399 400 401 
+400 401 
+410 411 412 413 414 
+411 412 413 414 
+412 413 414 
+413 414 
+431 432 433 434 
+432 433 434 
+433 434 
+435 436 437 438 439 
+436 437 438 439 
+437 438 439 
+438 439 
+454 455 456 457 
+455 456 457 
+456 457 
+460 461 462 463 464 
+461 462 463 464 
+462 463 464 
+463 464 
+472 473 474 475 
+473 474 475 
+474 475 
+501 502 503 504 
+502 503 504 
+503 504 
+529 530 531 532 
+530 531 532 
+531 532 
+539 540 541 542 543 544 
+540 541 542 543 544 
+541 542 543 544 
+542 543 544 
+543 544 
+549 550 551 552 
+550 551 552 
+551 552 
+553 554 555 556 
+554 555 556 
+555 556 
+567 568 569 570 
+568 569 570 
+569 570 
+595 596 597 598 599 
+596 597 598 599 
+597 598 599 
+598 599 
+608 609 610 611 612 613 
+609 610 611 612 613 
+610 611 612 613 
+611 612 613 
+612 613 
+617 618 619 620 621 
+618 619 620 621 
+619 620 621 
+620 621 
+629 630 631 632 
+630 631 632 
+631 632 
+641 642 643 644 645 
+642 643 644 645 
+643 644 645 
+644 645 
+657 658 659 660 
+658 659 660 
+659 660 
+668 669 670 671 
+669 670 671 
+670 671 
+#include "Inactive_exclusions_VirtGoSites.itp"
+

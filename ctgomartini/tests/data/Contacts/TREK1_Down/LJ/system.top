@@ -1,0 +1,18 @@
+#define GO_VIRT
+
+#include "Down/martini_v3.0.0.itp"
+#include "Down/Down.itp"
+#include "Down/martini_v3.0.0_phospholipids_v1.itp"
+#include "Down/martini_v3.0.0_solvents_v1.itp"
+#include "Down/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+Down    1
+POPC           147
+POPC           152
+W             8274
+NA              91
+CL              87

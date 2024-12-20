@@ -42,9 +42,10 @@ def gen_restraints(str_file, atomname, fc=1000, rest_file="restraints.txt"):
     u=mda.Universe(str_file)
     sel=u.select_atoms(f"name {atomname}")
     
-    newlines=["; atomindex functype(1) fc\n"]
+    newlines=["; atomindex functype(1) fc_x fc_y fc_z\n"]
+    newlines.append(f'; atomid start from 1\n')
     for i in sel.indices:
-        newlines.append(f'{i:>5} 1 {fc}\n')
+        newlines.append(f'{i+1:>5} 1 {fc} {fc} {fc}\n')
     
     with open(rest_file,'w') as g:
         g.writelines(newlines)
@@ -53,8 +54,11 @@ def restraints(system, inputs):
     crd, _ = LoadStructure(inputs.rest_ref)
     if inputs.rest == 'yes':
         # positional restraints for protein
-        posresPROT = mm.CustomExternalForce('1/2*k*periodicdistance(x, y, z, x0, y0, z0)^2;')
-        posresPROT.addPerParticleParameter('k')
+        # posresPROT = mm.CustomExternalForce('1/2*k*periodicdistance(x, y, z, x0, y0, z0)^2;')
+        posresPROT = mm.CustomExternalForce('1/2*kx*periodicdistance(x, 0, 0, x0, 0, 0)^2 + 1/2*ky*periodicdistance(0, y, 0, 0, y0, 0)^2 + 1/2*kz*periodicdistance(0, 0, z, 0, 0, z0)^2;')
+        posresPROT.addPerParticleParameter('kx')
+        posresPROT.addPerParticleParameter('ky')
+        posresPROT.addPerParticleParameter('kz')
         posresPROT.addPerParticleParameter('x0')
         posresPROT.addPerParticleParameter('y0')
         posresPROT.addPerParticleParameter('z0')
@@ -62,18 +66,19 @@ def restraints(system, inputs):
             if line.find(';') >= 0: line = line.split(';')[0]
             sline = line.strip()
             if sline == '': continue
-            segments, functype, fc = sline.split()[:3]
-            atom1 = int(segments)
-            fc = float(fc)
+            segments, functype, fcx, fcy, fcz = sline.split()[:5]
+            atom1 = int(segments) - 1
+            fcx, fcy, fcz = float(fcx), float(fcy), float(fcz)
             assert functype == '1', f'Error: Unsupport position restraint type.\n {line}'
             xpos  = crd.positions[atom1].value_in_unit(u.nanometers)[0]
             ypos  = crd.positions[atom1].value_in_unit(u.nanometers)[1]
             zpos  = crd.positions[atom1].value_in_unit(u.nanometers)[2]
-            if fc > 0:
-                posresPROT.addParticle(atom1, [fc, xpos, ypos, zpos])
+            if fcx >= 0 and fcy >=0 and fcz >= 0:
+                posresPROT.addParticle(atom1, [fcx, fcy, fcz, xpos, ypos, zpos])
 
         system.addForce(posresPROT)
     return system
+
 
 def BackupFile(file):
     if os.path.isfile(file):
@@ -192,6 +197,8 @@ def mdrun(inpfile):
     integrator = mm.LangevinIntegrator(
         inputs.temp * u.kelvin, inputs.fric_coeff / u.picosecond, inputs.dt * u.picosecond
     )
+    if inputs.const_tol: integrator.setConstraintTolerance(inputs.const_tol) # Set the constraint tolerance
+    print(integrator.getConstraintTolerance())
 
 
     simulation = Simulation(top.topology, system, integrator, platform, platformProperties)
@@ -239,10 +246,20 @@ def mdrun(inpfile):
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin, inputs.gen_seed)
         else:
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin)
-
+    
     # Production
-    start_time=datetime.datetime.now()
     if inputs.nstep > 0:
+        start_time=datetime.datetime.now()
+        # Set the output format
+        if inputs.odcd and not inputs.oxtc:
+            TrajReporter = DCDReporter
+            otraj = inputs.odcd
+        elif inputs.oxtc and not inputs.odcd:
+            TrajReporter = XTCReporter
+            otraj = inputs.oxtc
+        else:
+            raise ValueError("Error: Please specify either odcd or oxtc!")
+
         if inputs.append == 'no': 
             b_step = inputs.b_step
             simulation.context.setStepCount(b_step)
@@ -255,10 +272,10 @@ def mdrun(inpfile):
 
         if inputs.nstdcd > 0:
             if inputs.append == 'yes':
-                simulation.reporters.append(DCDReporter(inputs.odcd, inputs.nstdcd, append=True,))
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd, append=True,))
             else:
-                BackupFile(inputs.odcd)
-                simulation.reporters.append(DCDReporter(inputs.odcd, inputs.nstdcd))
+                BackupFile(otraj)
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd))
             BackupFile(inputs.ochk)
             simulation.reporters.append(CheckpointReporter(inputs.ochk, inputs.nstdcd, writeState=True))
         simulation.reporters.append(

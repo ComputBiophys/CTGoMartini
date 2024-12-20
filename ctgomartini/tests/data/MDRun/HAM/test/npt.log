@@ -1,0 +1,39 @@
+Loading parameters
+
+Using platform: CUDA, Precision: single
+Using GPU_id: 0
+gbp uses the multiple basin potential.
+['True', 'ham', '2', '1000', '-50', '0']
+(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;;
+energy1 = state1_force1;
+energy2 = state2_force1;
+1e-05
+
+Loading system finishes!
+  Start Time: 2024-12-15 19:22:56
+    End Time: 2024-12-15 19:22:57
+Elapsed Time: 1.91
+
+Initial system energy: -41665.387 kJ/mol
+
+Plan Energy minimization: 10000 steps
+Minimized system energy: -42040.844 kJ/mol
+  Start Time: 2024-12-15 19:22:57
+    End Time: 2024-12-15 19:22:58
+Elapsed Time: 0.13
+
+Generate initial velocities: 310.0 K
+
+MD run: begin 0, end 5000, total 5000
+#"Progress (%)"	"Step"	"Time (ps)"	"Potential Energy (kJ/mole)"	"Temperature (K)"	"Speed (ns/day)"	"Time Remaining"
+20.0%	1000	9.999999999999831	-110814.89272959184	300.89431216868957	0	--
+40.0%	2000	20.000000000000327	-110311.85073839089	315.2103177693017	3.54e+03	0:00
+60.0%	3000	30.00000000000189	-110113.04716349563	308.20735877926126	3.57e+03	0:00
+80.0%	4000	40.00000000000061	-110295.08380404109	307.4898472980262	3.49e+03	0:00
+100.0%	5000	49.99999999999862	-110124.45387542658	314.4630041831737	3.51e+03	0:00
+
+Write checkpoint file: npt.chk
+The task has finished!
+  Start Time: 2024-12-15 19:22:58
+    End Time: 2024-12-15 19:22:59
+Elapsed Time: 1.50

@@ -1,0 +1,13 @@
+
+#include "FF/martini_v3.0.0.itp"
+#include "gbp.itp"
+#include "gbp_params.itp"
+#include "FF/martini_v3.0.0_phospholipids_v1.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+gbp    1

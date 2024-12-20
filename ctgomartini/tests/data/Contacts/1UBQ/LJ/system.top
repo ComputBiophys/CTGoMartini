@@ -1,0 +1,16 @@
+#define GO_VIRT
+#include "FF/martini_v3.0.0.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+#include "FF/protein.itp"
+
+[ system ]
+; name
+Insanely solvated protein.
+
+[ molecules ]
+; name  number
+protein        1
+W            13385
+NA             147
+CL             147

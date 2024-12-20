@@ -1,38 +1,50 @@
-CTGoMartini
+# CTGoMartini: A Python package for protein conformational transitions with Go-Martini models
 
-# Install
-pip install .
+CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martini, and Multiple-basin Go-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of protiens, with particular focus on membrane proteins, using Go-Martini models.
 
-# api: the main class
-### 1.1 Load topology files 
-### 1.2 Generate new topology
-### 1.3 Gereate the running file: Switching GoMartini and Multiple-baisn Go-Martini
-### 1.4 Provide the analysis scripts
-# func: 
-### 2.1 Generate the new topology files
-### 2.2 Generate the running file
-### 2.3 Provide the analysis scripts: Pathway searching and state clustering
 
-# util: 
-### 3.1 Functions which are used to load topology files and generate the new topology
-### 3.2 Convert to all-atom
+## Installation
+### Prerequisites
+- conda
+- Python 3.8
+- dssp
 
-# Questions:
-CHOL for martini2
+```
+conda create -n ctgomartini python=3.8
+conda activate ctgomartini
+pip install -e .
+```
 
-Vsite self.nb_force.addExclusion(index + offset, atoms[0]) # ????
-Warninging: bonded types in [ atomtypes ]
+Verify your installation by typing the following command
+```
+python -m ctgomartini.tests.tests
+```
 
-# Project Roadmap
+## Features
+- Implement a new interaction type named "Contacts" to replace the LJ-type contact interactions in classic GoMartini3 models, which can (1) eliminate incorrect interactions between multiple protein copies in classic GoMartini3 models and (2) facilitate construction of multiple basin potentials in Multiple-basin GoMartini simulations.
+- Automatically construct GoMartini3 model topologies for different simulation methods.
+- Simplify the process of running coarse-grained simulations.
+
+## Tutorial
+- Please see the directory Tutorial
+
+
+
+
+
+## Project Roadmap
 - [x] Force Class Refinement: Transition the force class to utilize objective classification criteria to enhance clarity and maintainability.
 - [x] Multi-basin Force Groups Overhaul: Rebuild the multiple-basin force groups by employing a more efficient approach using two collective variables (CVs) instead of analyzing across all CVs. This will improve performance.
-- [ ] Vermouth Martinize Functions Update: Update the Vermouth Martinize functions to ensure compatibility with the latest standards and to improve overall functionality.
+- [ ] Vermouth Martinize Functions Update: Update the Vermouth Martinize functions to ensure compatibility with the latest standards and to improve overall functionality. Will be done until Vermouth becomes stable 
 - [x] Testing Completion: Develop a comprehensive test to validate the integrity and reliability of the project, ensuring that all components function as intended.
 - [x] Charge and atom number checkment: Add charge check and atom number check
-- [ ] XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
+- [x] XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
 - [x] Add Checkpoint at the ending of the simulations
-- [ ] Position restraints: x,y,z restraint instead of the distance restraint
+- [x] Add the constraint tolerance parameter in .inp file to better manage the constraint
+- [x] Position restraints: x,y,z restraint instead of the distance restraint
+- [x] Reconstruct the tests module
 - [ ] Analysis module should be added.
-- [ ] Minimization output module should be added.
+- [x] Minimization output module should be added. This function can be achieved simplely by setting the nstep in npt.inp as zero.
 - [ ] Plumed module should be added.
-- [ ] Add the single-basin contact topology generation
+- [x] Add the single-basin contact topology generation
+- [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs
