@@ -45,11 +45,9 @@ def read_data(struct_pdb, ref_pdb, file_contacts, file_CA, file_BB, file_OV, fil
     subprocess.call("echo '' >> " + file_OV, shell=True)
     subprocess.call("grep -a '0 [01] [01] 1' " + file_contacts + " > " + file_rCSU, shell=True)
     subprocess.call("echo '' >> " + file_rCSU, shell=True)
-    # subprocess.call("grep -a 'BB' " + struct_pdb + " > " + file_BB, shell=True)
-    subprocess.call(f"grep ^ATOM {struct_pdb}|grep -a 'BB' > {file_BB}", shell=True)
+    subprocess.call("grep -a 'BB' " + struct_pdb + " > " + file_BB, shell=True)
     subprocess.call("echo '' >> " + file_BB, shell=True)
-    # subprocess.call("grep -a 'CA ' " + ref_pdb + " > " + file_CA, shell=True)
-    subprocess.call(f"grep ^ATOM {ref_pdb}|grep -a 'CA ' > {file_CA}", shell=True)
+    subprocess.call("grep -a 'CA ' " + ref_pdb + " > " + file_CA, shell=True)
     subprocess.call("echo '' >> " + file_CA, shell=True)
 
     # read coarse-grained BB bead positions

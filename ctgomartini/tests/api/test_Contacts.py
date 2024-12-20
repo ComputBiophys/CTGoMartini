@@ -17,9 +17,9 @@ def CompareResults(working_dir, epsilon_r = 15):
     os.chdir(os.path.join(working_dir, "LJ"))
 
     # Use the results from the last run
-    Clean()
-    GMX_set(strfile=strfile, topfile=topfile, CreateMDP=True, indexfile=None, double_precision=True)
-    GMX_run()
+    # Clean()
+    # GMX_set(strfile=strfile, topfile=topfile, CreateMDP=True, indexfile=None, double_precision=True)
+    # GMX_run()
 
     gmx_energy=Load_energy(clean=False)
     gmx_forces=Load_forces(clean=False)   

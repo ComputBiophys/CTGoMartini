@@ -1,4 +1,4 @@
-# This file was created Fri Dec 13 11:24:13 2024
+# This file was created Thu Dec 19 17:00:11 2024
 # Created by:
 #             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
 # 
@@ -9,7 +9,7 @@
 #   gmx_d traj -f conf -s conf -of forces_conf
 # gmx traj is part of G R O M A C S:
 #
-# Gyas ROwers Mature At Cryogenic Speed
+# Guyana Rwanda Oman Macau Angola Cameroon Senegal
 #
 @    title "Force"
 @    xaxis  label "Time (ps)"

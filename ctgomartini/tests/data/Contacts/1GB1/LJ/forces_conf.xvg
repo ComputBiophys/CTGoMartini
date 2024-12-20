@@ -1,4 +1,4 @@
-# This file was created Fri Dec 13 11:23:55 2024
+# This file was created Thu Dec 19 16:59:52 2024
 # Created by:
 #             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
 # 
@@ -9,7 +9,7 @@
 #   gmx_d traj -f conf -s conf -of forces_conf
 # gmx traj is part of G R O M A C S:
 #
-# Gromacs Runs One Microsecond At Cannonball Speeds
+# Gnomes, ROck Monsters And Chili Sauce
 #
 @    title "Force"
 @    xaxis  label "Time (ps)"

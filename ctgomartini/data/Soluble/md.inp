@@ -4,7 +4,7 @@ mini_Tol    = 1000.0                            ; Minimization energy tolerance
 gen_vel     = no                                ; Generate initial velocities
 gen_temp    = 310                               ; Temperature for generating initial velocities (K)
 
-nstep       = 500000                            ; number of steps to run
+nstep       = 50000000                          ; number of steps to run
 dt          = 0.020                             ; time-step (ps)
 b_step      = 0                                 ; set begininng step count
 append      = no                                ; append new dcd to the old one

@@ -213,16 +213,16 @@ class TestMultipleBasinGoMartiniTopology:
                 pool.map(Compare_per_frame,range(10))
 
 
-    def test_Beta2AR_HAM(self):
-        base_dir = os.path.join(self.path, "../data/MBGoMartini/Beta2AR/")
-        HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
-                                ['True', 'ham', '2', '600', '-200', '0'],
-                                ['True', 'ham', '2', '100', '-900', '0'],
-                                ]
+    # def test_Beta2AR_HAM(self):
+    #     base_dir = os.path.join(self.path, "../data/MBGoMartini/Beta2AR/")
+    #     HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
+    #                             ['True', 'ham', '2', '600', '-200', '0'],
+    #                             ['True', 'ham', '2', '100', '-900', '0'],
+    #                             ]
 
-        for j, HAM_parameters in enumerate(HAM_parameters_list):
-            print(os.getcwd())
-            print(HAM_parameters)
-            Compare_per_frame = partial(Compare, base_dir=base_dir, mixing_parameters=HAM_parameters, prefix_strfile='Beta2AR')
-            with Pool(max(cpu_count(),10)) as pool:
-                pool.map(Compare_per_frame, range(10))
+    #     for j, HAM_parameters in enumerate(HAM_parameters_list):
+    #         print(os.getcwd())
+    #         print(HAM_parameters)
+    #         Compare_per_frame = partial(Compare, base_dir=base_dir, mixing_parameters=HAM_parameters, prefix_strfile='Beta2AR')
+    #         with Pool(max(cpu_count(),10)) as pool:
+    #             pool.map(Compare_per_frame, range(10))

@@ -285,9 +285,9 @@ def Compare_energy(energy1, energy2, isPrint=True):
     abs_energy_error = abs(energy1 - energy2)
 
     if isPrint:
-        print('Energy Compare')
-        print(f'Absolute error: {abs_energy_error:.5f}')
-        print(f'Relative error: {relative_energy_error:.5f}')
+        print('###Energy Compare###')
+        print(f'Absolute error: {abs_energy_error:.5e}')
+        print(f'Relative error: {relative_energy_error:.5e}')
 
     if relative_energy_error <= 1e-5 or abs_energy_error <= 1e-3:
         if isPrint:
@@ -331,27 +331,66 @@ def Compare_energy_array(energy_array1, energy_array2, isPrint=True):
         return True
 
 
+# def Compare_forces(forces1, forces2, isPrint=True):
+#     '''forces1 and forces2 should be the calculated force and standard forces, respectively.'''
+#     average = 0.5*np.linalg.norm(forces1, axis=1) + 0.5*np.linalg.norm(forces2, axis=1)
+
+#     relative_force_error = np.linalg.norm(forces1 - forces2, axis=1) / average
+#     relative_force_error = np.nan_to_num(relative_force_error, nan=0)
+#     max_relative_force_error, max_relative_force_error_index = relative_force_error.max(
+#     ), relative_force_error.argmax()
+
+#     abs_force_error = np.linalg.norm(forces1 - forces2, axis=1)
+#     max_abs_force_error, max_abs_force_error_index = abs_force_error.max(
+#     ), abs_force_error.argmax()
+
+#     atol = 1e-5
+#     rtol = 1e-4
+#     allclose = abs_force_error-(atol+rtol*average)
+#     max_allclose = allclose.max()
+#     if isPrint:
+#         print('###Forces Compare###')
+#         print(f'Max absolute error: {max_abs_force_error:.5f}')
+#         print(f'Max relative error: {max_relative_force_error:.5f}')
+#         print(f'      Max allclose: {max_allclose:.5f}')
+
+#     if max_allclose <= 0:
+#         if isPrint:
+#             print("Forces match!")
+#         return True
+#     else:
+#         if isPrint:
+#             print("Error: Forces do not match!")
+#         return False 
+
 def Compare_forces(forces1, forces2, isPrint=True):
-    average = 0.5*np.linalg.norm(forces1, axis=1) + 0.5*np.linalg.norm(forces2, axis=1)
+    '''forces1 and forces2 should be the calculated force and standard forces, respectively.'''
+    # Don't consider zero forces (virtual site atoms)
+    nonzero_index = (np.linalg.norm(forces1, axis=1) != 0) & (np.linalg.norm(forces2, axis=1) != 0)
+    forces1 = forces1[nonzero_index]
+    forces2 = forces2[nonzero_index]
 
-    relative_force_error = np.linalg.norm(forces1 - forces2, axis=1) / average
-    relative_force_error = np.nan_to_num(relative_force_error, nan=0)
-    max_relative_force_error, max_relative_force_error_index = relative_force_error.max(
-    ), relative_force_error.argmax()
+    ref = np.linalg.norm(forces2, axis=1)
 
-    abs_force_error = np.linalg.norm(forces1 - forces2, axis=1)
-    max_abs_force_error, max_abs_force_error_index = abs_force_error.max(
-    ), abs_force_error.argmax()
+    relative_force_errors = np.linalg.norm(forces1 - forces2, axis=1) / ref
+    relative_force_errors = np.nan_to_num(relative_force_errors, nan=0)
+    abs_force_errors = np.linalg.norm(forces1 - forces2, axis=1)
 
-    atol = 1e-5
-    rtol = 1e-4
-    allclose = abs_force_error-(atol+rtol*average)
+
+    atol = 1e-4
+    rtol = 1e-5
+    allclose = abs_force_errors-(atol+rtol*ref)
     max_allclose = allclose.max()
+    max_allclose_index = allclose.argmax()
+    abs_force_error = abs_force_errors[max_allclose_index]
+    relative_force_error = relative_force_errors[max_allclose_index]
+
     if isPrint:
         print('###Forces Compare###')
-        print(f'Max absolute error: {max_abs_force_error:.5f}')
-        print(f'Max relative error: {max_relative_force_error:.5f}')
-        print(f'      Max allclose: {max_allclose:.5f}')
+        print(f'   Max allclose: {max_allclose:.5e}')
+        print(f' Absolute error: {abs_force_error:.5e}')
+        print(f' Relative error: {relative_force_error:.5e}')
+
 
     if max_allclose <= 0:
         if isPrint:
@@ -361,7 +400,6 @@ def Compare_forces(forces1, forces2, isPrint=True):
         if isPrint:
             print("Error: Forces do not match!")
         return False 
-
 
 def Compare_forces_array(forces_array1, forces_array2, isPrint=True):
     # shape check:

@@ -44,6 +44,7 @@ python -m ctgomartini.tests.tests
 - [x] Position restraints: x,y,z restraint instead of the distance restraint
 - [x] Reconstruct the tests module
 - [ ] Analysis module should be added.
-- [ ] Minimization output module should be added.
+- [x] Minimization output module should be added. This function can be achieved simplely by setting the nstep in npt.inp as zero.
 - [ ] Plumed module should be added.
 - [x] Add the single-basin contact topology generation
+- [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs

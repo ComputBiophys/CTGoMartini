@@ -246,19 +246,20 @@ def mdrun(inpfile):
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin, inputs.gen_seed)
         else:
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin)
-
+    
     # Production
-    if inputs.odcd and not inputs.oxtc:
-        TrajReporter = DCDReporter
-        otraj = inputs.odcd
-    elif inputs.oxtc and not inputs.odcd:
-        TrajReporter = XTCReporter
-        otraj = inputs.oxtc
-    else:
-        raise ValueError("Error: Please specify either odcd or oxtc!")
-
-    start_time=datetime.datetime.now()
     if inputs.nstep > 0:
+        start_time=datetime.datetime.now()
+        # Set the output format
+        if inputs.odcd and not inputs.oxtc:
+            TrajReporter = DCDReporter
+            otraj = inputs.odcd
+        elif inputs.oxtc and not inputs.odcd:
+            TrajReporter = XTCReporter
+            otraj = inputs.oxtc
+        else:
+            raise ValueError("Error: Please specify either odcd or oxtc!")
+
         if inputs.append == 'no': 
             b_step = inputs.b_step
             simulation.context.setStepCount(b_step)
