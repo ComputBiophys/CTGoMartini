@@ -91,7 +91,7 @@ def BackupFile(file):
 
 def WriteOutput(output_file, simulation, strfile):
     # Get crd, volocities, box_vectors
-    state = simulation.context.getState(getPositions=True,getVelocities=True)
+    state = simulation.context.getState(getPositions=True,getVelocities=True,enforcePeriodicBox=True)
     crd = state.getPositions(asNumpy=True).value_in_unit(u.angstrom)
     velocities = state.getVelocities(asNumpy=True).value_in_unit(u.angstrom/u.picosecond)
     box_vectors = state.getPeriodicBoxVectors(asNumpy=True).value_in_unit(u.angstrom)[[0,1,2],[0,1,2]]

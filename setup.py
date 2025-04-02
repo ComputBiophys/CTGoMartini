@@ -48,8 +48,8 @@ setup(
         "pandas",
         "matplotlib>=3.3.3",
         "vermouth==0.9.6",
-        #"openmm>=8.1",
-#        "dssp"
+        # "openmm>=8.1",
+#       # "dssp"
     ],
     # package_data={'ctgomartini': [
     # 'data/*',

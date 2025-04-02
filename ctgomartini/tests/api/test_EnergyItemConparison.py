@@ -39,12 +39,13 @@ def Compare_OMM_GMX(working_dir, strfile='md.gro',  epsilon_r=15.0, **kwargs):
     omm_energy=Load_energy(clean=False)
     omm_forces=Load_forces(clean=False)
     print(omm_energy)
+
     # gmx
     os.chdir(os.path.join(working_dir, "gmx"))
-
-    Clean()
-    GMX_set(strfile=strfile, topfile=topfile, reffile='ref.gro', CreateMDP=False, indexfile=None, double_precision=True)
-    GMX_run()
+    # Clean()
+    # GMX_set(strfile=strfile, topfile=topfile, reffile='ref.gro', CreateMDP=False, indexfile=None, double_precision=True)
+    # GMX_set(strfile=strfile, topfile=topfile, reffile='ref.gro', CreateMDP=False, indexfile=None, double_precision=True)
+    # GMX_run()
 
     gmx_energy=Load_energy(clean=False)
     gmx_forces=Load_forces(clean=False)
@@ -63,9 +64,9 @@ class TestEnergyItemComparison:
     """
     path = os.path.dirname(__file__)
 
-    # def test_PullCode(self):
-    #     working_dir = os.path.join(self.path, "../data/EnergyItemComparison/PullCode/GlnBP/")
-    #     Compare_OMM_GMX(working_dir, strfile='md.gro', epsilon_r = 15)  
+    def test_PullCode(self):
+        working_dir = os.path.join(self.path, "../data/EnergyItemComparison/PullCode/GlnBP/")
+        Compare_OMM_GMX(working_dir, strfile='md.gro', epsilon_r = 15)  
 
     def test_Restraints(self):
         working_dir = os.path.join(self.path, "../data/EnergyItemComparison/Restraints/GlnBP_Open/")
