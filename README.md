@@ -48,3 +48,6 @@ python -m ctgomartini.tests.tests
 - [ ] Plumed module should be added.
 - [x] Add the single-basin contact topology generation
 - [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs
+- [ ] Seperate the tests and codes to different respositories in order to make the project more clear.
+- [ ] Reconstruct the codes with AI tools to make the codes more readable.
+- [ ] More tutorials should be added, especially for the membrane systems.
