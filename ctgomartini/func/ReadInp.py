@@ -39,11 +39,13 @@ class _OpenMMReadInputs():
         self.rest_ref         = 'input.gro'                               # Reference structure file
         self.rest_file        = 'restraints.txt'
         self.gen_rest         = 'no'
-        self.atomname         = None                                      # atom name
+        self.atomname         = None                                      # Atom name, such as "BB"
         self.fc               = 1000.0                                    # Positional restraint force constant for restraint generation (kJ/mol/nm^2)
-        self.gen_rest_file    = 'restraints.txt'                          #  Generated restraint file name
+        self.gen_rest_file    = 'restraints.txt'                          # Generated restraint file name
         
-        
+        self.plumed           = 'no'                                      # Turn on/off plumed
+        self.plumed_file      = 'plumed.dat'                              # Plumed input file name
+
         self.platform         = 'CUDA'                                    # CPU, CUDA, OpenCL, Reference
         self.precision        = 'single'                                  # single, mixed, double for CUDA and OpenCL. For CPU and Reference platforms, default precision is used.
         self.GPU_id           = None                                      # None is default
@@ -117,6 +119,11 @@ class _OpenMMReadInputs():
                     if input_param == 'FC':                             self.fc               = float(input_value)    
                     if input_param == 'GEN_REST_FILE':                  self.gen_rest_file    = str(input_value)
                     
+                    if input_param == 'PLUMED':
+                        if input_value.upper() == 'YES':                self.plumed          = 'yes'
+                        if input_value.upper() == 'NO':                 self.plumed          = 'no'
+                    if input_param == 'PLUMED_FILE':                    self.plumed_file      = str(input_value)
+
                     if input_param == 'PLATFORM':                       self.platform         = str(input_value)
                     if input_param == 'PRECISION':                      self.precision        = str(input_value)
                     if input_param == 'GPU_ID':                         self.GPU_id           = str(input_value)
