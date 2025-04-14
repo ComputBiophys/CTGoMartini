@@ -177,10 +177,10 @@ def mdrun(inpfile):
     if inputs.rest == 'yes':     system = restraints(system, inputs)
 
     # Add plumed
-    if inputs.plumed == 'yes':
-        print(f"\nAdd plumed: {inputs.plumed_file}")
-        plumed = PlumedForce(inputs.plumed_file)
-        system.addForce(plumed)
+    # if inputs.plumed == 'yes':
+    #     print(f"\nAdd plumed: {inputs.plumed_file}")
+    #     plumed = PlumedForce(inputs.plumed_file)
+    #     system.addForce(plumed)
 
     # Add a barostat
     if inputs.pcouple=='yes':
