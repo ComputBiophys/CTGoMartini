@@ -176,6 +176,12 @@ def mdrun(inpfile):
     if inputs.gen_rest == 'yes': gen_restraints(inputs.input, inputs.atomname, inputs.fc, inputs.gen_rest_file)
     if inputs.rest == 'yes':     system = restraints(system, inputs)
 
+    # Add plumed
+    if inputs.plumed == 'yes':
+        print(f"\nAdd plumed: {inputs.plumed_file}")
+        plumed = PlumedForce(inputs.plumed_file)
+        system.addForce(plumed)
+
     # Add a barostat
     if inputs.pcouple=='yes':
         if inputs.p_type == 'isotropic': 
