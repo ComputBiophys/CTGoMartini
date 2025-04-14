@@ -2,7 +2,6 @@
 
 """
 Authors: Song Yang
-Last update: 11 27, 2023
 """
 
 import os, sys
@@ -15,6 +14,9 @@ import MDAnalysis as mda
 import argparse
 import datetime
 import signal
+
+import warnings
+warnings.filterwarnings("ignore")
 
 def ReportTime(start_time):
     end_time=datetime.datetime.now()
