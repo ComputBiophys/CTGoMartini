@@ -51,3 +51,4 @@ python -m ctgomartini.tests.tests
 - [ ] Seperate the tests and codes to different respositories in order to make the project more clear.
 - [ ] Reconstruct the codes with AI tools to make the codes more readable.
 - [ ] More tutorials should be added, especially for the membrane systems.
+- [ ] Modify the suitable friction coefficient parameter in the inp file. 
