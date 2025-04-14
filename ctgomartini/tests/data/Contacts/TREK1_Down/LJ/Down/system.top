@@ -1,9 +1,0 @@
-#define GO_VIRT
-#include "martini_v3.0.0.itp"
-#include "Down.itp"
-
-[ system ]
-Title of the system
-
-[ molecules ]
-Down    1
