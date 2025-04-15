@@ -6,7 +6,7 @@ def Extract_contacts_from_top(top, molecule_name):
     atoms = top.moleculeTypes[molecule_name]._topology['atoms']
     nonbond_params = top.forcefield._parameters['nonbond_params']
 
-    pattern=f'{molecule_name}_\d+'
+    pattern=rf'{molecule_name}_\d+'
     contact_atoms = {}  # atomtype: atomid # hard restraint
     for item in atoms:
         atomtype = item[1]
@@ -137,45 +137,50 @@ def CombineDict(dict_list):
                 dict_combined[key].append(dict_list[i][key])
     return dict_combined
 
-def ForceItemFloat(item):
+def ForceItemFloat(item, precision=None):
     try:
         item = float(item)
+        if precision is not None:
+            item = round(item, precision)
     except:
         pass
     return item
 
-def ForceListFloat(itemlist):
+def ForceListFloat(itemlist, precision=None):
     newlist = []
     for item in itemlist:
         if type(item) is not list:
-            newlist.append(ForceItemFloat(item))
+            newlist.append(ForceItemFloat(item, precision))
         else:
-            newlist.append(ForceListFloat(item))
+            newlist.append(ForceListFloat(item, precision))
     return newlist
 
-def SameListList(listlist, typeforce=True, sort=False):
+def SameListList(listlist, typeforce=True, sort=False, precision=None):
     """
     Judge whether the lists in the list are the same
     
     Parameters
     #####
-    listlist: list(list)
+    listlist: list(list) or list(list(list*))
         list of some lists
     typefoce: bool, True
+    precision: int or None
+        number of decimal places to consider (None for exact comparison)
 
     Return
     ######
     True or False
     """
     issame = True
-    ref_list = ForceListFloat(listlist[0]) if typeforce else listlist[0]
+    ref_list = ForceListFloat(listlist[0], precision=precision) if typeforce else listlist[0]
     ref_list = sorted(ref_list) if sort else ref_list
     for item in listlist[1:]:
-        item = ForceListFloat(item) if typeforce else item
+        item = ForceListFloat(item, precision=precision) if typeforce else item
         item = sorted(item) if sort else item
         if item != ref_list:
             issame = False
     return issame
+
 
 def SameList(alist, typeforce=True):
     """
@@ -263,7 +268,7 @@ class CombineMols:
         mols_atoms_dict_combined = CombineDict(mols_atoms_dict_list)
 
         mbmol_atomtop = []
-        Extract=lambda atomtype: re.findall('^(\w+)_(\d+)$',atomtype)[0]
+        Extract=lambda atomtype: re.findall(r'^(\w+)_(\d+)$',atomtype)[0]
         for key, value in mols_atoms_dict_combined.items():
             assert len(value) == n_mols, f"Error: The number of molecules with the same atomid is not equal to the number of molecules. {key}"
             if SameListList(value):

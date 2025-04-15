@@ -39,7 +39,7 @@ def WriteItp(mol, Itp_file='default',Params_file='default'):
     Params_lines = []
     # atomtypes
     atoms_list = mol._topology['atoms']
-    new_atomtypes = [item[1] for item in atoms_list if re.fullmatch(f'{molecule_name}_\d+', item[1])]
+    new_atomtypes = [item[1] for item in atoms_list if re.fullmatch(rf'{molecule_name}_\d+', item[1])]
     if new_atomtypes != []:
         new_atomtypes_list=[[atomtype, '0.0', '0.0','A','0.0','0.0'] for atomtype in new_atomtypes]
         Params_lines+=['\n[ atomtypes ]\n']
