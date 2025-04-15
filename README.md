@@ -7,7 +7,7 @@ CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martin
 ### Prerequisites
 - conda
 - Python >= 3.8
-- dssp
+- dssp < 4.0
 - openmm >=8.1
 ```
 conda create -n ctgomartini python=3.8
