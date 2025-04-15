@@ -20,10 +20,8 @@ pip install -e .
 conda install -c conda-forge openmm-plumed
 ```
 
-Verify your installation by typing the following command
-```
-python -m ctgomartini.tests.tests
-```
+Verify your installation by following the instructions from [CTGoMartini-tests](https://github.com/ComputBiophys/CTGoMartini-tests).
+
 
 ## Features
 - Implement a new interaction type named "Contacts" to replace the LJ-type contact interactions in classic GoMartini3 models, which can (1) eliminate incorrect interactions between multiple protein copies in classic GoMartini3 models and (2) facilitate construction of multiple basin potentials in Multiple-basin GoMartini simulations.
@@ -51,9 +49,9 @@ python -m ctgomartini.tests.tests
 - [ ] Analysis module should be added.
 - [x] Minimization output module should be added. This function can be achieved simplely by setting the nstep in npt.inp as zero.
 - [x] Plumed module should be added.
-- [x] Add the single-basin contact topology generation
+- [x] Add the single-basin contact topology generation.
 - [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs
-- [ ] Seperate the tests and codes to different respositories in order to make the project more clear.
+- [x] Seperate the tests and codes to different respositories in order to make the project more clear.
 - [ ] Reconstruct the codes with AI tools to make the codes more readable.
 - [ ] More tutorials should be added, especially for the membrane systems.
 - [ ] Modify the suitable friction coefficient parameter in the inp file. 
