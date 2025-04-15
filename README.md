@@ -6,13 +6,17 @@ CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martin
 ## Installation
 ### Prerequisites
 - conda
-- Python 3.8
+- Python >= 3.8
 - dssp
-
+- openmm >=8.1
 ```
 conda create -n ctgomartini python=3.8
 conda activate ctgomartini
+conda install -c conda-forge openmm
 pip install -e .
+
+# if use plumed function, please install openmm-plumed
+conda install -c conda-forge openmm-plumed
 ```
 
 Verify your installation by typing the following command
@@ -45,7 +49,7 @@ python -m ctgomartini.tests.tests
 - [x] Reconstruct the tests module
 - [ ] Analysis module should be added.
 - [x] Minimization output module should be added. This function can be achieved simplely by setting the nstep in npt.inp as zero.
-- [ ] Plumed module should be added.
+- [x] Plumed module should be added.
 - [x] Add the single-basin contact topology generation
 - [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs
 - [ ] Seperate the tests and codes to different respositories in order to make the project more clear.

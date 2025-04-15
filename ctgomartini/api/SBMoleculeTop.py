@@ -4,7 +4,7 @@ from .MartiniTopology import MartiniTopFile
 
 def ChangeAtomType(atoms, mol_name, sbmol_name):
     import re
-    Extract=lambda atomtype: re.findall('^(\w+)_(\d+)$',atomtype)[0]
+    Extract=lambda atomtype: re.findall(r'^(\w+)_(\d+)$',atomtype)[0]
 
     newatoms = []
     for field in atoms:
