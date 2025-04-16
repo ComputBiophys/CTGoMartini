@@ -323,73 +323,73 @@ def mdrun(inpfile):
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin)
     
     # Production MD simulation
-        if inputs.nstep > 0:
-            start_time=datetime.datetime.now()
+    if inputs.nstep > 0:
+        start_time=datetime.datetime.now()
+        
+        # Determine trajectory output format (DCD or XTC)
+        if inputs.odcd and not inputs.oxtc:
+            TrajReporter = DCDReporter  # Binary DCD format
+            otraj = inputs.odcd
+        elif inputs.oxtc and not inputs.odcd:
+            TrajReporter = XTCReporter  # Compressed XTC format 
+            otraj = inputs.oxtc
+        else:
+            raise ValueError("Error: Please specify either odcd or oxtc!")
+
+        # Set simulation starting point (either from input or checkpoint)
+        if inputs.append == 'no': 
+            b_step = inputs.b_step  # Starting step from input
+            simulation.context.setStepCount(b_step)
+            simulation.context.setTime(inputs.dt * b_step)
+        else:
+            b_step = simulation.context.getStepCount()  # Continue from current step
             
-            # Determine trajectory output format (DCD or XTC)
-            if inputs.odcd and not inputs.oxtc:
-                TrajReporter = DCDReporter  # Binary DCD format
-                otraj = inputs.odcd
-            elif inputs.oxtc and not inputs.odcd:
-                TrajReporter = XTCReporter  # Compressed XTC format 
-                otraj = inputs.oxtc
+        e_step = inputs.nstep  # Total number of steps to run
+        be_step = e_step - b_step  # Steps remaining to reach target
+        
+        print(f"\nMD run: begin {b_step}, end {e_step}, total {be_step}")
+
+        # Setup trajectory and checkpoint reporters
+        if inputs.nstdcd > 0:
+            if inputs.append == 'yes':
+                # Append to existing trajectory file
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd, append=True))
             else:
-                raise ValueError("Error: Please specify either odcd or oxtc!")
-    
-            # Set simulation starting point (either from input or checkpoint)
-            if inputs.append == 'no': 
-                b_step = inputs.b_step  # Starting step from input
-                simulation.context.setStepCount(b_step)
-                simulation.context.setTime(inputs.dt * b_step)
-            else:
-                b_step = simulation.context.getStepCount()  # Continue from current step
-                
-            e_step = inputs.nstep  # Total number of steps to run
-            be_step = e_step - b_step  # Steps remaining to reach target
+                # Create new trajectory file with backup
+                BackupFile(otraj)
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd))
             
-            print(f"\nMD run: begin {b_step}, end {e_step}, total {be_step}")
-    
-            # Setup trajectory and checkpoint reporters
-            if inputs.nstdcd > 0:
-                if inputs.append == 'yes':
-                    # Append to existing trajectory file
-                    simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd, append=True))
-                else:
-                    # Create new trajectory file with backup
-                    BackupFile(otraj)
-                    simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd))
-                
-                # Setup checkpoint file reporter
-                BackupFile(inputs.ochk)
-                simulation.reporters.append(
-                    CheckpointReporter(inputs.ochk, inputs.nstdcd, writeState=True)
-                )
-                
-            # Add console output reporter
+            # Setup checkpoint file reporter
+            BackupFile(inputs.ochk)
             simulation.reporters.append(
-                StateDataReporter(
-                    sys.stdout, 
-                    inputs.nstout,  # Reporting interval
-                    step=True, 
-                    time=True, 
-                    potentialEnergy=True, 
-                    temperature=True, 
-                    progress=True,
-                    remainingTime=True, 
-                    speed=True, 
-                    totalSteps=e_step, 
-                    separator='\t'
-                )
+                CheckpointReporter(inputs.ochk, inputs.nstdcd, writeState=True)
             )
             
-            # Run the simulation
-            try:
-                simulation.step(be_step)
-                be_step = 0  # Reset remaining steps counter
-            except KeyboardInterrupt:
-                print("The task has been canceled!")
-                ReportTime(start_time)
-                Cleanup(signal.SIGINT, simulation, inputs)
+        # Add console output reporter
+        simulation.reporters.append(
+            StateDataReporter(
+                sys.stdout, 
+                inputs.nstout,  # Reporting interval
+                step=True, 
+                time=True, 
+                potentialEnergy=True, 
+                temperature=True, 
+                progress=True,
+                remainingTime=True, 
+                speed=True, 
+                totalSteps=e_step, 
+                separator='\t'
+            )
+        )
+        
+        # Run the simulation
+        try:
+            simulation.step(be_step)
+            be_step = 0  # Reset remaining steps counter
+        except KeyboardInterrupt:
+            print("The task has been canceled!")
+            ReportTime(start_time)
+            Cleanup(signal.SIGINT, simulation, inputs)
     
     # Write final output files
     if inputs.output:
