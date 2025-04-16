@@ -30,11 +30,14 @@ atomname    = BB                                ; Select atom name
 fc          = 1000.0                            ; Positional restraint force constant for restraint generation (kJ/mol/nm^2)
 gen_rest_file = restraints.txt                  ; Generated restraint file name
 
+plumed      = no                                ; Turn on/off plumed
+plumed_file =                                   ; Default: plumed.dat
+
 platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
 precision   = single                            ; single, mixed, double for CUDA and OpenCL. For CPU and Reference platforms, default precision is used.
 GPU_id      =  
 temp        = 310                               ; Temperature (K)
-fric_coeff  = 1                                 ; Friction coefficient for Langevin dynamics
+fric_coeff  = 0.1                               ; Friction coefficient for Langevin dynamics
 nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions. Unit: nm
 epsilon_r   = 15.0                              ; epsilon_r
 const_tol   =                                   ; Set the distance tolerance within which constraints are maintained. default is 1e-5
