@@ -2,7 +2,6 @@
 
 """
 Authors: Song Yang
-Last update: 11 27, 2023
 """
 
 import os, sys
@@ -15,6 +14,9 @@ import MDAnalysis as mda
 import argparse
 import datetime
 import signal
+
+import warnings
+warnings.filterwarnings("ignore")
 
 def ReportTime(start_time):
     end_time=datetime.datetime.now()
@@ -39,43 +41,77 @@ def LoadStructure(str_file):
     return conf, box_vectors
 
 def gen_restraints(str_file, atomname, fc=1000, rest_file="restraints.txt"):
+    """Generate restraint file for selected atoms.
+    
+    Args:
+        str_file (str): Structure file (gro/pdb) containing atoms to restrain
+        atomname (str): Atom name to apply restraints to (e.g. 'CA')
+        fc (int, optional): Force constant in kJ/(mol·nm²). Defaults to 1000.
+        rest_file (str, optional): Output restraint file. Defaults to "restraints.txt".
+    """
     u=mda.Universe(str_file)
     sel=u.select_atoms(f"name {atomname}")
     
-    newlines=["; atomindex functype(1) fc\n"]
+    newlines=["; atomindex functype(1) fc_x fc_y fc_z\n"]
+    newlines.append(f'; atomid start from 1\n')
     for i in sel.indices:
-        newlines.append(f'{i:>5} 1 {fc}\n')
+        newlines.append(f'{i+1:>5} 1 {fc} {fc} {fc}\n')
     
     with open(rest_file,'w') as g:
         g.writelines(newlines)
 
 def restraints(system, inputs):
+    """Add positional restraints to the system.
+    
+    Args:
+        system (openmm.System): The system to add restraints to
+        inputs (object): Input parameters object containing restraint settings
+        
+    Returns:
+        openmm.System: The system with restraints added
+    """
     crd, _ = LoadStructure(inputs.rest_ref)
     if inputs.rest == 'yes':
         # positional restraints for protein
-        posresPROT = mm.CustomExternalForce('1/2*k*periodicdistance(x, y, z, x0, y0, z0)^2;')
-        posresPROT.addPerParticleParameter('k')
+        # posresPROT = mm.CustomExternalForce('1/2*k*periodicdistance(x, y, z, x0, y0, z0)^2;')
+        # Create custom external force for anisotropic positional restraints
+        posresPROT = mm.CustomExternalForce('1/2*kx*periodicdistance(x, 0, 0, x0, 0, 0)^2 + 1/2*ky*periodicdistance(0, y, 0, 0, y0, 0)^2 + 1/2*kz*periodicdistance(0, 0, z, 0, 0, z0)^2;')
+        posresPROT.addPerParticleParameter('kx')
+        posresPROT.addPerParticleParameter('ky')
+        posresPROT.addPerParticleParameter('kz')
         posresPROT.addPerParticleParameter('x0')
         posresPROT.addPerParticleParameter('y0')
         posresPROT.addPerParticleParameter('z0')
+        
+        # Parse restraint file and add particles to the force
         for line in open(inputs.rest_file, 'r'):
             if line.find(';') >= 0: line = line.split(';')[0]
             sline = line.strip()
             if sline == '': continue
-            segments, functype, fc = sline.split()[:3]
-            atom1 = int(segments)
-            fc = float(fc)
+            segments, functype, fcx, fcy, fcz = sline.split()[:5]
+            atom1 = int(segments) - 1  # Convert to 0-based index
+            fcx, fcy, fcz = float(fcx), float(fcy), float(fcz)
             assert functype == '1', f'Error: Unsupport position restraint type.\n {line}'
-            xpos  = crd.positions[atom1].value_in_unit(u.nanometers)[0]
-            ypos  = crd.positions[atom1].value_in_unit(u.nanometers)[1]
-            zpos  = crd.positions[atom1].value_in_unit(u.nanometers)[2]
-            if fc > 0:
-                posresPROT.addParticle(atom1, [fc, xpos, ypos, zpos])
+            
+            # Get reference positions in nanometers
+            xpos = crd.positions[atom1].value_in_unit(u.nanometers)[0]
+            ypos = crd.positions[atom1].value_in_unit(u.nanometers)[1]
+            zpos = crd.positions[atom1].value_in_unit(u.nanometers)[2]
+            
+            # Add restraint if any force constant is positive
+            if fcx >= 0 and fcy >=0 and fcz >= 0:
+                posresPROT.addParticle(atom1, [fcx, fcy, fcz, xpos, ypos, zpos])
 
         system.addForce(posresPROT)
     return system
 
+
 def BackupFile(file):
+    """Create backup of existing file with incremental numbering.
+    
+    Args:
+        file (str): Path to file that needs backup
+    """
     if os.path.isfile(file):
         i = 1
         newfile = file + f'.bk{i}'
@@ -85,13 +121,20 @@ def BackupFile(file):
         os.rename(file,newfile)
 
 def WriteOutput(output_file, simulation, strfile):
-    # Get crd, volocities, box_vectors
-    state = simulation.context.getState(getPositions=True,getVelocities=True)
+    """Write simulation output to file in specified format.
+    
+    Args:
+        output_file (str): Path to output file
+        simulation (openmm.Simulation): Simulation object containing state
+        strfile (str): Reference structure file for topology
+    """
+    # Get current state information
+    state = simulation.context.getState(getPositions=True,getVelocities=True,enforcePeriodicBox=True)
     crd = state.getPositions(asNumpy=True).value_in_unit(u.angstrom)
     velocities = state.getVelocities(asNumpy=True).value_in_unit(u.angstrom/u.picosecond)
     box_vectors = state.getPeriodicBoxVectors(asNumpy=True).value_in_unit(u.angstrom)[[0,1,2],[0,1,2]]
     
-    # Write out output_file
+    # Create MDAnalysis universe and update with current simulation state
     mda_u = mda.Universe(strfile)
     mda_u.atoms.positions = crd
     mda_u.trajectory[0].velocities = True
@@ -100,22 +143,48 @@ def WriteOutput(output_file, simulation, strfile):
     mda_u.atoms.write(output_file)
 
 def WriteCheckPoint(simulation, input_ochk):
-    # Write CheckPoint file
-    state = simulation.context.getState(getPositions=True, getVelocities=True )
+    """Save simulation checkpoint state to XML file.
+    
+    Args:
+        simulation (openmm.Simulation): Simulation object to save
+        input_ochk (str): Path to output checkpoint file
+    """
+    state = simulation.context.getState(getPositions=True, getVelocities=True)
     with open(input_ochk, 'w') as f:
         f.write(mm.XmlSerializer.serialize(state))
     print(f"\nWrite checkpoint file: {input_ochk}")
 
 def Cleanup(signum, simulation, inputs):
+    """Handle signal interrupts by saving checkpoint before exiting.
+    
+    Args:
+        signum (int): Signal number
+        simulation (openmm.Simulation): Running simulation
+        inputs (object): Input parameters
+    """
     print("Received signal", signum, ". Performing cleanup...")
     WriteCheckPoint(simulation, inputs.ochk)
     sys.exit(0)
 signal.signal(signal.SIGTERM, Cleanup)
 
 def mdrun(inpfile):
-    """
-    inpfile: str,
-        Input parameter file.
+    """Main function to execute CTGoMartini molecular dynamics simulation.
+    
+    Args:
+        inpfile (str): Path to input parameter file containing simulation settings
+        
+    Workflow:
+        1. Load simulation parameters from input file
+        2. Configure computational platform (CPU/GPU)
+        3. Load molecular structure and topology
+        4. Create OpenMM system with forces and constraints
+        5. Perform energy minimization (if requested)
+        6. Generate initial velocities (if requested)
+        7. Run production MD simulation
+        8. Write output files
+        
+    Returns:
+        None: Outputs are written to files specified in input parameters
     """
     start_time=datetime.datetime.now()
 
@@ -169,6 +238,17 @@ def mdrun(inpfile):
     if inputs.gen_rest == 'yes': gen_restraints(inputs.input, inputs.atomname, inputs.fc, inputs.gen_rest_file)
     if inputs.rest == 'yes':     system = restraints(system, inputs)
 
+    # Add plumed
+    if inputs.plumed == 'yes':
+        from openmmplumed import PlumedForce
+        print(f"\nAdd plumed: {inputs.plumed_file}")
+        def SetPlumed(system, plumed_file):
+            with open(plumed_file, 'r') as f:
+                script = f.read()
+            # print(script)
+            system.addForce(PlumedForce(script))
+        SetPlumed(system, inputs.plumed_file)
+
     # Add a barostat
     if inputs.pcouple=='yes':
         if inputs.p_type == 'isotropic': 
@@ -192,6 +272,9 @@ def mdrun(inpfile):
     integrator = mm.LangevinIntegrator(
         inputs.temp * u.kelvin, inputs.fric_coeff / u.picosecond, inputs.dt * u.picosecond
     )
+    if inputs.const_tol: 
+        integrator.setConstraintTolerance(inputs.const_tol) # Set the constraint tolerance
+        print("Set Constraint Tolerance:", integrator.getConstraintTolerance())
 
 
     simulation = Simulation(top.topology, system, integrator, platform, platformProperties)
@@ -239,45 +322,77 @@ def mdrun(inpfile):
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin, inputs.gen_seed)
         else:
             simulation.context.setVelocitiesToTemperature(inputs.gen_temp * u.kelvin)
-
-    # Production
-    start_time=datetime.datetime.now()
+    
+    # Production MD simulation
     if inputs.nstep > 0:
+        start_time=datetime.datetime.now()
+        
+        # Determine trajectory output format (DCD or XTC)
+        if inputs.odcd and not inputs.oxtc:
+            TrajReporter = DCDReporter  # Binary DCD format
+            otraj = inputs.odcd
+        elif inputs.oxtc and not inputs.odcd:
+            TrajReporter = XTCReporter  # Compressed XTC format 
+            otraj = inputs.oxtc
+        else:
+            raise ValueError("Error: Please specify either odcd or oxtc!")
+
+        # Set simulation starting point (either from input or checkpoint)
         if inputs.append == 'no': 
-            b_step = inputs.b_step
+            b_step = inputs.b_step  # Starting step from input
             simulation.context.setStepCount(b_step)
             simulation.context.setTime(inputs.dt * b_step)
         else:
-            b_step = simulation.context.getStepCount()
-        e_step = inputs.nstep
-        be_step=e_step-b_step
+            b_step = simulation.context.getStepCount()  # Continue from current step
+            
+        e_step = inputs.nstep  # Total number of steps to run
+        be_step = e_step - b_step  # Steps remaining to reach target
+        
         print(f"\nMD run: begin {b_step}, end {e_step}, total {be_step}")
 
+        # Setup trajectory and checkpoint reporters
         if inputs.nstdcd > 0:
             if inputs.append == 'yes':
-                simulation.reporters.append(DCDReporter(inputs.odcd, inputs.nstdcd, append=True,))
+                # Append to existing trajectory file
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd, append=True))
             else:
-                BackupFile(inputs.odcd)
-                simulation.reporters.append(DCDReporter(inputs.odcd, inputs.nstdcd))
+                # Create new trajectory file with backup
+                BackupFile(otraj)
+                simulation.reporters.append(TrajReporter(otraj, inputs.nstdcd))
+            
+            # Setup checkpoint file reporter
             BackupFile(inputs.ochk)
-            simulation.reporters.append(CheckpointReporter(inputs.ochk, inputs.nstdcd, writeState=True))
+            simulation.reporters.append(
+                CheckpointReporter(inputs.ochk, inputs.nstdcd, writeState=True)
+            )
+            
+        # Add console output reporter
         simulation.reporters.append(
-            StateDataReporter(sys.stdout, inputs.nstout, step=True, time=True, potentialEnergy=True, temperature=True, progress=True,
-                            remainingTime=True, speed=True, 
-                            totalSteps=e_step, separator='\t')
+            StateDataReporter(
+                sys.stdout, 
+                inputs.nstout,  # Reporting interval
+                step=True, 
+                time=True, 
+                potentialEnergy=True, 
+                temperature=True, 
+                progress=True,
+                remainingTime=True, 
+                speed=True, 
+                totalSteps=e_step, 
+                separator='\t'
+            )
         )
         
+        # Run the simulation
         try:
             simulation.step(be_step)
-            be_step = 0 
+            be_step = 0  # Reset remaining steps counter
         except KeyboardInterrupt:
             print("The task has been canceled!")
             ReportTime(start_time)
-            # WriteCheckPoint(simulation, inputs.ochk)
             Cleanup(signal.SIGINT, simulation, inputs)
-        
-
-    # Write output file
+    
+    # Write final output files
     if inputs.output:
         WriteOutput(inputs.output, simulation, inputs.input)
     if inputs.output_pdb:
@@ -289,8 +404,22 @@ def mdrun(inpfile):
     ReportTime(start_time)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-i', dest='inpfile', help='Input parameter file', required=True)
+    # Set up command line argument parser
+    parser = argparse.ArgumentParser(
+        description="Run CTGoMartini molecular dynamics simulation using OpenMM"
+    )
+    
+    # Define required input parameter file argument
+    parser.add_argument(
+        '-i', 
+        dest='inpfile', 
+        help='Input parameter file containing simulation settings', 
+        required=True
+    )
+    
+    # Parse command line arguments
     args = parser.parse_args()
+    
+    # Execute the main MD simulation function with provided input file
     mdrun(args.inpfile)
     
