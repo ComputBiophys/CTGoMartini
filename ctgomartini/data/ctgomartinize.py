@@ -252,7 +252,7 @@ python ctgomartinize.py -s StateA_aa.pdb StateB_aa.pdb -m StateA_aa.map StateB_a
     parser.add_argument('-ff', dest='ff', default='martini3001', type=str,
                         help='forcefield to use (default: martini3001)\nNow only support martini3001!')
     parser.add_argument('-method', dest='method', required=True, type=str,
-                        help='method to use (required: sbp, exp, ham, switching)')
+                        help='method to use (required: exp, ham, switching)')
     parser.add_argument('-cutoff_BBB_angles', dest='cutoff_BBB_angles', default=15.0, type=float,
                         help='Cutoff of BBB angles for generating the multiple-baisn Go-Martini topology (default: 15.0 degree)')
     parser.add_argument('-cutoff_BBBB_dihedrals', dest='cutoff_BBBB_dihedrals', default=30.0, type=float,
