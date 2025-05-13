@@ -7,7 +7,7 @@ In this section, we will utilize GlnBP as an example to illustrate the capabilit
 (2) Generate the Multiple-basin Gō-Martini model for GlnBP. Firstly, we need to upload the atomistic pdb files of GlnBP to [web-server](http://info.ifpan.edu.pl/~rcsu/rcsu/index.html) and generate the contact maps with default settings. Download and uncompress the generated .tgz files. Then, we utilize ctgomartinize.py to generate the Multiple-basin Martini topology of GlnBP (GlnBP.itp and GlnBP_params.itp).
 
 ```
-python ctgomartinize.py -s 1GGG_clean.pdb 1WDN_clean.pdb -m 1GGG_clean.map 1WDN_clean.map -mol Open Closed -mbmol GlnBP -dssp dssp -ff martini3001 -method exp
+python ctgomartinize.py -s 1GGG_clean.pdb 1WDN_clean.pdb -m 1GGG_clean.map 1WDN_clean.map -mol Open Closed -mbmol GlnBP -dssp path/to/dssp -ff martini3001 -method exp
 
 ```
 
@@ -17,7 +17,7 @@ vi GlnBP.itp # Change beta, C1, and C2 to 1/300, -300, and 0, respectively.
 
 ```
 
-(3) Insert the CG protein of the open-state GlnBP into a cubic box and solvate the system with water and ions by using the script [insane.py](http://www.cgmartini.nl/images/tools/insane/insane.py). Be aware that there are issues with ion names and counts for the added ions that require manual correction.
+(3) Insert the CG protein of the open-state GlnBP into a cubic box and solvate the system with water and ions by using the script [insane.py](https://cgmartini-library.s3.ca-central-1.amazonaws.com/1_Downloads/tools/proteins_and_bilayers/insane.py). Be aware that there are issues with ion names and counts for the added ions that require manual correction.
 
 ```
 python2 insane.py -f Open/Open_cg.pdb -box 9,9,9 -o ions.gro -salt 0.15 -charge auto -center -sol W 2>system.top
@@ -51,3 +51,7 @@ python run_ctgomartini.py -i md.inp
 ```
 
 (5) Finally, analyze the simulations we just obtained.
+
+```
+python MBAnalysis_v3_argparse.py -s npt.pdb -f md.xtc -r Open/Open_cg.pdb Closed/Closed_cg.pdb -sel "name BB" -prefix dRMStrj
+```

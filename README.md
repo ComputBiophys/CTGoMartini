@@ -54,4 +54,7 @@ Verify your installation by following the instructions from [CTGoMartini-tests](
 - [x] Seperate the tests and codes to different respositories in order to make the project more clear.
 - [ ] Reconstruct the codes with AI tools to make the codes more readable.
 - [ ] More tutorials should be added, especially for the membrane systems.
-- [ ] Modify the suitable friction coefficient parameter in the inp file. 
+- [x] Modify the suitable friction coefficient parameter in the inp file. 
+- [ ] Bugs: Global Parameters for beta, C1, C2, indicating it only supports only one EXP system.
+- [ ] Update the parameter searching method with PyMBAR
+
