@@ -1,0 +1,60 @@
+# This file was created Wed Nov  1 14:54:11 2023
+# Created by:
+#             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/CommonUse/Martini/CTGoMartini/tests/data/NormalTopology/others_m3/1POPC/gmx
+# Command line:
+#   gmx_d traj -f conf -s conf -of forces_conf
+# gmx traj is part of G R O M A C S:
+#
+# GROningen Mixture of Alchemy and Childrens' Stories
+#
+@    title "Force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ mol\S-1\N nm\S-1\N)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "atom 1 X"
+@ s1 legend "atom 1 Y"
+@ s2 legend "atom 1 Z"
+@ s3 legend "atom 2 X"
+@ s4 legend "atom 2 Y"
+@ s5 legend "atom 2 Z"
+@ s6 legend "atom 3 X"
+@ s7 legend "atom 3 Y"
+@ s8 legend "atom 3 Z"
+@ s9 legend "atom 4 X"
+@ s10 legend "atom 4 Y"
+@ s11 legend "atom 4 Z"
+@ s12 legend "atom 5 X"
+@ s13 legend "atom 5 Y"
+@ s14 legend "atom 5 Z"
+@ s15 legend "atom 6 X"
+@ s16 legend "atom 6 Y"
+@ s17 legend "atom 6 Z"
+@ s18 legend "atom 7 X"
+@ s19 legend "atom 7 Y"
+@ s20 legend "atom 7 Z"
+@ s21 legend "atom 8 X"
+@ s22 legend "atom 8 Y"
+@ s23 legend "atom 8 Z"
+@ s24 legend "atom 9 X"
+@ s25 legend "atom 9 Y"
+@ s26 legend "atom 9 Z"
+@ s27 legend "atom 10 X"
+@ s28 legend "atom 10 Y"
+@ s29 legend "atom 10 Z"
+@ s30 legend "atom 11 X"
+@ s31 legend "atom 11 Y"
+@ s32 legend "atom 11 Z"
+@ s33 legend "atom 12 X"
+@ s34 legend "atom 12 Y"
+@ s35 legend "atom 12 Z"
+ 0	-9.68101	-69.518	53.0203	-7.44068	77.2065	-27.2291	-1.88482	-0.63862	-70.8462	19.2668	11.8965	-33.3915	5.61757	4.78473	52.0495	1.79072	-26.8325	-27.7631	-14.389	24.3445	40.7781	6.86351	-2.93487	-10.9942	-13.4815	-25.6989	-2.30084	14.4443	1.96292	42.8326	-10.1717	4.96654	7.38578	9.06586	0.461221	-23.5413

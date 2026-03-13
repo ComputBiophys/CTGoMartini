@@ -5,11 +5,11 @@ Authors: Song Yang
 """
 
 import os, sys
-from simtk import unit as u
-from simtk import openmm as mm
+import openmm.unit as u
+import openmm as mm
 from openmm.app import *
 from ctgomartini.api import MartiniTopFile
-from ctgomartini.func import read_inputs
+from ctgomartini.core import read_inputs
 import MDAnalysis as mda
 import argparse
 import datetime

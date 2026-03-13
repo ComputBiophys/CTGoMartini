@@ -1,0 +1,10 @@
+#include "martini_v2.2.itp"
+#include "Protein_A.itp"
+    
+[ system ]
+; name
+Martini system from beta-hairpin.pdb
+    
+[ molecules ]
+; name        number
+Protein_A 	 1

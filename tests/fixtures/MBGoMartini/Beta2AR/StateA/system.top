@@ -1,0 +1,29 @@
+#define GO_VIRT
+
+#include "Active/martini_v3.0.0.itp"
+#include "Active/Active.itp"
+#include "Active/martini_v3.0.0_phospholipids_v1.itp"
+#include "Active/martini_v3.0.0_solvents_v1.itp"
+#include "Active/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+Active    1
+; X: 8.000 (10 bins) Y: 8.000 (10 bins) in upper leaflet
+; X: 8.000 (10 bins) Y: 8.000 (10 bins) in lower leaflet
+; 80 lipids in upper leaflet, 77 lipids in lower leaflet
+; NDX Solute 1 959
+; Charge of protein: 4.000000
+; NDX Membrane 960 2843
+; Charge of membrane: 0.000000
+; Total charge: 4.000000
+; NDX Solvent 2844 5891
+; NDX System 1 5891
+; "I mean, the good stuff is just INSANE" --Julia Ormond
+POPC            80
+POPC            77
+W             2982
+NA              31
+CL              33

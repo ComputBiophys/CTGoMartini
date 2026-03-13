@@ -1,0 +1,30 @@
+# This file was created Wed Nov  1 14:54:20 2023
+# Created by:
+#             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/CommonUse/Martini/CTGoMartini/tests/data/NormalTopology/others_m3/2W/gmx
+# Command line:
+#   gmx_d traj -f conf -s conf -of forces_conf
+# gmx traj is part of G R O M A C S:
+#
+# Gyas ROwers Mature At Cryogenic Speed
+#
+@    title "Force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ mol\S-1\N nm\S-1\N)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "atom 1 X"
+@ s1 legend "atom 1 Y"
+@ s2 legend "atom 1 Z"
+@ s3 legend "atom 2 X"
+@ s4 legend "atom 2 Y"
+@ s5 legend "atom 2 Z"
+ 0	23.5404	1.1248	2.08891	-23.5404	-1.1248	-2.08891

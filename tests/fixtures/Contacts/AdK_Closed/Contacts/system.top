@@ -1,0 +1,24 @@
+
+#include "FF/martini_v3.0.0.itp"
+#include "closed_params.itp"
+#include "closed.itp"
+#include "FF/martini_v3.0.0_phospholipids_v1.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+closed    1
+; NDX Solute 1 690
+; Charge of protein: -8.000000
+; NDX Membrane 691 0
+; Charge of membrane: 0.000000
+; Total charge: -8.000000
+; NDX Solvent 691 5487
+; NDX System 1 5487
+; "I mean, the good stuff is just INSANE" --Julia Ormond
+W             4693
+NA              52
+CL              48

@@ -1,60 +1,176 @@
-# CTGoMartini: A Python package for protein conformational transitions with Go-Martini models
+# CTGoMartini: A Python Package for Protein Conformational Transitions with Go-Martini Models
 
-CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martini, and Multiple-basin Go-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of protiens, with particular focus on membrane proteins, using Go-Martini models.
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/ComputBiophys/CTGoMartini/releases)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
+CTGoMartini is a Python package for single-basin Go-Martini, Switching Go-Martini, and Multiple-basin Go-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of proteins, with particular focus on membrane proteins, using Go-Martini models.
 
-## Installation
-### Prerequisites
-- conda
-- Python >= 3.12
-- dssp < 4.0
-- openmm >=8.1
-- vermouth == 0.9.6
-```
-conda create -n ctgomartini python=3.8
-conda activate ctgomartini
-conda install -c conda-forge openmm
-pip install -e .
+**Version 0.6.0** - See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for upgrade information from 0.5.x.
 
-# if use plumed function, please install openmm-plumed
-conda install -c conda-forge openmm-plumed
-```
+## License
 
-Verify your installation by following the instructions from [CTGoMartini-tests](https://github.com/ComputBiophys/CTGoMartini-tests).
-
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Features
-- Implement a new interaction type named "Contacts" to replace the LJ-type contact interactions in classic GoMartini3 models, which can (1) eliminate incorrect interactions between multiple protein copies in classic GoMartini3 models and (2) facilitate construction of multiple basin potentials in Multiple-basin GoMartini simulations.
-- Automatically construct GoMartini3 model topologies for different simulation methods.
-- Simplify the process of running coarse-grained simulations.
 
-## Tutorial
-- Please see the directory Tutorial
+- **New "Contacts" Interaction Type**: Replaces LJ-type contact interactions in classic GoMartini3 models, eliminating incorrect interactions between multiple protein copies and facilitating construction of multiple basin potentials.
+- **Automatic Topology Construction**: Generate GoMartini3 model topologies for different simulation methods (Single-basin, Multiple-basin, Switching).
+- **Simplified MD Workflow**: Streamlined process for running coarse-grained molecular dynamics simulations with OpenMM.
+- **Modern Python**: Full type annotations using Python 3.12+ syntax for better IDE support and code clarity.
+
+## Installation
+
+### Prerequisites
+
+- Python >= 3.12
+- OpenMM >= 8.1
+- Vermouth == 0.9.6
+- MDAnalysis >= 2.4
+
+### Quick Install
+
+```bash
+# Create conda environment
+conda create -n ctgomartini python=3.12
+conda activate ctgomartini
+
+# Install dependencies
+conda install -c conda-forge openmm
+
+# Install CTGoMartini
+pip install -e .
+
+# Optional: Install PLUMED support for enhanced sampling
+conda install -c conda-forge openmm-plumed
+
+```
+
+## Testing
+
+Run the test suite to verify your installation:
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run specific test categories
+pytest tests/unit/        # Unit tests (fast, no external dependencies)
+pytest tests/integration/ # Integration tests (requires OpenMM)
+pytest tests/e2e/         # End-to-end tests (may take several minutes)
+
+# Run with coverage report
+pytest tests/ --cov=ctgomartini --cov-report=html
+```
+
+### Test Structure
+
+| Category | Description | Runtime |
+|----------|-------------|---------|
+| `tests/unit/` | Individual function tests | Seconds |
+| `tests/integration/` | OpenMM/GROMACS comparison | Minutes |
+| `tests/e2e/` | Full workflow tests | Tens of minutes |
+
+## Project Structure
+
+```
+CTGoMartini/
+├── ctgomartini/       # Main package
+│   ├── api/           # High-level API classes
+│   │   ├── MartiniTopology.py    # MartiniTopFile for topology handling
+│   │   ├── MBMoleculeTop.py      # GenMBPTop for multiple-basin topologies
+│   │   └── SBMoleculeTop.py      # GenSBPTop for single-basin topologies
+│   ├── core/          # Core functionality modules (formerly func/)
+│   │   ├── Topology.py           # GROMACS topology parser
+│   │   ├── Molecule.py           # Molecule representation
+│   │   ├── ForceField.py         # Force field parameter handling
+│   │   ├── Bonded_interaction.py # Bonded force terms
+│   │   ├── Nonbonded_interaction.py  # Non-bonded force terms
+│   │   ├── CombineMols.py        # Molecule combination utilities
+│   │   └── vsites.py             # Virtual site handling
+│   ├── utils/         # Utility functions (formerly util/)
+│   │   ├── ReadInp.py            # Input file parser
+│   │   ├── WriteItp.py           # ITP file generation
+│   │   ├── ConvertLongShortElasticBonds.py
+│   │   └── Create_goVirt_for_multimer.py
+│   ├── data/          # Data files and executable scripts
+│   │   ├── run_ctgomartini.py    # Main simulation script
+│   │   ├── ctgomartinize.py      # Topology generation script
+│   │   ├── run_REMD.py           # Replica exchange MD script
+│   │   └── ForceFields/          # Martini 3.0 force field files
+│   └── analysis/      # Analysis tools
+│       └── QValueAnalysis.py     # Native contact analysis
+│
+├── tests/             # Test suite
+│   ├── unit/          # Unit tests for individual functions
+│   ├── integration/   # Integration tests (OpenMM/GROMACS comparison)
+│   ├── e2e/           # End-to-end workflow tests
+│   └── fixtures/      # Test data and reference files
+│
+└── Tutorial/          # Tutorial examples
+    ├── GlnBP/         # Glutamine Binding Protein example
+    └── TRAAK/         # TRAAK channel example
+```
 
 
+### 2. Run Simulation
 
+```bash
+python ctgomartini/data/run_ctgomartini.py -i npt.inp
+```
 
+See the `Tutorial/` directory for complete examples.
 
 ## Project Roadmap
-- [x] Force Class Refinement: Transition the force class to utilize objective classification criteria to enhance clarity and maintainability.
-- [x] Multi-basin Force Groups Overhaul: Rebuild the multiple-basin force groups by employing a more efficient approach using two collective variables (CVs) instead of analyzing across all CVs. This will improve performance.
-- [ ] Vermouth Martinize Functions Update: Update the Vermouth Martinize functions to ensure compatibility with the latest standards and to improve overall functionality. Will be done until Vermouth becomes stable 
-- [x] Testing Completion: Develop a comprehensive test to validate the integrity and reliability of the project, ensuring that all components function as intended.
-- [x] Charge and atom number checkment: Add charge check and atom number check
-- [x] XTCReporter: Use the XTCReporter to replace the DCDReporter, which can reduce the size of output.
-- [x] Add Checkpoint at the ending of the simulations
-- [x] Add the constraint tolerance parameter in .inp file to better manage the constraint
-- [x] Position restraints: x,y,z restraint instead of the distance restraint
-- [x] Reconstruct the tests module
-- [ ] Analysis module should be added.
-- [x] Minimization output module should be added. This function can be achieved simplely by setting the nstep in npt.inp as zero.
-- [x] Plumed module should be added.
-- [x] Add the single-basin contact topology generation.
-- [ ] Refine Create_goVirt_for_multimer by fixing the extracting CA/BB bugs
-- [x] Seperate the tests and codes to different respositories in order to make the project more clear.
-- [ ] Reconstruct the codes with AI tools to make the codes more readable.
-- [x] More tutorials should be added, especially for the membrane systems.
-- [x] Modify the suitable friction coefficient parameter in the inp file. 
-- [ ] Bugs: Global Parameters for beta, C1, C2, indicating it only supports only one EXP system.
-- [ ] Add the parameter searching method.
 
+### Completed (v0.6.0)
+
+- [x] **Force Class Refinement**: Transitioned to objective classification criteria
+- [x] **Multi-basin Force Groups Overhaul**: Efficient CV-based approach
+- [x] **Code Reconstruction**: Refactored with AI tools for improved readability
+- [x] **Type Annotations**: Full type hints using Python 3.12+ syntax
+- [x] **Modern Package Structure**: Migrated to `pyproject.toml`
+- [x] **MIT License**: Added open-source license
+- [x] **Module Renaming**: `func/` → `core/`, `util/` → `utils/` (see [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md))
+- [x] **Testing Framework**: Comprehensive test suite with pytest (50 tests)
+- [x] **Test Organization**: Tests organized into unit/integration/e2e categories
+- [x] **Charge and Atom Number Checking**: Validation added
+- [x] **XTC Reporter**: Compressed trajectory output
+- [x] **Checkpoint Support**: Save/resume simulations
+- [x] **Constraint Tolerance**: Configurable in .inp files
+- [x] **Anisotropic Position Restraints**: x,y,z restraint support
+- [x] **PLUMED Integration**: Enhanced sampling support
+- [x] **Single-basin Contact Topology**: SBP generation
+- [x] **Tutorials**: Examples for membrane and soluble proteins
+- [x] **Bug Fixes**: Local_BondedInteraction_dict import, MBP energy expression, race conditions
+
+### In Progress / Planned
+
+#### v1.0.0 (In Development)
+- [ ] **Vermouth 0.15.0+ Compatibility**: Update for latest Vermouth/Martinize2
+- [ ] **MDTraj Integration**: Replace DSSP with MDTraj for secondary structure
+- [ ] **Contact Map Options**: Dual mode (OV+rCSU / martinize2 internal)
+
+#### Future
+- [ ] **Analysis Module**: Enhanced analysis tools
+- [ ] **Create_goVirt_for_multimer**: Fix CA/BB extraction bugs
+- [ ] **Global Parameters**: Support multiple EXP systems (beta, C1, C2)
+- [ ] **Parameter Searching**: Automated parameter optimization
+- [ ] **ctgomartinize.py**: Fix `-other_params "-nt"` bug
+- [ ] **Contact Options**: Parameter to toggle contacts usage
+- [ ] **PDB Validation**: Input file checking
+
+## Citation
+
+If you use CTGoMartini in your research, please cite:
+
+```
+Song Yang, CTGoMartini: A Python Package for Protein Conformational 
+Transitions and Protein-Lipid Interactions with Go-Martini Models, 2026
+```
+
+## Contact
+
+**Author**: Song Yang  
+**Email**: yangsong2015@pku.edu.cn  
+**Affiliation**: Computational Biophysics Research Group

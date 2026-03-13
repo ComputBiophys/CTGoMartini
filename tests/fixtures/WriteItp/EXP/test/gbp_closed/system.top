@@ -1,0 +1,9 @@
+#define GO_VIRT
+#include "martini_v3.0.0.itp"
+#include "gbp_closed.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+gbp_closed    1

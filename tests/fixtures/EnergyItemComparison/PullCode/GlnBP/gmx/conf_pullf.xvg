@@ -1,0 +1,17 @@
+# This file was created Wed May 22 16:48:27 2024
+# Created by:
+#             :-) GROMACS - gmx mdrun, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/CommonUse/Martini/test/CTGoMartini/tests/data/UmbrellaSampling/GlnBP/gmx
+# Command line:
+#   gmx_d mdrun -deffnm conf -rerun md.gro -nt 1 -v
+# gmx mdrun is part of G R O M A C S:
+#
+# Green Red Orange Magenta Azure Cyan Skyblue
+#
+@    title "Pull force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ/mol/nm)"
+@TYPE xy

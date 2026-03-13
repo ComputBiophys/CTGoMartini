@@ -6,8 +6,8 @@ import subprocess
 import MDAnalysis as mda
 import ctgomartini
 from ctgomartini.api import GenMBPTop, GenSBPTop
-from ctgomartini.func import WriteItp, ConvertLongShortElasticBonds
-from ctgomartini.func import Create_goVirt_for_multimer
+from ctgomartini.core import WriteItp, ConvertLongShortElasticBonds
+from ctgomartini.core import Create_goVirt_for_multimer
 
 def Martinize2(aa_strfile, dssp, ff, state_name, other_params=''):
     output = subprocess.run(f'martinize2 -f {aa_strfile} -o system.top -x {state_name}_cg.pdb -dssp {dssp} -p backbone -ff {ff} -govs-include -govs-moltype {state_name}  -cys auto {other_params}',
