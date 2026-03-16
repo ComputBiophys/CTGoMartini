@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .Bonded_interaction import BondedInteraction_types
+from .bonded import BondedInteractionTypes
 
 
 class Molecule:
@@ -245,7 +245,7 @@ Molecule_Categories['multiple_basin'] = Multiple_basin
 Bonded_Categories: dict[str, Molecule_Category] = {}
 
 # Initialize bonded categories from BondedInteraction_types
-for _Interaction in BondedInteraction_types:
+for _Interaction in BondedInteractionTypes:
     interaction = _Interaction()
     category_name = interaction.category
 
@@ -257,3 +257,14 @@ for _Interaction in BondedInteraction_types:
             contents=[]
         )
         Bonded_Categories[category_name] = molecule_category
+
+# Register multi-state categories for MBP (handled by MultiAllBonds)
+# These categories replace the legacy individual multi-state interaction classes
+for _category_name in ['multi_angles', 'multi_dihedrals', 'multi_contacts']:
+    if _category_name not in Bonded_Categories:
+        Bonded_Categories[_category_name] = Molecule_Category(
+            name=_category_name,
+            description=f"{_category_name}: automated generation",
+            category=_category_name,
+            contents=[]
+        )

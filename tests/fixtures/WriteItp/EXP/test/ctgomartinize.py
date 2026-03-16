@@ -202,9 +202,9 @@ def _process_single_state(
         ModifyFF(forcefield_file='martini_v3.0.0.itp')
         print(f"    ✓ Force field configured with Go virtual sites")
 
-        # Convert long elastic bonds if needed
+        # Convert long/short elastic bonds if needed
         if convert_lj:
-            print("  [Step 4/4] Converting elastic bonds to LJ interactions...")
+            print("  [Step 4/4] Converting long/short elastic bonds to LJ interactions...")
             convert_long_short_elastic_bonds(
                 state_name,
                 f'{state_name}_cg.pdb',
@@ -296,7 +296,7 @@ def MBGOMartinize(
     print("  Output files:")
     for state_name in state_name_list:
         print(f"    - {state_name}/{state_name}_cg.pdb")
-        print(f"    - {state_name}/{state_name}.itp (if SB)")
+        print(f"    - {state_name}/{state_name}.itp")
     print(f"    - {mbmol_name}.itp")
     print(f"    - {mbmol_name}_params.itp")
     print("=" * 60)
@@ -485,13 +485,13 @@ def main() -> None:
 
 Examples:
   # Multiple-basin Go-Martini with auto-generated contacts
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -method exp
+  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
 
   # Multiple-basin with user-provided contact files  
-  ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -method exp
+  ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
 
   # Switching Go-Martini
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -method switching
+  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -dssp -method switching
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )

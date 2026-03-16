@@ -8,18 +8,58 @@ molecule representation, and interaction definitions.
 from .Topology import Topology
 from .Molecule import Molecule, Molecule_Category, Moleculetype, Atoms, Multiple_basin
 from .ForceField import ForceField, FF_Category, Defaults, Atomtypes, Nonbond_params
-from .Bonded_interaction import (
-    Interaction, BondedInteraction_types,
-    Harmonic_bonds, Harmonic_angles, G96_angles, Restricted_angles,
-    Periodic_dihedrals, Harmonic_dihedrals,
-    Combined_bending_torsion_potentials, Ryckaert_Bellemans_dihedrals,
-    Constraints, Pairs, Contacts, Exclusions,
-    VirtualSite, Virtual_sitesn_COG, Virtual_sitesn_COM,
-    Virtual_sites2, Virtual_sites2fd, Virtual_sites3, Virtual_sites3fd, Virtual_sites3out,
-    Multi_allbonds, Multi_harmonic_angles, Multi_g96_angles, Multi_restricted_angles,
-    Multi_periodic_dihedrals, Multi_harmonic_dihedrals, Multi_contacts,
-    EXP_Interaction, HAM_Interaction,
-    NonLocal_BondedInteraction_dict, Local_BondedInteraction_dict
+from .bonded import (
+    # Base classes and errors
+    Interaction,
+    InteractionError,
+    FieldValidationError,
+    FuncTypeError,
+    register_interaction,
+    get_registered_interactions,
+    BondedInteractionTypes,
+    # Bonds
+    HarmonicBonds,
+    Constraints,
+    Pairs,
+    Contacts,
+    Exclusions,
+    # Angles
+    DEG_TO_RAD,
+    HarmonicAngles,
+    G96Angles,
+    RestrictedAngles,
+    # Dihedrals
+    PeriodicDihedrals,
+    HarmonicDihedrals,
+    CombinedBendingTorsionPotentials,
+    RyckaertBellemansDihedrals,
+    # Virtual Sites
+    VirtualSite,
+    VirtualSitesNCOG,
+    VirtualSitesNCOM,
+    VirtualSites2,
+    VirtualSites2fd,
+    VirtualSites3,
+    VirtualSites3fd,
+    VirtualSites3out,
+    # Multi-state
+    MULTI_DEG_TO_RAD,
+    HandlerParam,
+    MultiStateHandler,
+    MultiStateError,
+    MultiAllBonds,
+    G96AngleHandler,
+    RestrictedAngleHandler,
+    PeriodicDihedralHandler,
+    ContactHandler,
+    # Mixing
+    MixingError,
+    EXPInteraction,
+    HAMInteraction,
+    # Registry
+    NonLocalBondedInteractionDict,
+    LocalBondedInteractionDict,
+    build_interaction_dicts,
 )
 from .Nonbonded_interaction import (
     Nonbonded_interaction, ES_self_excl_interaction,

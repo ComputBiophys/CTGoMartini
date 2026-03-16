@@ -175,7 +175,7 @@ class MartiniTopFile(Topology):
         # Initialize non-local bonded interactions
         nonlocal_bonded_force_used: set[Any] = set()
         nonlocal_bonded_interaction_dict = self._Interaction_dict_initialization(
-            system, NonLocal_BondedInteraction_dict
+            system, NonLocalBondedInteractionDict
         )
 
         # Process each molecule type
@@ -244,17 +244,17 @@ class MartiniTopFile(Topology):
 
                         # Select mixing method
                         if method == "EXP":
-                            mbp_interaction = EXP_Interaction()
+                            mbp_interaction = EXPInteraction()
                         elif method == "HAM":
                             if n_states == 2:
-                                mbp_interaction = HAM_Interaction()
+                                mbp_interaction = HAMInteraction()
                             else:
                                 raise ValueError("HAM method not supported for more than 2 states")
                         
                         # MBP Interaction Initialization
                         mbp_force_dict: dict[str, set[Any]] = {str(i+1): set() for i in range(n_states)}
                         mbp_bonded_interaction_dict_list = [
-                            self._Interaction_dict_initialization(system, Local_BondedInteraction_dict)
+                            self._Interaction_dict_initialization(system, LocalBondedInteractionDict)
                             for _ in range(n_states)
                         ]
 
@@ -269,18 +269,27 @@ class MartiniTopFile(Topology):
                                 for i in range(n_states):
                                     for interaction in mbp_bonded_interaction_dict_list[i]['multi_allbonds']:
                                         try:
-                                            interaction.add_interaction(
+                                            # Track bond count to detect if bond was actually added
+                                            num_bonds_before = interaction.mm_force.getNumBonds()
+                                            result = interaction.add_interaction(
                                                 str(i+1), category, fields, base_atom_index, offset=-1
                                             )
+                                            num_bonds_after = interaction.mm_force.getNumBonds()
+                                            bond_was_added = (num_bonds_after > num_bonds_before)
+                                            
+                                            if not result:
+                                                # add_interaction returned False, skip this handler
+                                                continue
                                             exceptions = interaction.get_exception(
                                                 molecule_type.atoms, category, fields, 
                                                 base_atom_index, offset=-1
                                             )
                                             all_exceptions.extend(exceptions)
-                                            if fields_used:
-                                                raise ValueError(f"{fields} is used twice!")
-                                            fields_used = True
-                                            mbp_force_dict[str(i+1)].add(interaction.mm_force)
+                                            if bond_was_added:
+                                                if fields_used:
+                                                    raise ValueError(f"{fields} is used twice!")
+                                                fields_used = True
+                                                mbp_force_dict[str(i+1)].add(interaction.mm_force)
                                         except Exception:
                                             continue
                                 if not fields_used:
