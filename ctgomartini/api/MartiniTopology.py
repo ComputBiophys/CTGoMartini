@@ -264,36 +264,35 @@ class MartiniTopFile(Topology):
                         for category in ['multi_angles', 'multi_dihedrals', 'multi_contacts']:
                             if not hasattr(molecule_type, category):
                                 continue
+                            # Phase 1: Collect all interactions (without building Force)
                             for fields in getattr(molecule_type, category):
                                 fields_used = False
                                 for i in range(n_states):
                                     for interaction in mbp_bonded_interaction_dict_list[i]['multi_allbonds']:
                                         try:
-                                            # Track bond count to detect if bond was actually added
-                                            num_bonds_before = interaction.mm_force.getNumBonds()
-                                            result = interaction.add_interaction(
+                                            # add_interaction returns True only if handler found AND state matches
+                                            was_added = interaction.add_interaction(
                                                 str(i+1), category, fields, base_atom_index, offset=-1
                                             )
-                                            num_bonds_after = interaction.mm_force.getNumBonds()
-                                            bond_was_added = (num_bonds_after > num_bonds_before)
                                             
-                                            if not result:
-                                                # add_interaction returned False, skip this handler
+                                            if not was_added:
                                                 continue
+                                            
                                             exceptions = interaction.get_exception(
                                                 molecule_type.atoms, category, fields, 
                                                 base_atom_index, offset=-1
                                             )
                                             all_exceptions.extend(exceptions)
-                                            if bond_was_added:
-                                                if fields_used:
-                                                    raise ValueError(f"{fields} is used twice!")
-                                                fields_used = True
-                                                mbp_force_dict[str(i+1)].add(interaction.mm_force)
+                                            fields_used = True
                                         except Exception:
                                             continue
                                 if not fields_used:
                                     raise ValueError(f"Cannot recognize the fields: {fields}, {category}")
+                        
+                        # Phase 2: Build Forces and add to mbp_force_dict (after ALL categories processed)
+                        for i in range(n_states):
+                            for interaction in mbp_bonded_interaction_dict_list[i]['multi_allbonds']:
+                                mbp_force_dict[str(i+1)].add(interaction.mm_force)
 
                         # Create and add MBP force
                         mbp_force = mbp_interaction.addForce(

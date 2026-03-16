@@ -56,15 +56,18 @@ from .virtual_sites import (
 )
 from .multi_state import (
     DEG_TO_RAD as MULTI_DEG_TO_RAD,
-    HandlerParam,
-    MultiStateHandler,
     MultiStateError,
+    MultiStateInteraction,
     MultiAllBonds,
-    # Built-in handlers
-    G96AngleHandler,
-    RestrictedAngleHandler,
-    PeriodicDihedralHandler,
-    ContactHandler,
+    register_multi_handler,
+    get_multi_handlers,
+    # Angle handlers
+    MultiG96Angle,
+    MultiRestrictedAngle,
+    # Dihedral handlers
+    MultiPeriodicDihedral,
+    # Contact handlers
+    MultiContactLJ,
 )
 from .mixing import (
     MixingError,
@@ -113,15 +116,16 @@ __all__ = [
     "VirtualSites3out",
     # Multi-state core
     "MULTI_DEG_TO_RAD",
-    "HandlerParam",
-    "MultiStateHandler",
     "MultiStateError",
+    "MultiStateInteraction",
     "MultiAllBonds",
-    # Multi-state built-in handlers
-    "G96AngleHandler",
-    "RestrictedAngleHandler",
-    "PeriodicDihedralHandler",
-    "ContactHandler",
+    "register_multi_handler",
+    "get_multi_handlers",
+    # Multi-state handlers
+    "MultiG96Angle",
+    "MultiRestrictedAngle",
+    "MultiPeriodicDihedral",
+    "MultiContactLJ",
     # Mixing
     "MixingError",
     "EXPInteraction",
