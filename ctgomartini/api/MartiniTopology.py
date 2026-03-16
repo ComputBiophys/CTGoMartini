@@ -217,11 +217,20 @@ class MartiniTopFile(Topology):
                                     molecule_type.atoms, fields, base_atom_index, offset=-1
                                 )
                                 all_exceptions.extend(exceptions)
+                                
+                                # Check for duplicate usage after successful add
                                 if fields_used:
-                                    raise ValueError(f"{fields} is used twice!")
+                                    raise RuntimeError(
+                                        f"Fields {fields} in category '{category}' was already "
+                                        f"added to another interaction. Each field should belong "
+                                        f"to exactly one interaction."
+                                    )
+                                
                                 fields_used = True
                                 if interaction.mm_force is not None:
                                     nonlocal_bonded_force_used.add(interaction.mm_force)
+                            except RuntimeError:
+                                raise
                             except Exception:
                                 continue
                         if not fields_used:
@@ -283,7 +292,18 @@ class MartiniTopFile(Topology):
                                                 base_atom_index, offset=-1
                                             )
                                             all_exceptions.extend(exceptions)
+                                            
+                                            # Check for duplicate usage after successful add
+                                            if fields_used:
+                                                raise RuntimeError(
+                                                    f"Fields {fields} in category '{category}' was "
+                                                    f"already added to another interaction. Each "
+                                                    f"field should belong to exactly one state."
+                                                )
+                                            
                                             fields_used = True
+                                        except RuntimeError:
+                                            raise
                                         except Exception:
                                             continue
                                 if not fields_used:
