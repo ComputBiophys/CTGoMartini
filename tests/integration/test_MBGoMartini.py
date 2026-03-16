@@ -1,7 +1,7 @@
 """
 Integration tests for Multiple Basin Potential (MBP).
 
-Tests exponential (EXP) and harmonic (HAM) mixing schemes for
+Tests exponential (EXP) and Hamiltonian (HAM) mixing schemes for
 multi-state Go-Martini models, verifying energy and force consistency.
 
 Systems tested:

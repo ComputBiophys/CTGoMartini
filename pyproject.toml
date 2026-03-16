@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ctgomartini"
-version = "0.6.0"
+version = "1.0.0"
 description = "CTGoMartini - A Python Library For Protein Conformational Transitions"
 readme = "README.md"
 license = {text = "MIT"}
@@ -28,13 +28,14 @@ dependencies = [
     "numpy",
     "pandas",
     "matplotlib>=3.3.3",
-    "vermouth==0.9.6",
+    "vermouth>=0.10.0,<0.14.0",
     "openmm>=8.1",
 ]
 
 [project.optional-dependencies]
 plumed = ["openmm-plumed>=2.0.0"]
 dssp = ["dssp<4.0"]
+vermouth-warning = []  # Placeholder for vermouth compatibility notes
 dev = [
     "pytest>=7.0",
     "pytest-cov",
@@ -42,6 +43,9 @@ dev = [
     "ruff",
     "mypy",
 ]
+
+[project.scripts]
+ctgomartinize = "ctgomartini.data.ctgomartinize:main"
 
 [project.urls]
 Homepage = "https://github.com/ComputBiophys/CTGoMartini"

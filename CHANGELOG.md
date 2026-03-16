@@ -5,6 +5,58 @@ All notable changes to CTGoMartini will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-03-15
+
+### Breaking Changes
+
+- **Vermouth Version**: Updated dependency to `vermouth>=0.10.0,<0.14.0` (was ==0.9.6)
+  - Note: vermouth >= 0.14.0 modified Proline protein parameters; code supports it but tests use older reference data
+  - martinize2 CLI changes: `-dssp <cmd>` → `-dssp` (uses MDTraj by default)
+  - Side-chain fix (`-scfix`) is now **enabled by default** (use `-noscfix` to disable)
+  - Output file naming changed: `{name}.itp` → `{name}_0.itp` (handled internally)
+  - Virtual sites format changed in ITP output
+
+- **Go Contacts Generation**: Replaced OV+rCSU workflow with martinize2 native `-go` support
+  - Old: `create_go_virt_for_multimer` → `go-table_VirtGoSites.itp`
+  - New: `martinize2 -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0`
+  - Generates `go_atomtypes.itp` and `go_nbparams.itp` automatically
+
+### Added
+
+- **Command Line Tool**: `ctgomartinize` command available after installation
+  - Entry point added to pyproject.toml
+  - Can be invoked directly: `ctgomartinize -s protein.pdb ...`
+
+- **contacts Module**: New `ctgomartini/utils/contacts.py` utility
+  - `gen_go_contacts()`: Unified interface for contact generation (auto, .map, .out)
+  - `run_ovrcsu()`: Automatic contact generation via OVrCSU
+  - `detect_contact_file_format()`: File format detection by extension
+
+- **convert_map_format Module**: New utility to convert rCSU web-server `.map` format to martinize2-compatible `contact_map.out`
+  - Handles format differences (header, columns, Count/Model fields)
+  - CLI and Python API support
+
+- **E2E Tests for Vermouth 0.15.0**: Comprehensive tests for new Go contacts workflow
+  - Validates contacts conversion from `go_nbparams.itp` to `[contacts]` in final topology
+  - Verifies virtual site ID mapping (512 offset)
+  - Checks sigma value preservation
+
+### Changed
+
+- **ctgomartinize.py**: Major refactoring for improved maintainability
+  - Reduced code duplication via `_process_single_state()` helper function
+  - Improved directory handling using `pathlib.Path` and proper context management
+  - Enhanced CLI output with structured progress indicators and step markers
+  - Removed shell=True from subprocess calls for better security
+  - Added command-line entry point: `ctgomartinize`
+  - Updated help text with `RawDescriptionHelpFormatter` for better formatting
+  - New parameters: `-go-eps`, `-go-low`, `-go-up` for Go contacts control
+  - `-m` parameter now supports 'auto' mode (default) for automatic contact generation
+
+### Migration Notes
+
+See [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for detailed upgrade instructions from 0.6.0 to 1.0.0.
+
 ## [0.6.0] - 2026-03-13
 
 ### Breaking Changes

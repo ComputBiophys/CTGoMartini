@@ -1,12 +1,14 @@
 ; This file was generated using the following command:
-; /home/ys/.conda/envs/ctgomartini_test/bin/martinize2 -f ../1GGG_1_clean.pdb -o system.top -x gbp_open_cg.pdb -dssp mkdssp -p backbone -ff martini3001 -govs-include -govs-moltype gbp_open -cys auto
-; martinize with vermouth 0.9.6
+; /home/ys/.conda/envs/ctgomartini_test/bin/martinize2 -f /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/HAM/test/1GGG_1_clean.pdb -o system.top -x gbp_open_cg.pdb -p backbone -ff martini3001 -cys auto -dssp mkdssp -go /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/HAM/test/gbp_open/contact_map_gbp_open.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -name gbp_open -noscfix
+; martinize with vermouth 0.13.0
 ; The following sequence of secondary structure 
 ; was used for the full system:
 ; CEEEECSEETTTEEEETTEEESHHHHHHHHHHHHTTCCCEEEECCGGGHHHHHHTTSSSEECSSCBCCHHHHTTCEECSCCEEEEEEEEEETTCCSCSSCCSTTSCEEEEETTSHHHHHHHHHCCCSEEEEESSHHHHHHHHHTTSCSEEEEEHHHHHHHHHHTSTTTEEEEEEEEEEEEECCEECTTCHHHHHHHHHHHHHHHHTTHHHHHHHHHHSCC
 
-; Pleas cite the following papers:
+; Please cite the following papers:
+; Souza, P C T; Araujo, L P B; Brasnett, C; Moreira, R A; Grunewald, F; Park, P; Wang, L; Razmazma, H; Borges-Araujo, A C; Cofas-Vargas, L F; Monticelli, L; Mera-Adasme, R; Melo, M N; Wu, S; Marrink, S J; Poma, A B; Thallmair, S;  2024; 10.1101/2024.04.15.589479
 ; Souza, P C T; Alessandri, R; Barnoud, J; Thallmair, S; Faustino, I; Grünewald, F; Patmanidis, I; Abdizadeh, H; Bruininks, B M H; Wassenaar, T A; Kroon, P C; Melcr, J; Nieto, V; Corradi, V; Khan, H M; Domański, J; Javanainen, M; Martinez-Seara, H; Reuter, N; Best, R B; Vattulainen, I; Monticelli, L; Periole, X; Tieleman, D P; de Vries, A H; Marrink, S J;  Nature Methods 2021; 10.1038/s41592-021-01098-3
+; McGibbon, R T; Beauchamp, K A; Harrigan, M P; Klein, C; Swails, J M; Hernández, C X; Schwantes, C R; Wang, L; Lane, T J; Pande, V S;  Biophysical Journal 2015; 10.1016/j.bpj.2015.08.015
 
 [ moleculetype ]
 gbp_open 1
@@ -524,226 +526,226 @@ gbp_open 1
 510 SP1          219 THR SC1 510  0.0     
 511 Q5           220 GLU BB  511   -1     
 512 Q5n          220 GLU SC1 512 -1.0     
-513 gbp_open_1     1 LEU CA  513    0     
-514 gbp_open_2     2 VAL CA  514    0     
-515 gbp_open_3     3 VAL CA  515    0     
-516 gbp_open_4     4 ALA CA  516    0     
-517 gbp_open_5     5 THR CA  517    0     
-518 gbp_open_6     6 ASP CA  518    0     
-519 gbp_open_7     7 THR CA  519    0     
-520 gbp_open_8     8 ALA CA  520    0     
-521 gbp_open_9     9 PHE CA  521    0     
-522 gbp_open_10   10 VAL CA  522    0     
-523 gbp_open_11   11 PRO CA  523    0     
-524 gbp_open_12   12 PHE CA  524    0     
-525 gbp_open_13   13 GLU CA  525    0     
-526 gbp_open_14   14 PHE CA  526    0     
-527 gbp_open_15   15 LYS CA  527    0     
-528 gbp_open_16   16 GLN CA  528    0     
-529 gbp_open_17   17 GLY CA  529    0     
-530 gbp_open_18   18 ASP CA  530    0     
-531 gbp_open_19   19 LEU CA  531    0     
-532 gbp_open_20   20 TYR CA  532    0     
-533 gbp_open_21   21 VAL CA  533    0     
-534 gbp_open_22   22 GLY CA  534    0     
-535 gbp_open_23   23 PHE CA  535    0     
-536 gbp_open_24   24 ASP CA  536    0     
-537 gbp_open_25   25 VAL CA  537    0     
-538 gbp_open_26   26 ASP CA  538    0     
-539 gbp_open_27   27 LEU CA  539    0     
-540 gbp_open_28   28 TRP CA  540    0     
-541 gbp_open_29   29 ALA CA  541    0     
-542 gbp_open_30   30 ALA CA  542    0     
-543 gbp_open_31   31 ILE CA  543    0     
-544 gbp_open_32   32 ALA CA  544    0     
-545 gbp_open_33   33 LYS CA  545    0     
-546 gbp_open_34   34 GLU CA  546    0     
-547 gbp_open_35   35 LEU CA  547    0     
-548 gbp_open_36   36 LYS CA  548    0     
-549 gbp_open_37   37 LEU CA  549    0     
-550 gbp_open_38   38 ASP CA  550    0     
-551 gbp_open_39   39 TYR CA  551    0     
-552 gbp_open_40   40 GLU CA  552    0     
-553 gbp_open_41   41 LEU CA  553    0     
-554 gbp_open_42   42 LYS CA  554    0     
-555 gbp_open_43   43 PRO CA  555    0     
-556 gbp_open_44   44 MET CA  556    0     
-557 gbp_open_45   45 ASP CA  557    0     
-558 gbp_open_46   46 PHE CA  558    0     
-559 gbp_open_47   47 SER CA  559    0     
-560 gbp_open_48   48 GLY CA  560    0     
-561 gbp_open_49   49 ILE CA  561    0     
-562 gbp_open_50   50 ILE CA  562    0     
-563 gbp_open_51   51 PRO CA  563    0     
-564 gbp_open_52   52 ALA CA  564    0     
-565 gbp_open_53   53 LEU CA  565    0     
-566 gbp_open_54   54 GLN CA  566    0     
-567 gbp_open_55   55 THR CA  567    0     
-568 gbp_open_56   56 LYS CA  568    0     
-569 gbp_open_57   57 ASN CA  569    0     
-570 gbp_open_58   58 VAL CA  570    0     
-571 gbp_open_59   59 ASP CA  571    0     
-572 gbp_open_60   60 LEU CA  572    0     
-573 gbp_open_61   61 ALA CA  573    0     
-574 gbp_open_62   62 LEU CA  574    0     
-575 gbp_open_63   63 ALA CA  575    0     
-576 gbp_open_64   64 GLY CA  576    0     
-577 gbp_open_65   65 ILE CA  577    0     
-578 gbp_open_66   66 THR CA  578    0     
-579 gbp_open_67   67 ILE CA  579    0     
-580 gbp_open_68   68 THR CA  580    0     
-581 gbp_open_69   69 ASP CA  581    0     
-582 gbp_open_70   70 GLU CA  582    0     
-583 gbp_open_71   71 ARG CA  583    0     
-584 gbp_open_72   72 LYS CA  584    0     
-585 gbp_open_73   73 LYS CA  585    0     
-586 gbp_open_74   74 ALA CA  586    0     
-587 gbp_open_75   75 ILE CA  587    0     
-588 gbp_open_76   76 ASP CA  588    0     
-589 gbp_open_77   77 PHE CA  589    0     
-590 gbp_open_78   78 SER CA  590    0     
-591 gbp_open_79   79 ASP CA  591    0     
-592 gbp_open_80   80 GLY CA  592    0     
-593 gbp_open_81   81 TYR CA  593    0     
-594 gbp_open_82   82 TYR CA  594    0     
-595 gbp_open_83   83 LYS CA  595    0     
-596 gbp_open_84   84 SER CA  596    0     
-597 gbp_open_85   85 GLY CA  597    0     
-598 gbp_open_86   86 LEU CA  598    0     
-599 gbp_open_87   87 LEU CA  599    0     
-600 gbp_open_88   88 VAL CA  600    0     
-601 gbp_open_89   89 MET CA  601    0     
-602 gbp_open_90   90 VAL CA  602    0     
-603 gbp_open_91   91 LYS CA  603    0     
-604 gbp_open_92   92 ALA CA  604    0     
-605 gbp_open_93   93 ASN CA  605    0     
-606 gbp_open_94   94 ASN CA  606    0     
-607 gbp_open_95   95 ASN CA  607    0     
-608 gbp_open_96   96 ASP CA  608    0     
-609 gbp_open_97   97 VAL CA  609    0     
-610 gbp_open_98   98 LYS CA  610    0     
-611 gbp_open_99   99 SER CA  611    0     
-612 gbp_open_100 100 VAL CA  612    0     
-613 gbp_open_101 101 LYS CA  613    0     
-614 gbp_open_102 102 ASP CA  614    0     
-615 gbp_open_103 103 LEU CA  615    0     
-616 gbp_open_104 104 ASP CA  616    0     
-617 gbp_open_105 105 GLY CA  617    0     
-618 gbp_open_106 106 LYS CA  618    0     
-619 gbp_open_107 107 VAL CA  619    0     
-620 gbp_open_108 108 VAL CA  620    0     
-621 gbp_open_109 109 ALA CA  621    0     
-622 gbp_open_110 110 VAL CA  622    0     
-623 gbp_open_111 111 LYS CA  623    0     
-624 gbp_open_112 112 SER CA  624    0     
-625 gbp_open_113 113 GLY CA  625    0     
-626 gbp_open_114 114 THR CA  626    0     
-627 gbp_open_115 115 GLY CA  627    0     
-628 gbp_open_116 116 SER CA  628    0     
-629 gbp_open_117 117 VAL CA  629    0     
-630 gbp_open_118 118 ASP CA  630    0     
-631 gbp_open_119 119 TYR CA  631    0     
-632 gbp_open_120 120 ALA CA  632    0     
-633 gbp_open_121 121 LYS CA  633    0     
-634 gbp_open_122 122 ALA CA  634    0     
-635 gbp_open_123 123 ASN CA  635    0     
-636 gbp_open_124 124 ILE CA  636    0     
-637 gbp_open_125 125 LYS CA  637    0     
-638 gbp_open_126 126 THR CA  638    0     
-639 gbp_open_127 127 LYS CA  639    0     
-640 gbp_open_128 128 ASP CA  640    0     
-641 gbp_open_129 129 LEU CA  641    0     
-642 gbp_open_130 130 ARG CA  642    0     
-643 gbp_open_131 131 GLN CA  643    0     
-644 gbp_open_132 132 PHE CA  644    0     
-645 gbp_open_133 133 PRO CA  645    0     
-646 gbp_open_134 134 ASN CA  646    0     
-647 gbp_open_135 135 ILE CA  647    0     
-648 gbp_open_136 136 ASP CA  648    0     
-649 gbp_open_137 137 ASN CA  649    0     
-650 gbp_open_138 138 ALA CA  650    0     
-651 gbp_open_139 139 TYR CA  651    0     
-652 gbp_open_140 140 MET CA  652    0     
-653 gbp_open_141 141 GLU CA  653    0     
-654 gbp_open_142 142 LEU CA  654    0     
-655 gbp_open_143 143 GLY CA  655    0     
-656 gbp_open_144 144 THR CA  656    0     
-657 gbp_open_145 145 ASN CA  657    0     
-658 gbp_open_146 146 ARG CA  658    0     
-659 gbp_open_147 147 ALA CA  659    0     
-660 gbp_open_148 148 ASP CA  660    0     
-661 gbp_open_149 149 ALA CA  661    0     
-662 gbp_open_150 150 VAL CA  662    0     
-663 gbp_open_151 151 LEU CA  663    0     
-664 gbp_open_152 152 HIS CA  664    0     
-665 gbp_open_153 153 ASP CA  665    0     
-666 gbp_open_154 154 THR CA  666    0     
-667 gbp_open_155 155 PRO CA  667    0     
-668 gbp_open_156 156 ASN CA  668    0     
-669 gbp_open_157 157 ILE CA  669    0     
-670 gbp_open_158 158 LEU CA  670    0     
-671 gbp_open_159 159 TYR CA  671    0     
-672 gbp_open_160 160 PHE CA  672    0     
-673 gbp_open_161 161 ILE CA  673    0     
-674 gbp_open_162 162 LYS CA  674    0     
-675 gbp_open_163 163 THR CA  675    0     
-676 gbp_open_164 164 ALA CA  676    0     
-677 gbp_open_165 165 GLY CA  677    0     
-678 gbp_open_166 166 ASN CA  678    0     
-679 gbp_open_167 167 GLY CA  679    0     
-680 gbp_open_168 168 GLN CA  680    0     
-681 gbp_open_169 169 PHE CA  681    0     
-682 gbp_open_170 170 LYS CA  682    0     
-683 gbp_open_171 171 ALA CA  683    0     
-684 gbp_open_172 172 VAL CA  684    0     
-685 gbp_open_173 173 GLY CA  685    0     
-686 gbp_open_174 174 ASP CA  686    0     
-687 gbp_open_175 175 SER CA  687    0     
-688 gbp_open_176 176 LEU CA  688    0     
-689 gbp_open_177 177 GLU CA  689    0     
-690 gbp_open_178 178 ALA CA  690    0     
-691 gbp_open_179 179 GLN CA  691    0     
-692 gbp_open_180 180 GLN CA  692    0     
-693 gbp_open_181 181 TYR CA  693    0     
-694 gbp_open_182 182 GLY CA  694    0     
-695 gbp_open_183 183 ILE CA  695    0     
-696 gbp_open_184 184 ALA CA  696    0     
-697 gbp_open_185 185 PHE CA  697    0     
-698 gbp_open_186 186 PRO CA  698    0     
-699 gbp_open_187 187 LYS CA  699    0     
-700 gbp_open_188 188 GLY CA  700    0     
-701 gbp_open_189 189 SER CA  701    0     
-702 gbp_open_190 190 ASP CA  702    0     
-703 gbp_open_191 191 GLU CA  703    0     
-704 gbp_open_192 192 LEU CA  704    0     
-705 gbp_open_193 193 ARG CA  705    0     
-706 gbp_open_194 194 ASP CA  706    0     
-707 gbp_open_195 195 LYS CA  707    0     
-708 gbp_open_196 196 VAL CA  708    0     
-709 gbp_open_197 197 ASN CA  709    0     
-710 gbp_open_198 198 GLY CA  710    0     
-711 gbp_open_199 199 ALA CA  711    0     
-712 gbp_open_200 200 LEU CA  712    0     
-713 gbp_open_201 201 LYS CA  713    0     
-714 gbp_open_202 202 THR CA  714    0     
-715 gbp_open_203 203 LEU CA  715    0     
-716 gbp_open_204 204 ARG CA  716    0     
-717 gbp_open_205 205 GLU CA  717    0     
-718 gbp_open_206 206 ASN CA  718    0     
-719 gbp_open_207 207 GLY CA  719    0     
-720 gbp_open_208 208 THR CA  720    0     
-721 gbp_open_209 209 TYR CA  721    0     
-722 gbp_open_210 210 ASN CA  722    0     
-723 gbp_open_211 211 GLU CA  723    0     
-724 gbp_open_212 212 ILE CA  724    0     
-725 gbp_open_213 213 TYR CA  725    0     
-726 gbp_open_214 214 LYS CA  726    0     
-727 gbp_open_215 215 LYS CA  727    0     
-728 gbp_open_216 216 TRP CA  728    0     
-729 gbp_open_217 217 PHE CA  729    0     
-730 gbp_open_218 218 GLY CA  730    0     
-731 gbp_open_219 219 THR CA  731    0     
-732 gbp_open_220 220 GLU CA  732    0     
+513 gbp_open_1     1 LEU CA  513    0  0.0
+514 gbp_open_2     2 VAL CA  514    0  0.0
+515 gbp_open_3     3 VAL CA  515    0  0.0
+516 gbp_open_4     4 ALA CA  516    0  0.0
+517 gbp_open_5     5 THR CA  517    0  0.0
+518 gbp_open_6     6 ASP CA  518    0  0.0
+519 gbp_open_7     7 THR CA  519    0  0.0
+520 gbp_open_8     8 ALA CA  520    0  0.0
+521 gbp_open_9     9 PHE CA  521    0  0.0
+522 gbp_open_10   10 VAL CA  522    0  0.0
+523 gbp_open_11   11 PRO CA  523    0  0.0
+524 gbp_open_12   12 PHE CA  524    0  0.0
+525 gbp_open_13   13 GLU CA  525    0  0.0
+526 gbp_open_14   14 PHE CA  526    0  0.0
+527 gbp_open_15   15 LYS CA  527    0  0.0
+528 gbp_open_16   16 GLN CA  528    0  0.0
+529 gbp_open_17   17 GLY CA  529    0  0.0
+530 gbp_open_18   18 ASP CA  530    0  0.0
+531 gbp_open_19   19 LEU CA  531    0  0.0
+532 gbp_open_20   20 TYR CA  532    0  0.0
+533 gbp_open_21   21 VAL CA  533    0  0.0
+534 gbp_open_22   22 GLY CA  534    0  0.0
+535 gbp_open_23   23 PHE CA  535    0  0.0
+536 gbp_open_24   24 ASP CA  536    0  0.0
+537 gbp_open_25   25 VAL CA  537    0  0.0
+538 gbp_open_26   26 ASP CA  538    0  0.0
+539 gbp_open_27   27 LEU CA  539    0  0.0
+540 gbp_open_28   28 TRP CA  540    0  0.0
+541 gbp_open_29   29 ALA CA  541    0  0.0
+542 gbp_open_30   30 ALA CA  542    0  0.0
+543 gbp_open_31   31 ILE CA  543    0  0.0
+544 gbp_open_32   32 ALA CA  544    0  0.0
+545 gbp_open_33   33 LYS CA  545    0  0.0
+546 gbp_open_34   34 GLU CA  546    0  0.0
+547 gbp_open_35   35 LEU CA  547    0  0.0
+548 gbp_open_36   36 LYS CA  548    0  0.0
+549 gbp_open_37   37 LEU CA  549    0  0.0
+550 gbp_open_38   38 ASP CA  550    0  0.0
+551 gbp_open_39   39 TYR CA  551    0  0.0
+552 gbp_open_40   40 GLU CA  552    0  0.0
+553 gbp_open_41   41 LEU CA  553    0  0.0
+554 gbp_open_42   42 LYS CA  554    0  0.0
+555 gbp_open_43   43 PRO CA  555    0  0.0
+556 gbp_open_44   44 MET CA  556    0  0.0
+557 gbp_open_45   45 ASP CA  557    0  0.0
+558 gbp_open_46   46 PHE CA  558    0  0.0
+559 gbp_open_47   47 SER CA  559    0  0.0
+560 gbp_open_48   48 GLY CA  560    0  0.0
+561 gbp_open_49   49 ILE CA  561    0  0.0
+562 gbp_open_50   50 ILE CA  562    0  0.0
+563 gbp_open_51   51 PRO CA  563    0  0.0
+564 gbp_open_52   52 ALA CA  564    0  0.0
+565 gbp_open_53   53 LEU CA  565    0  0.0
+566 gbp_open_54   54 GLN CA  566    0  0.0
+567 gbp_open_55   55 THR CA  567    0  0.0
+568 gbp_open_56   56 LYS CA  568    0  0.0
+569 gbp_open_57   57 ASN CA  569    0  0.0
+570 gbp_open_58   58 VAL CA  570    0  0.0
+571 gbp_open_59   59 ASP CA  571    0  0.0
+572 gbp_open_60   60 LEU CA  572    0  0.0
+573 gbp_open_61   61 ALA CA  573    0  0.0
+574 gbp_open_62   62 LEU CA  574    0  0.0
+575 gbp_open_63   63 ALA CA  575    0  0.0
+576 gbp_open_64   64 GLY CA  576    0  0.0
+577 gbp_open_65   65 ILE CA  577    0  0.0
+578 gbp_open_66   66 THR CA  578    0  0.0
+579 gbp_open_67   67 ILE CA  579    0  0.0
+580 gbp_open_68   68 THR CA  580    0  0.0
+581 gbp_open_69   69 ASP CA  581    0  0.0
+582 gbp_open_70   70 GLU CA  582    0  0.0
+583 gbp_open_71   71 ARG CA  583    0  0.0
+584 gbp_open_72   72 LYS CA  584    0  0.0
+585 gbp_open_73   73 LYS CA  585    0  0.0
+586 gbp_open_74   74 ALA CA  586    0  0.0
+587 gbp_open_75   75 ILE CA  587    0  0.0
+588 gbp_open_76   76 ASP CA  588    0  0.0
+589 gbp_open_77   77 PHE CA  589    0  0.0
+590 gbp_open_78   78 SER CA  590    0  0.0
+591 gbp_open_79   79 ASP CA  591    0  0.0
+592 gbp_open_80   80 GLY CA  592    0  0.0
+593 gbp_open_81   81 TYR CA  593    0  0.0
+594 gbp_open_82   82 TYR CA  594    0  0.0
+595 gbp_open_83   83 LYS CA  595    0  0.0
+596 gbp_open_84   84 SER CA  596    0  0.0
+597 gbp_open_85   85 GLY CA  597    0  0.0
+598 gbp_open_86   86 LEU CA  598    0  0.0
+599 gbp_open_87   87 LEU CA  599    0  0.0
+600 gbp_open_88   88 VAL CA  600    0  0.0
+601 gbp_open_89   89 MET CA  601    0  0.0
+602 gbp_open_90   90 VAL CA  602    0  0.0
+603 gbp_open_91   91 LYS CA  603    0  0.0
+604 gbp_open_92   92 ALA CA  604    0  0.0
+605 gbp_open_93   93 ASN CA  605    0  0.0
+606 gbp_open_94   94 ASN CA  606    0  0.0
+607 gbp_open_95   95 ASN CA  607    0  0.0
+608 gbp_open_96   96 ASP CA  608    0  0.0
+609 gbp_open_97   97 VAL CA  609    0  0.0
+610 gbp_open_98   98 LYS CA  610    0  0.0
+611 gbp_open_99   99 SER CA  611    0  0.0
+612 gbp_open_100 100 VAL CA  612    0  0.0
+613 gbp_open_101 101 LYS CA  613    0  0.0
+614 gbp_open_102 102 ASP CA  614    0  0.0
+615 gbp_open_103 103 LEU CA  615    0  0.0
+616 gbp_open_104 104 ASP CA  616    0  0.0
+617 gbp_open_105 105 GLY CA  617    0  0.0
+618 gbp_open_106 106 LYS CA  618    0  0.0
+619 gbp_open_107 107 VAL CA  619    0  0.0
+620 gbp_open_108 108 VAL CA  620    0  0.0
+621 gbp_open_109 109 ALA CA  621    0  0.0
+622 gbp_open_110 110 VAL CA  622    0  0.0
+623 gbp_open_111 111 LYS CA  623    0  0.0
+624 gbp_open_112 112 SER CA  624    0  0.0
+625 gbp_open_113 113 GLY CA  625    0  0.0
+626 gbp_open_114 114 THR CA  626    0  0.0
+627 gbp_open_115 115 GLY CA  627    0  0.0
+628 gbp_open_116 116 SER CA  628    0  0.0
+629 gbp_open_117 117 VAL CA  629    0  0.0
+630 gbp_open_118 118 ASP CA  630    0  0.0
+631 gbp_open_119 119 TYR CA  631    0  0.0
+632 gbp_open_120 120 ALA CA  632    0  0.0
+633 gbp_open_121 121 LYS CA  633    0  0.0
+634 gbp_open_122 122 ALA CA  634    0  0.0
+635 gbp_open_123 123 ASN CA  635    0  0.0
+636 gbp_open_124 124 ILE CA  636    0  0.0
+637 gbp_open_125 125 LYS CA  637    0  0.0
+638 gbp_open_126 126 THR CA  638    0  0.0
+639 gbp_open_127 127 LYS CA  639    0  0.0
+640 gbp_open_128 128 ASP CA  640    0  0.0
+641 gbp_open_129 129 LEU CA  641    0  0.0
+642 gbp_open_130 130 ARG CA  642    0  0.0
+643 gbp_open_131 131 GLN CA  643    0  0.0
+644 gbp_open_132 132 PHE CA  644    0  0.0
+645 gbp_open_133 133 PRO CA  645    0  0.0
+646 gbp_open_134 134 ASN CA  646    0  0.0
+647 gbp_open_135 135 ILE CA  647    0  0.0
+648 gbp_open_136 136 ASP CA  648    0  0.0
+649 gbp_open_137 137 ASN CA  649    0  0.0
+650 gbp_open_138 138 ALA CA  650    0  0.0
+651 gbp_open_139 139 TYR CA  651    0  0.0
+652 gbp_open_140 140 MET CA  652    0  0.0
+653 gbp_open_141 141 GLU CA  653    0  0.0
+654 gbp_open_142 142 LEU CA  654    0  0.0
+655 gbp_open_143 143 GLY CA  655    0  0.0
+656 gbp_open_144 144 THR CA  656    0  0.0
+657 gbp_open_145 145 ASN CA  657    0  0.0
+658 gbp_open_146 146 ARG CA  658    0  0.0
+659 gbp_open_147 147 ALA CA  659    0  0.0
+660 gbp_open_148 148 ASP CA  660    0  0.0
+661 gbp_open_149 149 ALA CA  661    0  0.0
+662 gbp_open_150 150 VAL CA  662    0  0.0
+663 gbp_open_151 151 LEU CA  663    0  0.0
+664 gbp_open_152 152 HIS CA  664    0  0.0
+665 gbp_open_153 153 ASP CA  665    0  0.0
+666 gbp_open_154 154 THR CA  666    0  0.0
+667 gbp_open_155 155 PRO CA  667    0  0.0
+668 gbp_open_156 156 ASN CA  668    0  0.0
+669 gbp_open_157 157 ILE CA  669    0  0.0
+670 gbp_open_158 158 LEU CA  670    0  0.0
+671 gbp_open_159 159 TYR CA  671    0  0.0
+672 gbp_open_160 160 PHE CA  672    0  0.0
+673 gbp_open_161 161 ILE CA  673    0  0.0
+674 gbp_open_162 162 LYS CA  674    0  0.0
+675 gbp_open_163 163 THR CA  675    0  0.0
+676 gbp_open_164 164 ALA CA  676    0  0.0
+677 gbp_open_165 165 GLY CA  677    0  0.0
+678 gbp_open_166 166 ASN CA  678    0  0.0
+679 gbp_open_167 167 GLY CA  679    0  0.0
+680 gbp_open_168 168 GLN CA  680    0  0.0
+681 gbp_open_169 169 PHE CA  681    0  0.0
+682 gbp_open_170 170 LYS CA  682    0  0.0
+683 gbp_open_171 171 ALA CA  683    0  0.0
+684 gbp_open_172 172 VAL CA  684    0  0.0
+685 gbp_open_173 173 GLY CA  685    0  0.0
+686 gbp_open_174 174 ASP CA  686    0  0.0
+687 gbp_open_175 175 SER CA  687    0  0.0
+688 gbp_open_176 176 LEU CA  688    0  0.0
+689 gbp_open_177 177 GLU CA  689    0  0.0
+690 gbp_open_178 178 ALA CA  690    0  0.0
+691 gbp_open_179 179 GLN CA  691    0  0.0
+692 gbp_open_180 180 GLN CA  692    0  0.0
+693 gbp_open_181 181 TYR CA  693    0  0.0
+694 gbp_open_182 182 GLY CA  694    0  0.0
+695 gbp_open_183 183 ILE CA  695    0  0.0
+696 gbp_open_184 184 ALA CA  696    0  0.0
+697 gbp_open_185 185 PHE CA  697    0  0.0
+698 gbp_open_186 186 PRO CA  698    0  0.0
+699 gbp_open_187 187 LYS CA  699    0  0.0
+700 gbp_open_188 188 GLY CA  700    0  0.0
+701 gbp_open_189 189 SER CA  701    0  0.0
+702 gbp_open_190 190 ASP CA  702    0  0.0
+703 gbp_open_191 191 GLU CA  703    0  0.0
+704 gbp_open_192 192 LEU CA  704    0  0.0
+705 gbp_open_193 193 ARG CA  705    0  0.0
+706 gbp_open_194 194 ASP CA  706    0  0.0
+707 gbp_open_195 195 LYS CA  707    0  0.0
+708 gbp_open_196 196 VAL CA  708    0  0.0
+709 gbp_open_197 197 ASN CA  709    0  0.0
+710 gbp_open_198 198 GLY CA  710    0  0.0
+711 gbp_open_199 199 ALA CA  711    0  0.0
+712 gbp_open_200 200 LEU CA  712    0  0.0
+713 gbp_open_201 201 LYS CA  713    0  0.0
+714 gbp_open_202 202 THR CA  714    0  0.0
+715 gbp_open_203 203 LEU CA  715    0  0.0
+716 gbp_open_204 204 ARG CA  716    0  0.0
+717 gbp_open_205 205 GLU CA  717    0  0.0
+718 gbp_open_206 206 ASN CA  718    0  0.0
+719 gbp_open_207 207 GLY CA  719    0  0.0
+720 gbp_open_208 208 THR CA  720    0  0.0
+721 gbp_open_209 209 TYR CA  721    0  0.0
+722 gbp_open_210 210 ASN CA  722    0  0.0
+723 gbp_open_211 211 GLU CA  723    0  0.0
+724 gbp_open_212 212 ILE CA  724    0  0.0
+725 gbp_open_213 213 TYR CA  725    0  0.0
+726 gbp_open_214 214 LYS CA  726    0  0.0
+727 gbp_open_215 215 LYS CA  727    0  0.0
+728 gbp_open_216 216 TRP CA  728    0  0.0
+729 gbp_open_217 217 PHE CA  729    0  0.0
+730 gbp_open_218 218 GLY CA  730    0  0.0
+731 gbp_open_219 219 THR CA  731    0  0.0
+732 gbp_open_220 220 GLU CA  732    0  0.0
 
 [ position_restraints ]
 #ifdef POSRES
@@ -2316,6 +2318,32 @@ gbp_open 1
 492 495 498 504 1 -120 400 1
 
 [ exclusions ]
+ 3  9           ;  2  5
+ 29  38           ;  13  16
+ 98  105           ;  40  43
+ 191  201           ;  82  85
+ 196  202           ;  83  86
+ 199  204           ;  84  87
+ 201  206           ;  85  88
+ 202  208           ;  86  89
+ 204  210           ;  87  90
+ 206  212           ;  88  91
+ 247  253           ;  107  110
+ 249  255           ;  108  111
+ 294  301           ;  128  131
+ 296  303           ;  129  132
+ 342  348           ;  149  152
+ 344  352           ;  150  153
+ 388  397           ;  169  172
+ 392  399           ;  170  173
+ 395  400           ;  171  174
+ 397  402           ;  172  175
+ 399  404           ;  173  176
+ 400  406           ;  174  177
+ 402  408           ;  175  178
+ 404  410           ;  176  179
+ 406  412           ;  177  180
+ 408  414           ;  178  181
  17  18  19  20 
  18  19  20 
  19  20 
@@ -2402,7 +2430,487 @@ gbp_open 1
 504 505 506 507 
 505 506 507 
 506 507 
-#include "gbp_open_exclusions_VirtGoSites.itp"
+
+; Go model exclusion
+ 29   9 
+ 29  11 
+ 29  15 
+ 29  17 
+ 31  15 
+ 31  21 
+ 35  13 
+ 43  35 
+ 45  11 
+ 45  13 
+ 45  29 
+ 45  31 
+ 45  35 
+ 50  29 
+ 50  31 
+ 50  38 
+ 52  23 
+ 52  25 
+ 52  29 
+ 52  31 
+ 53  23 
+ 53  25 
+ 57   9 
+ 57  25 
+ 57  29 
+ 59   9 
+ 59  25 
+ 59  29 
+ 59  45 
+ 59  50 
+ 61  52 
+ 63  53 
+ 65   5 
+ 65  57 
+ 71  59 
+ 73  61 
+ 75  63 
+ 77  65 
+ 79  71 
+ 82  73 
+ 84  75 
+ 86  77 
+ 89   1 
+ 89  65 
+ 89  77 
+ 91   1 
+ 93   1 
+ 93   5 
+ 93  65 
+ 93  71 
+ 93  77 
+ 98   1 
+ 98   3 
+ 98   5 
+100   5 
+100   9 
+100  45 
+100  59 
+102   3 
+102   5 
+102   7 
+102   9 
+105   9 
+105  13 
+105  45 
+107   7 
+107   9 
+107  11 
+109  13 
+111  11 
+118   7 
+118   9 
+118  11 
+118 107 
+118 109 
+120 111 
+122 115 
+124 107 
+124 117 
+126 118 
+128 120 
+130 122 
+132 124 
+135 124 
+137   3 
+137   7 
+137 102 
+137 124 
+137 126 
+139   1 
+139   3 
+139 126 
+141   1 
+141   3 
+141   5 
+141   7 
+141 126 
+143   7 
+143 118 
+143 126 
+145   5 
+145   7 
+145   9 
+145  29 
+145  57 
+145  63 
+145  65 
+147   9 
+147  11 
+147  17 
+147  29 
+147  57 
+147 111 
+147 118 
+149  17 
+149  57 
+150 111 
+150 143 
+162 120 
+162 150 
+162 152 
+165 154 
+165 156 
+168 158 
+171 120 
+171 128 
+173 120 
+173 126 
+173 128 
+173 162 
+177 150 
+177 152 
+177 154 
+177 162 
+177 165 
+185 154 
+186  53 
+186  57 
+186  63 
+186 149 
+186 150 
+191  53 
+219 210 
+225 206 
+225 210 
+230 206 
+234 225 
+244 234 
+244 237 
+249 234 
+263 202 
+264 202 
+264 253 
+264 255 
+266 253 
+266 255 
+266 258 
+266 260 
+270 202 
+270 263 
+275 249 
+275 264 
+277 266 
+280 268 
+282 270 
+284 234 
+284 237 
+284 249 
+284 270 
+284 275 
+286 237 
+286 239 
+289 237 
+289 244 
+289 249 
+289 275 
+291 237 
+291 243 
+291 244 
+291 247 
+294 244 
+294 247 
+294 249 
+296 249 
+296 253 
+296 266 
+296 275 
+296 277 
+298 247 
+298 249 
+298 251 
+298 253 
+301 253 
+301 258 
+301 260 
+301 266 
+303 251 
+303 253 
+303 255 
+303 258 
+307 255 
+309 255 
+311 255 
+315 303 
+315 307 
+317 251 
+317 303 
+317 309 
+319 208 
+319 311 
+324 313 
+326 251 
+326 298 
+326 315 
+328 208 
+328 210 
+328 212 
+328 317 
+330 212 
+330 319 
+331 212 
+331 324 
+333 212 
+335 247 
+335 298 
+335 326 
+338 247 
+338 251 
+338 326 
+338 328 
+340 210 
+340 212 
+340 225 
+340 234 
+340 244 
+340 247 
+340 328 
+342 206 
+342 208 
+342 210 
+342 225 
+342 234 
+342 247 
+342 249 
+342 251 
+342 328 
+344 206 
+344 208 
+344 249 
+344 251 
+344 311 
+344 317 
+344 319 
+344 328 
+346 202 
+346 204 
+346 206 
+346 249 
+346 251 
+346 253 
+346 255 
+346 264 
+346 270 
+346 275 
+348 202 
+348 204 
+348 311 
+352 201 
+352 202 
+354 191 
+354 199 
+354 201 
+354 204 
+356  17 
+356  25 
+356 191 
+356 199 
+358 348 
+360 204 
+360 208 
+360 344 
+360 348 
+360 352 
+362 204 
+362 354 
+364  21 
+364  23 
+364 356 
+369 319 
+369 358 
+373 208 
+373 360 
+375 362 
+378 364 
+380 369 
+382 369 
+382 373 
+383 373 
+383 375 
+385 215 
+386 212 
+386 215 
+388 208 
+388 210 
+388 212 
+388 215 
+388 328 
+388 330 
+388 369 
+388 373 
+388 382 
+392 208 
+392 210 
+392 212 
+392 215 
+392 219 
+392 221 
+392 373 
+395 204 
+395 206 
+395 208 
+395 360 
+395 362 
+395 373 
+397 204 
+397 206 
+397 210 
+397 227 
+400 196 
+400 204 
+402 196 
+402 199 
+402 201 
+402 202 
+402 354 
+404 201 
+404 202 
+404 206 
+404 270 
+404 346 
+406 201 
+406 202 
+408 196 
+408 199 
+408 201 
+410 152 
+410 196 
+410 199 
+412 152 
+412 154 
+412 185 
+412 191 
+412 196 
+414 149 
+414 150 
+414 152 
+414 154 
+414 185 
+414 186 
+414 191 
+414 199 
+419 150 
+419 154 
+419 177 
+419 186 
+420 141 
+420 143 
+420 145 
+420 177 
+420 181 
+420 186 
+422 126 
+422 141 
+422 143 
+422 150 
+422 173 
+422 175 
+422 177 
+424 126 
+424 141 
+424 173 
+424 175 
+424 181 
+428 126 
+428 132 
+428 137 
+428 139 
+428 173 
+430 132 
+430 165 
+430 168 
+430 173 
+430 175 
+433 175 
+434 139 
+434 175 
+434 424 
+440 141 
+440 424 
+442 175 
+442 177 
+442 181 
+442 424 
+442 434 
+445 436 
+447  84 
+447 438 
+450  65 
+450  75 
+450  84 
+450 420 
+450 440 
+452 181 
+452 183 
+452 442 
+454 445 
+455  75 
+455  82 
+455  84 
+455 447 
+457  63 
+457  75 
+457 183 
+457 186 
+457 450 
+459 452 
+462 454 
+464  63 
+464  73 
+464  75 
+464  82 
+464 455 
+466 186 
+466 457 
+469 459 
+471 462 
+473 464 
+474  73 
+474 464 
+476  53 
+476  63 
+476 186 
+476 457 
+476 464 
+476 466 
+483 473 
+485  53 
+485  61 
+485  63 
+485 464 
+485 474 
+487  53 
+487 191 
+487 362 
+487 476 
+492 481 
+495  61 
+495 375 
+495 483 
+498  23 
+498  52 
+498  53 
+498 364 
+498 375 
+498 485 
+504  23 
+504  53 
+504 356 
+504 362 
+504 375 
+504 487 
+508 375 
+508 487 
+508 492 
+509 487 
+509 492 
+511 481 
+511 487 
+511 492 
 
 [ dihedrals ]
  49  47  48  46 2 180.0 50.0

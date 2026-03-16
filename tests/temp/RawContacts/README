@@ -1,0 +1,4 @@
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go -go-low 0.3 -go-up 1.1 -go-eps 9.414
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+sed -i "s/\[ nonbond_params \]/#ifdef GO_VIRT\n#include "go_atomtypes.itp"\n #endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp

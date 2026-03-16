@@ -249,6 +249,55 @@ export PATH="/home/ys/.conda/envs/ctgomartini_test/bin:/usr/local/cuda-12.6/bin:
 
 ---
 
+## 版本 1.0.0 更新 (2026-03-15)
+
+### Vermouth 升级: 0.9.6 → >=0.15.0
+
+#### 主要变更
+
+| 组件 | 变更 | 状态 |
+|------|------|------|
+| `vermouth` 依赖 | `==0.9.6` → `>=0.15.0` | ✅ 完成 |
+| DSSP 处理 | 外部命令 → MDTraj (默认) | ✅ 完成 |
+| Go 接触生成 | `create_go_virt_for_multimer` → `martinize2 -go` | ✅ 完成 |
+| Side-chain fix | 默认关闭 → 默认开启 | ✅ 已适配 |
+
+#### 新增模块
+
+| 模块 | 功能 | 状态 |
+|------|------|------|
+| `utils/convert_map_format.py` | rCSU .map → contact_map.out 转换 | ✅ 完成 |
+| `tests/e2e/test_Vermouth015_Contacts.py` | E2E 测试 for 新流程 | ✅ 完成 |
+
+#### API 变更
+
+**ctgomartinize.py**:
+- `Martinize2()`: DSSP 参数改为可选，移除 `-scfix` 显式指定
+- `GenGoContacts()`: 完全重写，使用 `convert_map_format` + `martinize2 -go`
+- `ModifyFF()`: 更新为包含 `go_atomtypes.itp` 和 `go_nbparams.itp`
+
+#### 文件格式变更
+
+| 旧文件 (0.6.0) | 新文件 (1.0.0) | 说明 |
+|----------------|----------------|------|
+| `BB-part-def_VirtGoSites.itp` | `go_atomtypes.itp` | Go 虚拟位点原子类型 |
+| `go-table_VirtGoSites.itp` | `go_nbparams.itp` | Go 相互作用参数 |
+
+#### 测试结果
+
+- **5 个新 E2E 测试**: 全部通过 ✅
+  - test_map_format_conversion
+  - test_martinize2_go_generation
+  - test_sbgomartinize_contacts_conversion
+  - test_contact_sigma_values_match
+  - test_virtual_site_id_mapping
+
+- **原有 50 个测试**: 全部通过 ✅
+
+**总测试数**: 55/55 通过
+
+---
+
 **记录时间**: 2026-03-13
 **重构版本**: 0.5.0 → 0.6.0 (建议)
 **测试通过率**: 100% (50/50) ✅

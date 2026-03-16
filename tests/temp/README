@@ -1,0 +1,73 @@
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go -go-low 0.3 -go-up 1.1 -go-eps 9.414
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+sed -i "s/\[ nonbond_params \]/#ifdef GO_VIRT\n#include "go_atomtypes.itp"\n #endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp
+
+
+# RawContacts: use the contacts from vermouth
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go -go-low 0.3 -go-up 1.1 -go-eps 9.414
+
+# NewContacts: use the contacts from http://pomalab.ippt.pan.pl/GoContactMap/
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 9.414
+
+# InitialContacts: use the contacts from initial website
+cp ../../fixtures/WriteItp/WriteItp/ref/1GGG_1_clean.map .
+
+
+# InitialContacts2: use the contacts from initial website
+cp ../../fixtures/WriteItp/WriteItp/ref/1GGG_1_clean.map .
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go contact_map_converted.out -go-low 0.3 -go-up 1.1 -go-eps 9.414
+
+# NewProcess: generate the go-model for the new process
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+cp ../../fixtures/WriteItp/WriteItp/ref/1GGG_1_clean.pdb .
+cp ../../../ctgomartini/data/OVrCSU.py .
+python OVrCSU.py -f 1GGG_1_clean.pdb -o contact.map
+cp ../convert_map_format.py .
+# modify the convert_map_format.py to suit the system here.
+python convert_map_format.py contact.map contact_map.out
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -name Open
+sed -i "s/\[ nonbond_params \]/#ifdef GO_VIRT\n#include "go_atomtypes.itp"\n #endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp
+
+# NewProcess-Multimomers: generate the go-model for the new process
+cp ../NewProcess/*.py .
+cp ~/ys/CTGoMartini/TREK1/Work2/repeat-Down-copy/*clean.pdb .
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+python OVrCSU.py -f 8DE7_clean.pdb -o contact.map
+python convert_map_format.py contact.map contact_map.out
+martinize2 -f 8DE7_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -name TREK1
+
+
+# NewProcess2: for multiple-basin Go-model
+cp ../../fixtures/WriteItp/WriteItp/ref/* . -a
+rm ClosedItp/ OpenItp/ create_goVirt_for_multimer.py README Contact.py *.itp *.gro *.inp *.top -r
+cp ../../../ctgomartini/data/
+
+# NewProcess-test
+
+# ComparisonSingleITP
+mkdir New && cd New
+cp ../../NewProcess/1GGG_1_clean.pdb .
+cp ~/CommonUse/Martini/ForceField3/martini_v3.0.0.itp .
+cp ../../NewProcess/OVrCSU.py .
+
+cp /home/ys/ys/CTGoMartini/GlnBP-v3/Work-Switching/repeat-open-copy/1GGG_clean.map .
+cp ../../NewProcess/convert_map_format.py .
+# modify the convert_map_format.py to suit the system here.
+python convert_map_format.py 1GGG_clean.map contact_map.out
+martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top -ff martini3001 -p backbone -dssp -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -name Open
+sed -i "s/\[ nonbond_params \]/#ifdef GO_VIRT\n#include "go_atomtypes.itp"\n #endif\n\n\[ nonbond_params \]/" martini_v3.0.0.itp
+cd ..
+
+mkdir Old && Old
+cp /home/ys/ys/CTGoMartini/GlnBP-v3/Work-Switching/repeat-open-copy/Open/* . -a
+
+pip install vermouth==0.13.0
+python compare_itp_detailed.py Old/Open.itp New/Open.itp
+python compare_itp_categories.py Old/Open.itp New/Open.itp
+python compare_go_contacts.py Old/Open_go-table_VirtGoSites.itp New/go_nbparams.itp
+
+Old:
+Open_5  Open_13    1  0.7000513310  12.0000000000
+New:
+Open_13 Open_5 1 0.70001193 12.00000000 ;go bond 0.7857368283087967

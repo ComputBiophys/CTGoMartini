@@ -69,16 +69,28 @@ def convert_long_short_elastic_bonds(
     """
     # Check files
     prot_itp = f"{prefix}.itp"
-    go_pair_file = f"{prefix}_go-table_VirtGoSites.itp"
-    exclusion_file = f"{prefix}_exclusions_VirtGoSites.itp"
+    # For vermouth >= 0.15.0: use go_nbparams.itp instead of go-table_VirtGoSites.itp
+    go_pair_file_new = f"go_nbparams.itp"
+    go_pair_file_old = f"{prefix}_go-table_VirtGoSites.itp"
+    exclusion_file_old = f"{prefix}_exclusions_VirtGoSites.itp"
+    
     if not os.path.exists(prot_itp):
         raise ValueError(f"Error: cannot find {prot_itp}!")
-    if not os.path.exists(go_pair_file):
-        raise ValueError(f"Error: cannot find {go_pair_file}!")
-    if not os.path.exists(exclusion_file):
-        raise ValueError(f"Error: cannot find {exclusion_file}!")
     if not os.path.exists(ref_pdb):
         raise ValueError(f"Error: cannot find {ref_pdb}!")
+    
+    # Check for new or old format Go contacts file
+    if os.path.exists(go_pair_file_new):
+        go_pair_file = go_pair_file_new
+        use_new_format = True
+    elif os.path.exists(go_pair_file_old):
+        go_pair_file = go_pair_file_old
+        use_new_format = False
+    else:
+        raise ValueError(f"Error: cannot find {go_pair_file_new} or {go_pair_file_old}!")
+    
+    # Exclusions file is optional for new format
+    exclusion_file = exclusion_file_old if os.path.exists(exclusion_file_old) else None
 
     # Load the topology file and extract molecule information
     top = MartiniTopFile(prot_itp)
@@ -162,10 +174,39 @@ def convert_long_short_elastic_bonds(
             line = line_style.format(atomid1, atomid2, resid1, resid2)
             exclusions_extend.append(line)
 
-    # Create a backup of the exclusion file and append the new exclusions
-    subprocess.run(f'cp {exclusion_file} {exclusion_file + ".bk"}', shell=True)
-    with open(exclusion_file, "a+") as f:
-        f.writelines(exclusions_extend)
+    # Handle exclusions: new format has [exclusions] in protein.itp, old format has separate file
+    if exclusions_extend:
+        if use_new_format:
+            # For new format: add exclusions to protein.itp [exclusions] section
+            with open(prot_itp, "r") as f:
+                lines = f.readlines()
+            
+            # Find [exclusions] section and add new exclusions
+            new_lines = []
+            in_exclusions = False
+            for line in lines:
+                new_lines.append(line)
+                if line.strip() == "[ exclusions ]":
+                    in_exclusions = True
+                    # Add the new exclusions after the section header
+                    for ex_line in exclusions_extend:
+                        new_lines.append(ex_line)
+            
+            # If no [exclusions] section found, add one at the end
+            if not in_exclusions:
+                new_lines.append("\n[ exclusions ]\n")
+                for ex_line in exclusions_extend:
+                    new_lines.append(ex_line)
+            
+            # Write back
+            subprocess.run(f'cp {prot_itp} {prot_itp + ".bk"}', shell=True)
+            with open(prot_itp, "w") as f:
+                f.writelines(new_lines)
+        else:
+            # For old format: use separate exclusion file
+            subprocess.run(f'cp {exclusion_file} {exclusion_file + ".bk"}', shell=True)
+            with open(exclusion_file, "a+") as f:
+                f.writelines(exclusions_extend)
 
     # Generate Go-model pair interactions for the converted bonds
     # Go-model interactions are attractive interactions between specific atom pairs
@@ -210,9 +251,23 @@ def convert_long_short_elastic_bonds(
             go_pairs_extend.append(line)
 
     # Create a backup of the Go-pair file and append the new interactions
-    subprocess.run(f'cp {go_pair_file} {go_pair_file + ".bk"}', shell=True)
-    with open(go_pair_file, "a+") as f:
-        f.writelines(go_pairs_extend)
+    if go_pairs_extend:
+        subprocess.run(f'cp {go_pair_file} {go_pair_file + ".bk"}', shell=True)
+        with open(go_pair_file, "a+") as f:
+            if use_new_format:
+                # For new format (go_nbparams.itp), convert to nonbond_params format
+                # New format: Open_X Open_Y 1 sigma epsilon ;comment
+                # Note: atom1/atom2 are already full atom names (e.g., "gbp_open_2")
+                f.write("\n; Converted elastic bonds\n")
+                for line in go_pairs_extend:
+                    parts = line.strip().split()
+                    if len(parts) >= 6:
+                        # Format: atom1 atom2 functype sigma epsilon ; comment
+                        atom1, atom2 = parts[0], parts[1]
+                        functype, sigma, epsilon = parts[2], parts[3], parts[4]
+                        f.write(f"{atom1} {atom2} {functype} {sigma} {epsilon}\n")
+            else:
+                f.writelines(go_pairs_extend)
 
     # Remove the original long and short elastic bonds from the topology file
     # This is necessary because we've converted them to Go-model interactions

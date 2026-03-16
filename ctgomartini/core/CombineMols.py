@@ -145,7 +145,7 @@ def DifferentiateDihedrals(dihedrals: list[list[str]], atoms: list[list[str]]) -
         Tuple of (BBBB_dihedrals, SSSS_dihedrals, SBBS_dihedrals).
 
     Raises:
-        AssertionError: If unsupported dihedral types are found.
+        AssertionError: If unsupported dihedral types are found (e.g., from scfix).
     """
     BBBB_dihedrals: list[list[str]] = []
     SSSS_dihedrals: list[list[str]] = []

@@ -167,6 +167,99 @@ The package now uses modern Python packaging:
 - Google-style docstrings
 - MIT License
 
+## Migrating from 0.6.0 to 1.0.0
+
+### Vermouth Upgrade (>= 0.15.0)
+
+CTGoMartini 1.0.0 requires vermouth >= 0.15.0, which has significant changes from 0.9.6:
+
+#### 1. DSSP Handling
+
+| Version | Command | Behavior |
+|---------|---------|----------|
+| 0.9.6 | `-dssp /path/to/dssp` | Requires external DSSP executable |
+| 0.15.0 | `-dssp` (no argument) | Uses MDTraj (no external dependency) |
+
+**Migration**: DSSP parameter is now optional in `ctgomartinize.py`:
+```bash
+# Old (0.6.0)
+python ctgomartinize.py -s protein.pdb -m contact.map -mol State1 -dssp /usr/bin/dssp
+
+# New (1.0.0) - uses MDTraj by default
+python ctgomartinize.py -s protein.pdb -m contact.map -mol State1
+
+# Or explicitly provide DSSP path
+python ctgomartinize.py -s protein.pdb -m contact.map -mol State1 -dssp /usr/bin/dssp
+```
+
+#### 2. Side-Chain Fix (`-scfix`)
+
+| Version | Default | To Enable | To Disable |
+|---------|---------|-----------|------------|
+| 0.9.6 | Disabled | Add `-scfix` | (default) |
+| 0.15.0 | **Enabled** | (default) | Add `-noscfix` |
+
+**Note**: CTGoMartini 1.0.0 removes explicit `-scfix` from martinize2 calls since it's now the default.
+
+#### 3. Go Contacts Workflow
+
+The Go contacts generation has been completely redesigned:
+
+**Old Workflow (0.6.0)**:
+```
+1. martinize2 -f protein.pdb -dssp <cmd> -govs-include ...
+2. create_go_virt_for_multimer -r protein.pdb -s protein_cg.pdb -f contact.map
+3. Generates: BB-part-def_VirtGoSites.itp, go-table_VirtGoSites.itp
+```
+
+**New Workflow (1.0.0)**:
+```
+1. convert_map_format input.map output.out  # Convert rCSU .map to martinize2 format
+2. martinize2 -f protein.pdb -dssp -go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0
+3. Generates: go_atomtypes.itp, go_nbparams.itp
+```
+
+**Key Differences**:
+- Input format: rCSU `.map` → `contact_map.out` (OV+rCSU format)
+- Go parameters now specified in martinize2 command
+- Output files renamed and reformatted
+
+### New Utility Module
+
+Added `convert_map_format` for converting rCSU web-server contact maps:
+
+```python
+from ctgomartini.utils import convert_map_format
+
+# Convert .map to contact_map.out
+convert_map_format(
+    input_file='contact.map',
+    output_file='contact_map.out',
+    pdb_name='protein.pdb',
+    force=True
+)
+```
+
+### API Changes in ctgomartinize.py
+
+| Function | Change | Details |
+|----------|--------|---------|
+| `Martinize2()` | DSSP parameter now optional | `dssp: str \| None = None` |
+| `Martinize2()` | Removed `-scfix` | Now default in vermouth 0.15.0 |
+| `GenGoContacts()` | Complete rewrite | Now converts .map format instead of calling `create_go_virt_for_multimer` |
+| `ModifyFF()` | Updated includes | Now includes `go_atomtypes.itp` and `go_nbparams.itp` |
+
+### File Output Changes
+
+| Old File (0.6.0) | New File (1.0.0) | Purpose |
+|------------------|------------------|---------|
+| `BB-part-def_VirtGoSites.itp` | `go_atomtypes.itp` | Go virtual site atom types |
+| `go-table_VirtGoSites.itp` | `go_nbparams.itp` | Go interaction parameters |
+
+### Position Restraints
+
+Removed `position_restraints` section from final ITP in SB mode (not needed for production).
+
 ## Version
 
-This migration guide applies to CTGoMartini >= 0.6.0
+This migration guide applies to CTGoMartini >= 1.0.0

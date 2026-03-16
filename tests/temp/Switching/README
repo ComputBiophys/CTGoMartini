@@ -1,0 +1,34 @@
+已创建 /home/ys/CommonUse/Martini/CTGoMartini/tests/temp/Switching 目录！
+
+目录结构
+Switching/
+├── State1.pdb          # 状态1 PDB 文件
+├── State1.map          # 状态1 接触图 (rCSU 格式)
+├── State2.pdb          # 状态2 PDB 文件
+├── State2.map          # 状态2 接触图 (rCSU 格式)
+├── martini_v3.0.0.itp  # Martini 3.0 力场
+├── run_switching.py    # 运行脚本
+├── verify_contacts.py  # 验证脚本
+└── README.md           # 说明文档
+使用方法
+cd /home/ys/CommonUse/Martini/CTGoMartini/tests/temp/Switching
+
+# 1. 运行 Switching 模式
+python run_switching.py
+
+# 2. 验证结果
+python verify_contacts.py
+关键脚本说明
+run_switching.py
+使用新的 SwitchingGOMartinize：
+
+自动调用 convert_map_format 转换 .map → contact_map.out
+运行 martinize2 -go 生成 Go contacts
+转换 LJ nonbond_params → [contacts]
+verify_contacts.py
+验证 contacts 转换正确性：
+
+对比 go_nbparams.itp vs Open.itp / Closed.itp
+检查 atom ID 映射 (512 偏移)
+检查 sigma 值一致性
+

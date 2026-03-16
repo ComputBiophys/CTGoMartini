@@ -4,7 +4,7 @@
 
 CTGoMartini is a Python package for simulating protein conformational transitions using Go-Martini coarse-grained models. It provides tools for setting up and running molecular dynamics simulations with single-basin, switching, and multiple-basin Go-Martini potentials, with particular focus on membrane proteins.
 
-**Version**: 0.6.0  
+**Version**: 1.0.0  
 **Python Requirement**: >= 3.12  
 **License**: MIT  
 **Development Status**: Beta (4 - Beta)
@@ -20,14 +20,14 @@ CTGoMartini is a Python package for simulating protein conformational transition
 ### Core Dependencies
 - **OpenMM** (>=8.1): Molecular dynamics simulation engine
 - **MDAnalysis** (>=2.4): Trajectory analysis
-- **vermouth** (==0.9.6): Martinize2 integration for coarse-graining (version locked due to API instability)
+- **vermouth** (>=0.15.0): Martinize2 integration for coarse-graining with native Go model support
 - **NumPy**: Numerical computations
 - **Pandas**: Data manipulation
 - **Matplotlib** (>=3.3.3): Plotting and visualization
 
 ### Optional Dependencies
 - **openmm-plumed** (>=2.0.0): PLUMED integration for enhanced sampling
-- **dssp** (<4.0): Secondary structure assignment (vermouth 0.9.6 only compatible with DSSP <4.0)
+- **dssp** (<4.0): Optional, for secondary structure assignment. Not required if using MDTraj (default)
 
 ### Development Dependencies
 - **pytest** (>=7.0): Testing framework
@@ -58,6 +58,7 @@ CTGoMartini/
 │   ├── utils/                # Utility functions (formerly util/)
 │   │   ├── WriteItp.py           # ITP file generation
 │   │   ├── ReadInp.py            # Input file parser
+│   │   ├── convert_map_format.py # rCSU .map to martinize2 converter
 │   │   ├── ConvertLongShortElasticBonds.py
 │   │   └── Create_goVirt_for_multimer.py
 │   ├── analysis/             # Analysis tools
@@ -156,6 +157,16 @@ From `REFACTORING_STATUS.md`:
 - 3 out of 40 external tests fail due to incomplete test data (not code issues)
 - GlnBP and Beta2AR test topologies missing `multi_angles`/`multi_contacts` sections
 - MBP core functionality verified through `test_Beta2AR_HAM`
+
+### Vermouth Version Compatibility
+
+**Recommended**: `vermouth>=0.10.0,<0.14.0`
+
+**Note on vermouth >= 0.14.0**:
+- vermouth 0.14.0+ modified the protein parameters for Proline residues
+- CTGoMartini code supports vermouth >= 0.14.0, but the test reference data was generated with older versions
+- Tests may fail due to slight differences in Proline-related bonded parameters
+- For production use with vermouth >= 0.14.0, the code will work correctly, but reference values in tests need updating
 
 ## Code Style Guidelines
 
