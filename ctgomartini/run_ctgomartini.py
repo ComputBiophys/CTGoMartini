@@ -15,8 +15,7 @@ import argparse
 import sys
 from typing import Any
 
-from ctgomartini.core.simulation import MDRunner, REMDRunner
-from ctgomartini.utils import read_inputs
+from ctgomartini.simulation import MDRunner, REMDRunner, load_config
 
 
 def main() -> int:
@@ -75,7 +74,7 @@ Examples:
 
     # Read input file to detect simulation mode
     try:
-        inputs = read_inputs(args.inpfile)
+        config = load_config(args.inpfile)
     except FileNotFoundError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -84,7 +83,7 @@ Examples:
         return 1
 
     # Determine if this is REMD or standard MD
-    is_remd = inputs.remd == "yes"
+    is_remd = config.remd == "yes"
 
     if is_remd:
         # Run REMD simulation
@@ -94,7 +93,7 @@ Examples:
         return _run_md(args, inputs)
 
 
-def _run_md(args: argparse.Namespace, inputs: Any) -> int:
+def _run_md(args: argparse.Namespace, config: Any) -> int:
     """Run standard MD simulation.
 
     Args:
@@ -132,7 +131,7 @@ def _run_md(args: argparse.Namespace, inputs: Any) -> int:
         return 1
 
 
-def _run_remd(args: argparse.Namespace, inputs: Any) -> int:
+def _run_remd(args: argparse.Namespace, config: Any) -> int:
     """Run REMD simulation.
 
     Args:

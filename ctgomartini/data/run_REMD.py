@@ -31,8 +31,8 @@ from openmmtools.cache import global_context_cache
 import MDAnalysis as mda
 
 from ctgomartini.api import MartiniTopFile
-from ctgomartini.utils import read_inputs
-from ctgomartini.utils.ReadInp import _OpenMMReadInputs
+from ctgomartini.simulation import load_config
+from ctgomartini.simulation.config import SimulationConfig
 
 from Topology import (
     load_platform,
@@ -70,7 +70,7 @@ def run(
 
     # Load parameters
     print("Loading parameters")
-    inputs = read_inputs(inpfile)
+    inputs = load_config(inpfile)
 
     # Platform
     platform, platformProperties = load_platform(inputs)

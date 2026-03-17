@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pytest
 
-from ctgomartini.core.simulation import MDRunner
+from ctgomartini.simulation import MDRunner
 
 
 class TestMDRunner:
@@ -58,10 +58,10 @@ fric_coeff = 1.0
         """Test MDRunner initialization."""
         runner = MDRunner(mock_inp_file)
 
-        assert runner.inputs.nstep == 1000
-        assert runner.inputs.dt == 0.020
-        assert runner.inputs.temp == 310.0
-        assert runner.inputs.platform == "CPU"
+        assert runner.config.nstep == 1000
+        assert runner.config.dt == 0.020
+        assert runner.config.temp == 310.0
+        assert runner.config.platform == "CPU"
         assert runner.simulation is None
 
     def test_detect_existing_output_no_files(self, mock_inp_file, temp_dir):
@@ -77,7 +77,7 @@ fric_coeff = 1.0
         runner = MDRunner(mock_inp_file)
         
         # Create the DCD file in the correct location (relative to working dir)
-        dcd_file = runner.inputs.odcd
+        dcd_file = runner.config.odcd
         with open(dcd_file, "w") as f:
             f.write("")
 
@@ -94,7 +94,7 @@ fric_coeff = 1.0
         runner = MDRunner(mock_inp_file)
         
         # Create the checkpoint file in the correct location
-        chk_file = runner.inputs.ochk
+        chk_file = runner.config.ochk
         with open(chk_file, "w") as f:
             f.write("")
 
