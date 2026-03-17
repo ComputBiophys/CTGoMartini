@@ -70,10 +70,10 @@ def Martinize2(
         '-cys', 'auto',
     ]
 
-    if dssp:
+    if dssp and dssp != 'auto':
         cmd.extend(['-dssp', dssp])
     else:
-        cmd.append('-dssp')
+        cmd.append('-dssp')  # Use MDTraj
 
     if go_file and go_file.exists():
         cmd.extend([
@@ -253,7 +253,7 @@ def MBGOMartinize(
     # Validate PDB compatibility before processing
     print("\n  [Pre-check] Validating PDB file compatibility...")
     try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
         print("    ✓ All PDB files are compatible")
     except ValueError as e:
         print(e)
@@ -545,8 +545,9 @@ Examples:
                         help='Molecule type names')
     parser.add_argument('-mbmol', dest='mbmoltype', default='mbmol', type=str,
                         help='Multiple-basin molecule type name (default: mbmol)')
-    parser.add_argument('-dssp', dest='dssp', default=None, type=str,
-                        help='DSSP executable path. If not provided, uses MDTraj (default: None)')
+    parser.add_argument('-dssp', dest='dssp', default='auto', nargs='?', const='auto', type=str,
+                        help='DSSP executable path. Use "-dssp" alone for MDTraj (default), '
+                             'or provide path like "-dssp /usr/bin/mkdssp"')
     parser.add_argument('-ff', dest='ff', default='martini3001', type=str,
                         help='Force field to use (default: martini3001)')
     parser.add_argument('-method', dest='method', required=True, type=str,
