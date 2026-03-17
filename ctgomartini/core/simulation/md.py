@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime
 import os
+import signal
 import sys
 from typing import Any
 
