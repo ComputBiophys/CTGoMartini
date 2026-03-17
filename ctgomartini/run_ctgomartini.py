@@ -87,10 +87,10 @@ Examples:
 
     if is_remd:
         # Run REMD simulation
-        return _run_remd(args, inputs)
+        return _run_remd(args, config)
     else:
         # Run standard MD simulation
-        return _run_md(args, inputs)
+        return _run_md(args, config)
 
 
 def _run_md(args: argparse.Namespace, config: Any) -> int:
@@ -98,7 +98,7 @@ def _run_md(args: argparse.Namespace, config: Any) -> int:
 
     Args:
         args: Parsed command line arguments.
-        inputs: Input parameters object.
+        config: Simulation configuration object.
 
     Returns:
         Exit code (0 for success, non-zero for failure).
@@ -136,7 +136,7 @@ def _run_remd(args: argparse.Namespace, config: Any) -> int:
 
     Args:
         args: Parsed command line arguments.
-        inputs: Input parameters object.
+        config: Simulation configuration object.
 
     Returns:
         Exit code (0 for success, non-zero for failure).
