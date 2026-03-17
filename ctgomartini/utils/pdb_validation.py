@@ -165,26 +165,14 @@ class ValidationReport:
             if len(extra_in_other) > 10:
                 lines.append(f"    ... and {len(extra_in_other) - 10} more")
         
-        lines.extend([
-            "\nPossible specific causes:",
-            "  1. Missing terminal residues (N-terminal or C-terminal truncation)",
-            "  2. Missing loop residues (unresolved flexible regions)",
-            "  3. One structure includes tags or purification handles (His-tag, etc.)",
-            "  4. Different protein constructs (truncation variants, fusion proteins)",
-        ])
-        
         return lines
     
     def _format_chain_error(self) -> list[str]:
         """Format chain structure mismatch details."""
         return [
             "\n❌ CHAIN STRUCTURE MISMATCH",
-            "\nThe chain IDs or chain breaks differ between structures.",
-            "This can cause residue alignment issues.",
-            "\nPossible causes:",
-            "  1. Different chain ID assignments (e.g., A vs B)",
-            "  2. Different chain breaks in the structures",
-            "  3. One structure is a multimer while the other is monomeric",
+            "\nChain IDs in reference: " + str(getattr(self, '_ref_chains', 'N/A')),
+            "Chain IDs in comparison: " + str(getattr(self, '_other_chains', 'N/A')),
         ]
     
     def _format_sequence_error(self) -> list[str]:
@@ -219,14 +207,6 @@ class ValidationReport:
         
         if len(self.mismatches) > 10:
             lines.append(f"  ... and {len(self.mismatches) - 10} more differences")
-        
-        lines.extend([
-            "\nPossible specific causes:",
-            "  1. Amino acid mutations (point mutations or sequence variants)",
-            "  2. Different protonation states (e.g., HSE/HID/HIE vs HIS)",
-            "  3. Different residue numbering (offset or missing insertion codes)",
-            "  4. Different protein isoforms or splice variants",
-        ])
         
         return lines
     
