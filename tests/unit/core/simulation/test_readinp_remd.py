@@ -12,7 +12,7 @@ import tempfile
 
 import pytest
 
-from ctgomartini.utils import read_inputs
+from ctgomartini.simulation import load_config as read_inputs
 
 
 class TestRemdParameters:

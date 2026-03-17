@@ -57,7 +57,7 @@ def run_ovrcsu(aa_strfile: str, state_name: str) -> str:
     Raises:
         Exception: If OVrCSU execution fails.
     """
-    ovrcsu_script = os.path.join(ctgomartini.__path__[0], 'data/OVrCSU.py')
+    ovrcsu_script = os.path.join(ctgomartini.__path__[0], 'utils/contact_map.py')
     output_map = f'{state_name}_OVrCSU.map'
     
     cmd = f'python {ovrcsu_script} -f {aa_strfile} -o {output_map}'
