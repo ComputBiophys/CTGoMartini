@@ -4,29 +4,17 @@ CTGoMartini topology generation script.
 
 This script generates Go-Martini topology files for coarse-grained molecular dynamics
 simulations. It supports multiple methods:
-- Single-basin Go-Martini (SBP)
-- Multiple-basin Go-Martini with exponential mixing (EXP)
-- Multiple-basin Go-Martini with Hamiltonian mixing (HAM)
-- Switching Go-Martini
+- Single-basin Go-Martini (SBP): Convert one structure to Go-Contact format
+- Multiple-basin Go-Martini with exponential mixing (EXP): 2+ structures
+- Multiple-basin Go-Martini with Hamiltonian mixing (HAM): Exactly 2 structures
+- Switching Go-Martini: Generate separate topologies for each structure
 
-The script integrates with martinize2 (vermouth >= 0.15.0) to:
+The script integrates with martinize2 (vermouth >= 0.10.0) to:
 1. Convert all-atom structures to coarse-grained Martini models
 2. Generate Go-like contacts from various sources (auto, rCSU .map, martinize2 .out)
 3. Combine multiple states into multi-basin potential topologies
-
-Usage examples:
-    # Auto-generate contacts for multiple-basin
-    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB \\
-        -mbmol protein -ff martini3001 -method exp
-
-    # Use provided contact map files
-    ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map \\
-        -mol StateA StateB -mbmol protein -ff martini3001 -method exp
-
-    # Single-basin Go-Martini
-    ctgomartinize -s protein.pdb -m auto -mol protein \\
-        -mbmol protein -ff martini3001 -method sbp
 """
+
 
 from __future__ import annotations
 
@@ -42,6 +30,11 @@ import ctgomartini
 from ctgomartini.api import GenMBPTop, GenSBPTop
 from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
 from ctgomartini.utils.contacts import gen_go_contacts
+from ctgomartini.utils.pdb_validation import (
+    validate_pdb_compatibility,
+    PDBCompatibilityValidator
+)
+from ctgomartini.utils.constraints_to_bonds import convert_constraints_to_bonds
 
 
 def Martinize2(
@@ -66,10 +59,10 @@ def Martinize2(
         '-cys', 'auto',
     ]
 
-    if dssp:
+    if dssp and dssp != 'auto':
         cmd.extend(['-dssp', dssp])
     else:
-        cmd.append('-dssp')
+        cmd.append('-dssp')  # Use MDTraj
 
     if go_file and go_file.exists():
         cmd.extend([
@@ -234,6 +227,7 @@ def MBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Generate multiple-basin Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -245,6 +239,18 @@ def MBGOMartinize(
     print(f"  States: {', '.join(state_name_list)}")
     print(f"  Output molecule: {mbmol_name}")
     print("=" * 60)
+
+    # Validate PDB compatibility before processing
+    print("\n  [Pre-check] Validating PDB file compatibility...")
+    try:
+        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
+        print("    ✓ All PDB files are compatible")
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\n  ERROR: {e}")
+        sys.exit(1)
 
     # For MB mode: use -noscfix
     mb_other_params = f'{other_params} -noscfix'.strip()
@@ -289,7 +295,23 @@ def MBGOMartinize(
 
     write_itp(mbmol)
     print(f"  ✓ Topology written: {mbmol_name}.itp, {mbmol_name}_params.itp")
-    
+
+    # Post-process: convert constraints to bonds in final topology
+    if constraints2bonds is not None:
+        print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+        try:
+            final_itp = Path(f"{mbmol_name}.itp")
+            if final_itp.exists():
+                n_converted = convert_constraints_to_bonds(
+                    final_itp, mbmol_name, fc=constraints2bonds
+                )
+                if n_converted > 0:
+                    print(f"    ✓ Converted {n_converted} constraints to bonds")
+                else:
+                    print(f"    ℹ No constraints found in {mbmol_name}")
+        except Exception as e:
+            print(f"    ! Warning: Failed to convert constraints: {e}")
+
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
@@ -306,7 +328,6 @@ def SBGOMartinize(
     aa_strfile_list: list[str],
     map_file_list: list[str | None],
     state_name_list: list[str],
-    sbmol_name: str,
     method: str = 'SBP',
     dssp: str | None = None,
     ff: str = 'martini3001',
@@ -314,61 +335,91 @@ def SBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
-    """Generate single-basin Go-Martini topology for multiple states."""
+    """Generate single-basin Go-Martini topology from a single PDB.
+    
+    SBP mode converts martinize2's Go-LJ model to CTGoMartini Go-Contact format.
+    Requires exactly one PDB file and one molecule name.
+    """
+    # Strict validation: SBP requires exactly one PDB
+    if len(aa_strfile_list) != 1:
+        raise ValueError(
+            f"SBP mode requires exactly one PDB file, got {len(aa_strfile_list)}.\n"
+            f"Usage: ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -method sbp\n"
+            f"For multiple structures, use EXP, HAM, or Switching mode."
+        )
+    if len(state_name_list) != 1:
+        raise ValueError(
+            f"SBP mode requires exactly one molecule name, got {len(state_name_list)}.\n"
+            f"Usage: ctgomartinize -s protein.pdb -mol protein -method sbp"
+        )
+    
     working_path = Path.cwd()
+    state_name = state_name_list[0]
     
     print("\n" + "=" * 60)
     print(f"  CTGoMartini - Single-Basin Mode (SBP)")
     print("=" * 60)
     print(f"  Working directory: {working_path}")
-    print(f"  States: {', '.join(state_name_list)}")
-    print(f"  Output molecule: {sbmol_name}")
+    print(f"  Structure: {aa_strfile_list[0]}")
+    print(f"  Molecule: {state_name}")
     print("=" * 60)
 
-    for aa_strfile, map_file, state_name in zip(aa_strfile_list, map_file_list, state_name_list):
-        state_dir = working_path / state_name
-        if state_dir.exists():
-            raise ValueError(f'Error: Directory {state_name} exists!')
+    state_dir = working_path / state_name
+    if state_dir.exists():
+        raise ValueError(f'Error: Directory {state_name} exists!')
 
-        _process_single_state(
-            working_path=working_path,
-            state_dir=state_dir,
-            aa_strfile=Path(aa_strfile),
-            map_file=map_file,
-            state_name=state_name,
-            ff=ff,
-            dssp=dssp,
-            other_params=other_params,
-            go_eps=go_eps,
-            go_low=go_low,
-            go_up=go_up,
-            convert_lj=False,
-        )
+    _process_single_state(
+        working_path=working_path,
+        state_dir=state_dir,
+        aa_strfile=Path(aa_strfile_list[0]),
+        map_file=map_file_list[0],
+        state_name=state_name,
+        ff=ff,
+        dssp=dssp,
+        other_params=other_params,
+        go_eps=go_eps,
+        go_low=go_low,
+        go_up=go_up,
+        convert_lj=False,
+    )
 
     print("\n" + "─" * 60)
-    print(f"  Combining {len(state_name_list)} states into single-basin potential...")
+    print(f"  Generating single-basin topology...")
     
-    mols_list: list[list[str]] = [
-        [f'{state_name}/system.top', state_name]
-        for state_name in state_name_list
-    ]
-    sbmol = GenSBPTop(mols_list, sbmol_name)
+    mols_list: list[list[str]] = [[f'{state_name}/system.top', state_name]]
+    sbmol = GenSBPTop(mols_list, state_name)
 
     if method.lower() != "sbp":
         raise ValueError(f'Error: Unsupported method: {method}')
 
     write_itp(sbmol)
-    print(f"  ✓ Topology written: {sbmol_name}.itp, {sbmol_name}_params.itp")
-    
+    print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
+
+    # Post-process: convert constraints to bonds in final topology
+    if constraints2bonds is not None:
+        print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+        try:
+            final_itp = Path(f"{state_name}.itp")
+            if final_itp.exists():
+                n_converted = convert_constraints_to_bonds(
+                    final_itp, state_name, fc=constraints2bonds
+                )
+                if n_converted > 0:
+                    print(f"    ✓ Converted {n_converted} constraints to bonds")
+                else:
+                    print(f"    ℹ No constraints found in {state_name}")
+        except Exception as e:
+            print(f"    ! Warning: Failed to convert constraints: {e}")
+
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
     print("  Output files:")
-    for state_name in state_name_list:
-        print(f"    - {state_name}/{state_name}_cg.pdb")
-    print(f"    - {sbmol_name}.itp")
-    print(f"    - {sbmol_name}_params.itp")
+    print(f"    - {state_name}/{state_name}_cg.pdb")
+    print(f"    - {state_name}.itp")
+    print(f"    - {state_name}_params.itp")
     print("=" * 60)
 
 
@@ -385,6 +436,7 @@ def SwitchingGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Generate switching Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -395,6 +447,18 @@ def SwitchingGOMartinize(
     print(f"  Working directory: {working_path}")
     print(f"  States: {', '.join(state_name_list)}")
     print("=" * 60)
+
+    # Validate PDB compatibility before processing
+    print("\n  [Pre-check] Validating PDB file compatibility...")
+    try:
+        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
+        print("    ✓ All PDB files are compatible")
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\n  ERROR: {e}")
+        sys.exit(1)
 
     for aa_strfile, map_file, state_name in zip(aa_strfile_list, map_file_list, state_name_list):
         state_dir = working_path / state_name
@@ -420,10 +484,26 @@ def SwitchingGOMartinize(
 
         # Generate single-basin topology for switching (inside state dir)
         print(f"\n  Generating single-basin topology for {state_name}...")
-        mols_list: list[list[str]] = [[f'system.top', state_name]]
+        mols_list: list[list[str]] = [[str(state_dir / 'system.top'), state_name]]
         sbmol = GenSBPTop(mols_list, state_name)
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
+
+        # Post-process: convert constraints to bonds for this state
+        if constraints2bonds is not None:
+            print(f"  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+            try:
+                state_itp = Path(f"{state_name}.itp")
+                if state_itp.exists():
+                    n_converted = convert_constraints_to_bonds(
+                        state_itp, state_name, fc=constraints2bonds
+                    )
+                    if n_converted > 0:
+                        print(f"    ✓ Converted {n_converted} constraints to bonds")
+                    else:
+                        print(f"    ℹ No constraints found")
+            except Exception as e:
+                print(f"    ! Warning: Failed to convert constraints: {e}")
 
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
@@ -449,25 +529,29 @@ def CTGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Main entry point for Go-Martini topology generation."""
     if method.lower() == 'switching':
         SwitchingGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     elif method.lower() in ['exp', 'ham']:
         MBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     elif method.lower() == 'sbp':
         SBGOMartinize(
-            aa_strfile_list, map_file_list, state_name_list, sbmol_name=mbmol_name,
+            aa_strfile_list, map_file_list, state_name_list,
             method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     else:
         raise ValueError(f'Error: unsupported method: {method}!')
@@ -483,15 +567,35 @@ def main() -> None:
      - rCSU web-server .map files (will be converted)
      - martinize2/contact_map.out files (used directly)
 
-Examples:
-  # Multiple-basin Go-Martini with auto-generated contacts
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+Usage examples:
 
-  # Multiple-basin with user-provided contact files  
-  ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+    # Single-basin Go-Martini (SBP) - single structure
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp
+    
+    # Multiple-basin Go-Martini with exponential mixing (EXP) - 2+ structures
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+    
+    # Multiple-basin Go-Martini with Hamiltonian mixing (HAM) - exactly 2 structures
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method ham
+    
+    # Switching Go-Martini - generates separate topologies for each structure
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -dssp -method switching
 
-  # Switching Go-Martini
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -dssp -method switching
+    # Use provided contact map files instead of auto-generation
+    ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+
+    # Convert constraints to bonds (allows slight flexibility, default FC=50000)
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds
+
+    # Convert constraints with custom force constant
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds 2000
+
+Notes:
+    - SBP mode: Requires exactly one PDB file and one molecule name
+    - EXP/HAM/Switching modes: Require 2+ PDB files with matching residue sequences
+    - -dssp: Use alone for MDTraj (default), or provide path to DSSP executable
+    - -mbmol: Output molecule name for multi-basin modes (EXP, HAM, Switching)
+    - -other_params: For params starting with dash, use -other_params="-param" (e.g., -other_params="-nt")
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -505,8 +609,9 @@ Examples:
                         help='Molecule type names')
     parser.add_argument('-mbmol', dest='mbmoltype', default='mbmol', type=str,
                         help='Multiple-basin molecule type name (default: mbmol)')
-    parser.add_argument('-dssp', dest='dssp', default=None, type=str,
-                        help='DSSP executable path. If not provided, uses MDTraj (default: None)')
+    parser.add_argument('-dssp', dest='dssp', default='auto', nargs='?', const='auto', type=str,
+                        help='DSSP executable path. Use "-dssp" alone for MDTraj (default), '
+                             'or provide path like "-dssp /usr/bin/mkdssp"')
     parser.add_argument('-ff', dest='ff', default='martini3001', type=str,
                         help='Force field to use (default: martini3001)')
     parser.add_argument('-method', dest='method', required=True, type=str,
@@ -520,13 +625,19 @@ Examples:
     parser.add_argument('-cutoff_contacts', dest='cutoff_contacts', default=0.06, type=float,
                         help='Sigma cutoff of contacts (default: 0.06 nm)')
     parser.add_argument('-other_params', dest='other_params', default='', type=str,
-                        help='Other parameters for martinize2')
+                        help='Other parameters for martinize2. '
+                             'Use -other_params="-param" for params starting with dash (e.g., -other_params="-nt")')
     parser.add_argument('-go-eps', dest='go_eps', default=12.0, type=float,
                         help='Epsilon value for Go contacts (default: 12.0)')
     parser.add_argument('-go-low', dest='go_low', default=0.3, type=float,
                         help='Lower cutoff for Go contacts in nm (default: 0.3)')
     parser.add_argument('-go-up', dest='go_up', default=1.1, type=float,
                         help='Upper cutoff for Go contacts in nm (default: 1.1)')
+    parser.add_argument('-constraints2bonds', dest='constraints2bonds',
+                        nargs='?', const=50000.0, default=None, type=float, metavar='FC',
+                        help='Convert constraints to bonds with force constant FC (kJ/(mol·nm²)). '
+                             'Use -constraints2bonds for default FC=50000, or '
+                             '-constraints2bonds 2000 for custom value.')
     args = parser.parse_args()
 
     # Handle -m parameter
@@ -554,7 +665,8 @@ Examples:
         args.strfile, map_file_list, args.moltype, args.mbmoltype,
         dict_cutoffs, method=args.method, dssp=args.dssp, ff=args.ff,
         other_params=args.other_params, go_eps=args.go_eps,
-        go_low=args.go_low, go_up=args.go_up
+        go_low=args.go_low, go_up=args.go_up,
+        constraints2bonds=args.constraints2bonds
     )
 
 

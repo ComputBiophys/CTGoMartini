@@ -100,7 +100,7 @@ class TestConvertConstraintsToBondsIntegration:
     """Integration tests for convert_constraints_to_bonds with real files."""
 
     @pytest.fixture
-    def sample_topology_content(self):
+    def sample_topology_with_constraints(self):
         """Sample topology content with constraints."""
         return """;
 ; Sample topology for testing
@@ -145,11 +145,11 @@ Protein      3
    1   2      1  0.35  5000
 """
 
-    def test_convert_constraints_in_file(self, sample_topology_content, tmp_path):
+    def test_convert_constraints_in_file(self, sample_topology_with_constraints, tmp_path):
         """Test converting constraints in a real file."""
         # Create a temporary topology file
         top_file = tmp_path / "test.itp"
-        top_file.write_text(sample_topology_content)
+        top_file.write_text(sample_topology_with_constraints)
 
         # Convert constraints
         result = convert_constraints_to_bonds(top_file, "Protein", fc=50000.0)
@@ -179,18 +179,18 @@ Protein      3
         with pytest.raises(FileNotFoundError, match="does_not_exist.itp"):
             convert_constraints_to_bonds(non_existent, "Protein")
 
-    def test_molecule_not_found(self, sample_topology_content, tmp_path):
+    def test_molecule_not_found(self, sample_topology_with_constraints, tmp_path):
         """Test ValueError for non-existent molecule."""
         top_file = tmp_path / "test.itp"
-        top_file.write_text(sample_topology_content)
+        top_file.write_text(sample_topology_with_constraints)
 
         with pytest.raises(ValueError, match="'NonExistent' not found"):
             convert_constraints_to_bonds(top_file, "NonExistent")
 
-    def test_custom_fc_in_file(self, sample_topology_content, tmp_path):
+    def test_custom_fc_in_file(self, sample_topology_with_constraints, tmp_path):
         """Test custom force constant in file conversion."""
         top_file = tmp_path / "test.itp"
-        top_file.write_text(sample_topology_content)
+        top_file.write_text(sample_topology_with_constraints)
 
         convert_constraints_to_bonds(top_file, "Protein", fc=12345.6)
         

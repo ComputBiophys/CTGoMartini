@@ -147,18 +147,22 @@ See the `Tutorial/` directory for complete examples.
 ### In Progress / Planned
 
 #### v1.0.0 (In Development)
-- [ ] **Vermouth 0.15.0+ Compatibility**: Update for latest Vermouth/Martinize2
-- [ ] **MDTraj Integration**: Replace DSSP with MDTraj for secondary structure
-- [ ] **Contact Map Options**: Dual mode (OV+rCSU / martinize2 internal)
+- [x] **Vermouth 0.15.0+ Compatibility**: Update for latest Vermouth/Martinize2
+- [x] **MDTraj Integration**: Replace DSSP with MDTraj for secondary structure
+- [x] **Contact Map Options**: Dual mode (OV+rCSU / martinize2 internal)
 
 #### Future
 - [ ] **Analysis Module**: Enhanced analysis tools
-- [ ] **Create_goVirt_for_multimer**: Fix CA/BB extraction bugs
-- [ ] **Global Parameters**: Support multiple EXP systems (beta, C1, C2)
+- [x] **Create_goVirt_for_multimer**: Fix CA/BB extraction bugs： Deprecated
+- [x] **Global Parameters**: Support multiple EXP systems (beta, C1, C2)
 - [ ] **Parameter Searching**: Automated parameter optimization
-- [ ] **ctgomartinize.py**: Fix `-other_params "-nt"` bug
-- [ ] **Contact Options**: Parameter to toggle contacts usage
-- [ ] **PDB Validation**: Input file checking
+- [x] **ctgomartinize.py**: Fix `-other_params "-nt"` bug
+- [x] **Contact Options**: Parameter to toggle contacts usage
+- [x] **PDB Validation**: Input file checking
+- [x] **Constraints to bonds**: Add flag to control
+- [x] **Add new contact types**
+- [ ] **Convert contact interactions into new types**
+- [ ] **Tutorial update**
 
 ## Citation
 

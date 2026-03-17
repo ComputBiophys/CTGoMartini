@@ -8,14 +8,12 @@ bonds, allowing slight flexibility in regions that were originally constrained.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from ctgomartini.core import Molecule
+from ctgomartini.core import Molecule
 
 
 def convert_constraints_to_bonds_in_molecule(
-    molecule,
+    molecule: Molecule,
     fc: float = 50000.0,
 ) -> int:
     """
@@ -80,16 +78,11 @@ def convert_constraints_to_bonds(
 
     top = MartiniTopFile(str(topology_path))
 
-    # Handle both naming conventions (_molecule_types vs _moleculeTypes)
-    mol = getattr(top, "_molecule_types", {}).get(mol_name)
-    if mol is None:
-        mol = getattr(top, "_moleculeTypes", {}).get(mol_name)
+    # Get molecule from topology (using _moleculeTypes attribute)
+    mol = top._moleculeTypes.get(mol_name)
 
     if mol is None:
-        available = list(
-            getattr(top, "_molecule_types", {}).keys()
-            or getattr(top, "_moleculeTypes", {}).keys()
-        )
+        available = list(top._moleculeTypes.keys())
         raise ValueError(
             f"Molecule '{mol_name}' not found in {topology_path}. "
             f"Available: {available}"
