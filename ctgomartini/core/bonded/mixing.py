@@ -68,18 +68,23 @@ class EXPInteraction:
         
         beta = float(coupling_constant)
 
+        # Build C value assignments
+        c_assignments = []
+        for state_idx in range(len(mbp_force_dict)):
+            c_value = float(basin_energy_list[state_idx])
+            c_assignments.append(f"C{state_idx + 1}={c_value};")
+
         part1_list = []
         part2_list = []
         for state, force_set in mbp_force_dict.items():
-            state_idx = int(state) - 1  # state is 1-indexed
-            c_value = float(basin_energy_list[state_idx])
-            part1_list.append(f"exp(-{beta} * (energy{state} + {c_value}))")
+            part1_list.append(f"exp(-beta * (energy{state} + C{state}))")
             energy_combined = ' + '.join([f'state{state}_force{j+1}' for j in range(len(force_set))])
             part2_list.append(f"energy{state} = {energy_combined};")
 
         part1 = ' + '.join(part1_list)
         part2 = '\n'.join(part2_list)
-        energy = f"""-1/{beta} * log({part1});\n{part2}"""
+        c_assignments_str = '\n'.join(c_assignments)
+        energy = f"""-1/beta * log({part1});\n{part2}\nbeta={beta};\n{c_assignments_str}"""
         print(energy)
 
         self.mm_force = mm.CustomCVForce(energy)
@@ -153,10 +158,10 @@ class HAMInteraction:
             energy_combined = ' + '.join([f'state{state}_force{j+1}' for j in range(len(force_set))])
             part2_list.append(f"energy{state} = {energy_combined};")
 
-        # Hardcode all parameters: delta, deltaV, mbp_energy1, mbp_energy2
-        part1 = f'(energy1+energy2+{deltaV})/2 - sqrt(((energy1-energy2-{deltaV})/2)^2+{delta**2});'
+        # Use named variables for parameters: delta and deltaV
+        part1 = '(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);'
         part2 = '\n'.join(part2_list)
-        energy = f"""{part1};\n{part2}"""
+        energy = f"""{part1}\n{part2}\ndelta={delta};\ndeltaV={deltaV};"""
         print(energy)
 
         self.mm_force = mm.CustomCVForce(energy)
