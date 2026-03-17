@@ -23,13 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **PDB Compatibility Validation**: Pre-flight check for multiple-basin topology generation
-  - New `validate_pdb_compatibility()` function in `ctgomartinize.py`
-  - Automatically checks all input PDB files before processing
-  - Validates: residue count, residue sequence (name + numbering), and atom counts
-  - Provides detailed error messages with specific mismatch locations
-  - Called at the start of `MBGOMartinize()`, `SBGOMartinize()`, and `SwitchingGOMartinize()`
-  - Prevents wasting time on martinize2 processing when structures are incompatible
+- **PDB Compatibility Validation**: Comprehensive pre-flight check for MBP topology generation
+  - New module: `ctgomartini/utils/pdb_validation.py`
+  - Uses MDTraj for reliable PDB parsing
+  - `PDBCompatibilityValidator` class with detailed diagnostic capabilities
+  - Validates: residue count, sequence, chain structure, atom counts, protonation states
+  - **Detailed error messages**:
+    - Specific mismatch locations (residue name, number, chain)
+    - Diagnosis of difference type (mutation, numbering offset, missing residue)
+    - Lists all missing/extra residues when counts differ
+    - Suggests specific causes based on mismatch patterns
+  - Integrated into `MBGOMartinize()`, `SBGOMartinize()`, `SwitchingGOMartinize()`
 
 - **New Contact Types**: Support for adjustable rcut and 10-12 LJ potentials
   - `ContactsLJ` (functype=1): 6-12 LJ with fixed rcut=1.1 nm (renamed from Contacts)
