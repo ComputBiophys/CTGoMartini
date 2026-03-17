@@ -43,6 +43,9 @@ class EXPInteraction:
     ) -> mm.CustomCVForce:
         """Add exponential mixing force.
         
+        Parameters are hardcoded into the energy expression to avoid naming conflicts
+        when multiple MBPs exist in the same system.
+        
         Args:
             mbp_force_dict: Dictionary mapping state to list of forces.
             coupling_constant: Beta parameter for exponential mixing.
@@ -63,27 +66,27 @@ class EXPInteraction:
                 f"Force count ({len(mbp_force_dict)}) doesn't match energy count ({len(basin_energy_list)})"
             )
         
-        beta = coupling_constant
+        beta = float(coupling_constant)
 
         part1_list = []
         part2_list = []
         for state, force_set in mbp_force_dict.items():
-            part1_list.append(f"exp(-beta * (energy{state} + C{state}))")
+            state_idx = int(state) - 1  # state is 1-indexed
+            c_value = float(basin_energy_list[state_idx])
+            part1_list.append(f"exp(-{beta} * (energy{state} + {c_value}))")
             energy_combined = ' + '.join([f'state{state}_force{j+1}' for j in range(len(force_set))])
             part2_list.append(f"energy{state} = {energy_combined};")
 
         part1 = ' + '.join(part1_list)
         part2 = '\n'.join(part2_list)
-        energy = f"""-1/beta * log({part1});\n{part2}"""
+        energy = f"""-1/{beta} * log({part1});\n{part2}"""
         print(energy)
 
         self.mm_force = mm.CustomCVForce(energy)
         for state, force_set in mbp_force_dict.items():
             for j, force in enumerate(force_set):
                 self.mm_force.addCollectiveVariable(f"state{state}_force{j+1}", force)
-        self.mm_force.addGlobalParameter("beta", float(beta))
-        for i, basin_energy in enumerate(basin_energy_list):
-            self.mm_force.addGlobalParameter(f'C{i+1}', float(basin_energy))
+        # No GlobalParameters needed - values are hardcoded in energy expression
         return self.mm_force
 
 
@@ -113,6 +116,9 @@ class HAMInteraction:
     ) -> mm.CustomCVForce:
         """Add Hamiltonian mixing force.
         
+        Parameters are hardcoded into the energy expression to avoid naming conflicts
+        when multiple MBPs exist in the same system.
+        
         Args:
             mbp_force_dict: Dictionary mapping state to list of forces.
             coupling_constant: Delta parameter for Hamiltonian mixing.
@@ -137,14 +143,18 @@ class HAMInteraction:
                 f"HAM method requires exactly 2 basin energies, got {len(basin_energy_list)}"
             )
         
-        delta = coupling_constant
+        delta = float(coupling_constant)
+        mbp_energy1 = float(basin_energy_list[0])
+        mbp_energy2 = float(basin_energy_list[1])
+        deltaV = mbp_energy2 - mbp_energy1
 
         part2_list = []
         for state, force_set in mbp_force_dict.items():
             energy_combined = ' + '.join([f'state{state}_force{j+1}' for j in range(len(force_set))])
             part2_list.append(f"energy{state} = {energy_combined};")
 
-        part1 = '(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);deltaV=mbp_energy2-mbp_energy1;'
+        # Hardcode all parameters: delta, deltaV, mbp_energy1, mbp_energy2
+        part1 = f'(energy1+energy2+{deltaV})/2 - sqrt(((energy1-energy2-{deltaV})/2)^2+{delta**2});'
         part2 = '\n'.join(part2_list)
         energy = f"""{part1};\n{part2}"""
         print(energy)
@@ -153,9 +163,7 @@ class HAMInteraction:
         for state, force_set in mbp_force_dict.items():
             for j, force in enumerate(force_set):
                 self.mm_force.addCollectiveVariable(f"state{state}_force{j+1}", force)
-        self.mm_force.addGlobalParameter("delta", float(delta))
-        for i, basin_energy in enumerate(basin_energy_list):
-            self.mm_force.addGlobalParameter(f'mbp_energy{i+1}', float(basin_energy))
+        # No GlobalParameters needed - values are hardcoded in energy expression
         return self.mm_force
 
 

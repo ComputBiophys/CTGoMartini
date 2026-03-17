@@ -53,6 +53,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **mixing.py (MBP)**: Parameters hardcoded into energy expressions
+  - `EXPInteraction` and `HAMInteraction` no longer use `addGlobalParameter()`
+  - `beta`, `C1`, `C2`, `delta`, `mbp_energy1`, `mbp_energy2` are now hardcoded values
+  - This allows multiple MBPs in the same System without naming conflicts
+  - Note: Parameters cannot be modified at runtime after force creation
+
 - **ctgomartinize.py**: Major refactoring for improved maintainability
   - Reduced code duplication via `_process_single_state()` helper function
   - Improved directory handling using `pathlib.Path` and proper context management
