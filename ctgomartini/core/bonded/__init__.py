@@ -29,7 +29,9 @@ from .bonds import (
     HarmonicBonds,
     Constraints,
     Pairs,
-    Contacts,
+    ContactsLJ,
+    Contacts6_12,
+    Contacts10_12,
     Exclusions,
 )
 from .angles import (
@@ -67,7 +69,9 @@ from .multi_state import (
     # Dihedral handlers
     MultiPeriodicDihedral,
     # Contact handlers
-    MultiContactLJ,
+    MultiContactsLJ,
+    MultiContacts6_12,
+    MultiContacts10_12,
 )
 from .mixing import (
     MixingError,

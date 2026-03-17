@@ -23,6 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **New Contact Types**: Support for adjustable rcut and 10-12 LJ potentials
+  - `ContactsLJ` (functype=1): 6-12 LJ with fixed rcut=1.1 nm (renamed from Contacts)
+  - `Contacts6_12` (functype=2): 6-12 LJ with adjustable rcut per bond
+  - `Contacts10_12` (functype=3): 10-12 LJ with adjustable rcut per bond
+  - Corresponding multi-state handlers: `MultiContactsLJ`, `MultiContacts6_12`, `MultiContacts10_12`
+  - Field formats:
+    - functype=1: `[ai, aj, 1, C6/sigma, C12/epsilon]` (5 fields)
+    - functype=2: `[ai, aj, 2, C6/sigma, C12/epsilon, rcut]` (6 fields)
+    - functype=3: `[ai, aj, 3, C10/sigma, C12/epsilon, rcut]` (6 fields)
+
 - **Command Line Tool**: `ctgomartinize` command available after installation
   - Entry point added to pyproject.toml
   - Can be invoked directly: `ctgomartinize -s protein.pdb ...`

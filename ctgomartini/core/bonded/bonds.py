@@ -270,13 +270,14 @@ class Pairs(Interaction):
 
 
 @register_interaction
-class Contacts(Interaction):
+class ContactsLJ(Interaction):
     """Contact (soft-core) interaction.
     
     Implements a shifted Lennard-Jones potential for contacts:
     V(r) = step(rcut - r) * (LJ(r) - LJ(rcut))
     
     This smoothly goes to zero at the cutoff distance.
+    rcut is fixed at 1.1 nm.
     
     Field layout: [atomid1, atomid2, functype, C6/sigma, C12/epsilon]
     """
@@ -290,16 +291,15 @@ class Contacts(Interaction):
         C12_OR_EPS = 4
     
     EXPECTED_FIELDS = 5
+    RCUT_NM: float = 1.1  # Fixed cutoff distance in nanometers
 
     def __init__(
         self,
-        nonbonded_cutoff: unit.Quantity = 1.1 * mm.unit.nanometer,
         use_sigma_eps: bool = True,
     ) -> None:
         """Initialize contacts interaction.
         
         Args:
-            nonbonded_cutoff: Cutoff distance for the potential.
             use_sigma_eps: Whether to use sigma/epsilon (True) or C6/C12 (False).
         """
         super().__init__(
@@ -309,14 +309,13 @@ class Contacts(Interaction):
             mm_force=None,
             type_label=[2, "1"],
         )
-        self.nonbonded_cutoff: unit.Quantity = nonbonded_cutoff
         self.use_sigma_eps: bool = use_sigma_eps
 
         self.mm_force = mm.CustomBondForce(
             "step(rcut-r) * (energy - corr);"
             "energy = (C12/r^12 - C6/r^6);"
             "corr = (C12/rcut^12 - C6/rcut^6);"
-            f"rcut={self.nonbonded_cutoff.value_in_unit(mm.unit.nanometers)};"
+            f"rcut={self.RCUT_NM};"
         )
         self.mm_force.addPerBondParameter("C12")
         self.mm_force.addPerBondParameter("C6")
@@ -351,6 +350,225 @@ class Contacts(Interaction):
             self._get_atom_index(fields[idx.ATOM1], base_atom_index, offset),
             self._get_atom_index(fields[idx.ATOM2], base_atom_index, offset),
             [C12, C6],
+        )
+
+    def get_exception(
+        self,
+        atoms: list[tuple[Any, ...]],
+        fields: list[str],
+        base_atom_index: int = 0,
+        offset: int = -1,
+    ) -> list[list[float]]:
+        """Get the exception from the fields."""
+        idx = self.Idx
+        q1 = float(atoms[int(fields[idx.ATOM1]) - 1][6])
+        q2 = float(atoms[int(fields[idx.ATOM2]) - 1][6])
+        return [
+            [
+                self._get_atom_index(fields[idx.ATOM1], base_atom_index, offset),
+                self._get_atom_index(fields[idx.ATOM2], base_atom_index, offset),
+                q1 * q2,
+                0,
+                0,
+            ]
+        ]
+
+
+@register_interaction
+class Contacts6_12(Interaction):
+    """Contact (6-12) interaction with adjustable rcut.
+    
+    Implements a shifted Lennard-Jones potential for contacts:
+    V(r) = step(rcut - r) * (LJ(r) - LJ(rcut))
+    
+    rcut is adjustable per bond (stored as per-bond parameter).
+    
+    Field layout: [atomid1, atomid2, functype=2, C6/sigma, C12/epsilon, rcut]
+    """
+    
+    class Idx:
+        """Field indices for adjustable 6-12 contacts."""
+        ATOM1 = 0
+        ATOM2 = 1
+        FUNCTYPE = 2
+        C6_OR_SIGMA = 3
+        C12_OR_EPS = 4
+        RCUT = 5
+    
+    EXPECTED_FIELDS = 6
+    FUNCTYPE = "2"
+
+    def __init__(
+        self,
+        use_sigma_eps: bool = True,
+    ) -> None:
+        """Initialize adjustable 6-12 contacts interaction.
+        
+        Args:
+            use_sigma_eps: Whether to use sigma/epsilon (True) or C6/C12 (False).
+        """
+        super().__init__(
+            name='contacts_6_12_adjustable',
+            description='Contacts 6-12 LJ with adjustable rcut: atomid1, atomid2, functype=2, C6/sigma, C12/epsilon, rcut',
+            category='contacts',
+            mm_force=None,
+            type_label=[2, "2"],
+        )
+        self.use_sigma_eps: bool = use_sigma_eps
+
+        # rcut is per-bond parameter, allowing each contact to have different rcut
+        self.mm_force = mm.CustomBondForce(
+            "step(rcut-r) * (energy - corr);"
+            "energy = (C12/r^12 - C6/r^6);"
+            "corr = (C12/rcut^12 - C6/rcut^6);"
+        )
+        self.mm_force.addPerBondParameter("C12")
+        self.mm_force.addPerBondParameter("C6")
+        self.mm_force.addPerBondParameter("rcut")
+
+    def add_interaction(
+        self,
+        fields: list[str],
+        base_atom_index: int = 0,
+        offset: int = -1,
+    ) -> None:
+        """Add one adjustable 6-12 contact interaction.
+        
+        Args:
+            fields: List of [atomid1, atomid2, functype, C6/sigma, C12/epsilon, rcut].
+            base_atom_index: Base index for atom numbering.
+            offset: Offset to apply to atom indices.
+        """
+        self._validate_field_count(fields, self.EXPECTED_FIELDS)
+        self._validate_functype(fields)
+        
+        idx = self.Idx
+        if self.use_sigma_eps:
+            sigma = float(fields[idx.C6_OR_SIGMA])
+            eps = float(fields[idx.C12_OR_EPS])
+            C6 = 4 * eps * sigma ** 6
+            C12 = 4 * eps * sigma ** 12
+        else:
+            C6 = float(fields[idx.C6_OR_SIGMA])
+            C12 = float(fields[idx.C12_OR_EPS])
+        
+        rcut = float(fields[idx.RCUT])
+
+        self.mm_force.addBond(
+            self._get_atom_index(fields[idx.ATOM1], base_atom_index, offset),
+            self._get_atom_index(fields[idx.ATOM2], base_atom_index, offset),
+            [C12, C6, rcut],
+        )
+
+    def get_exception(
+        self,
+        atoms: list[tuple[Any, ...]],
+        fields: list[str],
+        base_atom_index: int = 0,
+        offset: int = -1,
+    ) -> list[list[float]]:
+        """Get the exception from the fields."""
+        idx = self.Idx
+        q1 = float(atoms[int(fields[idx.ATOM1]) - 1][6])
+        q2 = float(atoms[int(fields[idx.ATOM2]) - 1][6])
+        return [
+            [
+                self._get_atom_index(fields[idx.ATOM1], base_atom_index, offset),
+                self._get_atom_index(fields[idx.ATOM2], base_atom_index, offset),
+                q1 * q2,
+                0,
+                0,
+            ]
+        ]
+
+
+@register_interaction
+class Contacts10_12(Interaction):
+    """Contact (10-12) interaction with adjustable rcut.
+    
+    Implements a shifted 10-12 Lennard-Jones potential:
+    V(r) = step(rcut - r) * (C12/r^12 - C10/r^10 - C12/rcut^12 + C10/rcut^10)
+    
+    This is useful for specific interactions requiring different distance dependence.
+    rcut is adjustable per bond (stored as per-bond parameter).
+    
+    Field layout: [atomid1, atomid2, functype=3, C10/sigma10, C12/epsilon, rcut]
+                 or with sigma/epsilon: [atomid1, atomid2, 3, sigma, epsilon, rcut]
+    """
+    
+    class Idx:
+        """Field indices for 10-12 contacts."""
+        ATOM1 = 0
+        ATOM2 = 1
+        FUNCTYPE = 2
+        C10_OR_SIGMA = 3  # C10 or sigma (sigma^10 -> C10)
+        C12_OR_EPS = 4    # C12 or epsilon
+        RCUT = 5
+    
+    EXPECTED_FIELDS = 6
+    FUNCTYPE = "3"
+
+    def __init__(
+        self,
+        use_sigma_eps: bool = True,
+    ) -> None:
+        """Initialize 10-12 contacts interaction.
+        
+        Args:
+            use_sigma_eps: Whether to use sigma/epsilon (True) or C10/C12 (False).
+        """
+        super().__init__(
+            name='contacts_10_12',
+            description='Contacts 10-12 LJ with adjustable rcut: atomid1, atomid2, functype=3, C10/sigma, C12/epsilon, rcut',
+            category='contacts',
+            mm_force=None,
+            type_label=[2, "3"],
+        )
+        self.use_sigma_eps: bool = use_sigma_eps
+
+        # rcut is per-bond parameter
+        self.mm_force = mm.CustomBondForce(
+            "step(rcut-r) * (energy - corr);"
+            "energy = (C12/r^12 - C10/r^10);"
+            "corr = (C12/rcut^12 - C10/rcut^10);"
+        )
+        self.mm_force.addPerBondParameter("C12")
+        self.mm_force.addPerBondParameter("C10")
+        self.mm_force.addPerBondParameter("rcut")
+
+    def add_interaction(
+        self,
+        fields: list[str],
+        base_atom_index: int = 0,
+        offset: int = -1,
+    ) -> None:
+        """Add one 10-12 contact interaction.
+        
+        Args:
+            fields: List of [atomid1, atomid2, functype, C10/sigma, C12/epsilon, rcut].
+            base_atom_index: Base index for atom numbering.
+            offset: Offset to apply to atom indices.
+        """
+        self._validate_field_count(fields, self.EXPECTED_FIELDS)
+        self._validate_functype(fields)
+        
+        idx = self.Idx
+        if self.use_sigma_eps:
+            sigma = float(fields[idx.C10_OR_SIGMA])
+            eps = float(fields[idx.C12_OR_EPS])
+            # 10-12 LJ: C10 = 4*eps*sigma^10, C12 = 4*eps*sigma^12
+            C10 = 4 * eps * sigma ** 10
+            C12 = 4 * eps * sigma ** 12
+        else:
+            C10 = float(fields[idx.C10_OR_SIGMA])
+            C12 = float(fields[idx.C12_OR_EPS])
+        
+        rcut = float(fields[idx.RCUT])
+
+        self.mm_force.addBond(
+            self._get_atom_index(fields[idx.ATOM1], base_atom_index, offset),
+            self._get_atom_index(fields[idx.ATOM2], base_atom_index, offset),
+            [C12, C10, rcut],
         )
 
     def get_exception(
@@ -445,6 +663,8 @@ __all__ = [
     "HarmonicBonds",
     "Constraints",
     "Pairs",
-    "Contacts",
+    "ContactsLJ",
+    "Contacts6_12",
+    "Contacts10_12",
     "Exclusions",
 ]

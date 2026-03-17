@@ -14,14 +14,13 @@ from __future__ import annotations
 
 import math
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar
 
 import openmm as mm
 
 from .base import Interaction, InteractionError, register_interaction
 
-if TYPE_CHECKING:
-    import openmm.unit as unit
+# No TYPE_CHECKING imports needed
 
 # Module-level constant for degree to radian conversion
 DEG_TO_RAD = math.pi / 180
@@ -293,8 +292,10 @@ class MultiPeriodicDihedral(MultiStateInteraction):
 # ============================================================================
 
 @register_multi_handler
-class MultiContactLJ(MultiStateInteraction):
-    """Multi-state Lennard-Jones contact potential with cutoff.
+class MultiContactsLJ(MultiStateInteraction):
+    """Multi-state Lennard-Jones contact potential with fixed cutoff.
+    
+    rcut is fixed at 1.1 nm.
     
     Field layout: [ai, aj, nstates, stateid, functype, C6/sigma, C12/epsilon]
                  functype = 1
@@ -306,16 +307,14 @@ class MultiContactLJ(MultiStateInteraction):
     expected_fields = 7
     delta_flag = "delta_contact"
     needs_sigma_eps = True
+    RCUT_NM: float = 1.1  # Fixed cutoff distance in nanometers
     
     class Idx:
         ATOM1, ATOM2, NSTATES, STATEID, FUNCTYPE, C6_OR_SIGMA, C12_OR_EPS = range(7)
     
-    def __init__(self, nonbonded_cutoff: float = 1.1) -> None:
-        self.rcut = nonbonded_cutoff
-    
     @property
     def energy_expr(self) -> str:
-        rcut = self.rcut
+        rcut = self.RCUT_NM
         return (
             f"step({rcut}-distance(p1,p2)) * "
             f"((C12/distance(p1,p2)^12 - C6/distance(p1,p2)^6) - "
@@ -353,6 +352,133 @@ class MultiContactLJ(MultiStateInteraction):
         }
 
 
+@register_multi_handler
+class MultiContacts6_12(MultiStateInteraction):
+    """Multi-state Lennard-Jones contact potential (6-12) with adjustable rcut.
+    
+    rcut is adjustable per contact (stored as per-bond parameter).
+    
+    Field layout: [ai, aj, nstates, stateid, functype, C6/sigma, C12/epsilon, rcut]
+                 functype = 2
+    """
+    
+    name = "contact_lj_adj"
+    category = "multi_contacts"
+    functype = "2"
+    expected_fields = 8
+    delta_flag = "delta_contact_adj"
+    needs_sigma_eps = True
+    
+    class Idx:
+        ATOM1, ATOM2, NSTATES, STATEID, FUNCTYPE, C6_OR_SIGMA, C12_OR_EPS, RCUT = range(8)
+    
+    @property
+    def energy_expr(self) -> str:
+        # rcut is per-bond parameter
+        return (
+            "step(rcut-distance(p1,p2)) * "
+            "((C12/distance(p1,p2)^12 - C6/distance(p1,p2)^6) - "
+            "(C12/rcut^12 - C6/rcut^6))"
+        )
+    
+    @property
+    def per_bond_params(self) -> list[str]:
+        return ["delta_contact_adj", "C12", "C6", "rcut"]
+    
+    @classmethod
+    def build_atoms(cls, fields: list[str], base_atom_index: int, offset: int) -> list[int]:
+        idx = cls.Idx
+        a1 = base_atom_index + int(fields[idx.ATOM1]) + offset
+        a2 = base_atom_index + int(fields[idx.ATOM2]) + offset
+        return [a1, a2, a1, a2]
+    
+    @classmethod
+    def extract_params(cls, fields: list[str], use_sigma_eps: bool = True) -> dict[str, float]:
+        idx = cls.Idx
+        
+        if use_sigma_eps:
+            sigma = float(fields[idx.C6_OR_SIGMA])
+            eps = float(fields[idx.C12_OR_EPS])
+            C6 = 4 * eps * sigma ** 6
+            C12 = 4 * eps * sigma ** 12
+        else:
+            C6 = float(fields[idx.C6_OR_SIGMA])
+            C12 = float(fields[idx.C12_OR_EPS])
+        
+        rcut = float(fields[idx.RCUT])
+        
+        return {
+            "delta_contact_adj": 1.0,
+            "C12": C12,
+            "C6": C6,
+            "rcut": rcut,
+        }
+
+
+@register_multi_handler
+class MultiContacts10_12(MultiStateInteraction):
+    """Multi-state Lennard-Jones contact potential (10-12) with adjustable rcut.
+    
+    rcut is adjustable per contact (stored as per-bond parameter).
+    
+    Field layout: [ai, aj, nstates, stateid, functype, C10/sigma, C12/epsilon, rcut]
+                 functype = 3
+    """
+    
+    name = "contact_1012"
+    category = "multi_contacts"
+    functype = "3"
+    expected_fields = 8
+    delta_flag = "delta_contact_1012"
+    needs_sigma_eps = True
+    
+    class Idx:
+        ATOM1, ATOM2, NSTATES, STATEID, FUNCTYPE, C10_OR_SIGMA, C12_OR_EPS, RCUT = range(8)
+    
+    @property
+    def energy_expr(self) -> str:
+        # rcut is per-bond parameter
+        return (
+            "step(rcut-distance(p1,p2)) * "
+            "((C12/distance(p1,p2)^12 - C10/distance(p1,p2)^10) - "
+            "(C12/rcut^12 - C10/rcut^10))"
+        )
+    
+    @property
+    def per_bond_params(self) -> list[str]:
+        return ["delta_contact_1012", "C12", "C10", "rcut"]
+    
+    @classmethod
+    def build_atoms(cls, fields: list[str], base_atom_index: int, offset: int) -> list[int]:
+        idx = cls.Idx
+        a1 = base_atom_index + int(fields[idx.ATOM1]) + offset
+        a2 = base_atom_index + int(fields[idx.ATOM2]) + offset
+        return [a1, a2, a1, a2]
+    
+    @classmethod
+    def extract_params(cls, fields: list[str], use_sigma_eps: bool = True) -> dict[str, float]:
+        idx = cls.Idx
+        
+        if use_sigma_eps:
+            sigma = float(fields[idx.C10_OR_SIGMA])
+            eps = float(fields[idx.C12_OR_EPS])
+            # 10-12 LJ: C10 = 4*eps*sigma^10, C12 = 4*eps*sigma^12
+            C10 = 4 * eps * sigma ** 10
+            C12 = 4 * eps * sigma ** 12
+        else:
+            C10 = float(fields[idx.C10_OR_SIGMA])
+            C12 = float(fields[idx.C12_OR_EPS])
+        
+        rcut = float(fields[idx.RCUT])
+        
+        return {
+            "delta_contact_1012": 1.0,
+            "C12": C12,
+            "C10": C10,
+            "rcut": rcut,
+        }
+
+
 # ============================================================================
 # MultiAllBonds - Lazy Unified Builder
 # ============================================================================
@@ -387,13 +513,11 @@ class MultiAllBonds(Interaction):
     
     def __init__(
         self,
-        nonbonded_cutoff: unit.Quantity | None = None,
         use_sigma_eps: bool = True,
     ) -> None:
         """Initialize MultiAllBonds in collection mode.
         
         Args:
-            nonbonded_cutoff: Cutoff distance for contact interactions
             use_sigma_eps: Whether to use sigma/epsilon (True) or C6/C12 (False)
         """
         # Initialize all attributes BEFORE calling super().__init__
@@ -412,7 +536,6 @@ class MultiAllBonds(Interaction):
         self._param_indices: dict[str, int] = {}
         
         # Configuration
-        self.nonbonded_cutoff = nonbonded_cutoff or (1.1 * mm.unit.nanometer)
         self.use_sigma_eps = use_sigma_eps
         
         # Now safe to call super().__init__
@@ -464,10 +587,7 @@ class MultiAllBonds(Interaction):
     def _create_handler(self, handler_name: str) -> MultiStateInteraction:
         """Create handler instance with appropriate initialization."""
         handler_cls = self._handler_classes[handler_name]
-        if handler_cls.category == 'multi_contacts':
-            return handler_cls(
-                nonbonded_cutoff=self.nonbonded_cutoff.value_in_unit(mm.unit.nanometer)
-            )
+        # All handlers use fixed constants, no special initialization needed
         return handler_cls()
     
     def add_interaction(

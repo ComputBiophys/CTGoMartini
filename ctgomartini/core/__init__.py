@@ -21,7 +21,9 @@ from .bonded import (
     HarmonicBonds,
     Constraints,
     Pairs,
-    Contacts,
+    ContactsLJ,
+    Contacts6_12,
+    Contacts10_12,
     Exclusions,
     # Angles
     DEG_TO_RAD,
@@ -52,7 +54,9 @@ from .bonded import (
     MultiG96Angle,
     MultiRestrictedAngle,
     MultiPeriodicDihedral,
-    MultiContactLJ,
+    MultiContactsLJ,
+    MultiContacts6_12,
+    MultiContacts10_12,
     # Mixing
     MixingError,
     EXPInteraction,
