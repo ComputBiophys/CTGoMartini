@@ -322,7 +322,6 @@ def SBGOMartinize(
     aa_strfile_list: list[str],
     map_file_list: list[str | None],
     state_name_list: list[str],
-    sbmol_name: str,
     method: str = 'SBP',
     dssp: str | None = None,
     ff: str = 'martini3001',
@@ -331,72 +330,73 @@ def SBGOMartinize(
     go_low: float = 0.3,
     go_up: float = 1.1,
 ) -> None:
-    """Generate single-basin Go-Martini topology for multiple states."""
+    """Generate single-basin Go-Martini topology from a single PDB.
+    
+    SBP mode converts martinize2's Go-LJ model to CTGoMartini Go-Contact format.
+    Requires exactly one PDB file and one molecule name.
+    """
+    # Strict validation: SBP requires exactly one PDB
+    if len(aa_strfile_list) != 1:
+        raise ValueError(
+            f"SBP mode requires exactly one PDB file, got {len(aa_strfile_list)}.\n"
+            f"Usage: ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -method sbp\n"
+            f"For multiple structures, use EXP, HAM, or Switching mode."
+        )
+    if len(state_name_list) != 1:
+        raise ValueError(
+            f"SBP mode requires exactly one molecule name, got {len(state_name_list)}.\n"
+            f"Usage: ctgomartinize -s protein.pdb -mol protein -method sbp"
+        )
+    
     working_path = Path.cwd()
+    state_name = state_name_list[0]
     
     print("\n" + "=" * 60)
     print(f"  CTGoMartini - Single-Basin Mode (SBP)")
     print("=" * 60)
     print(f"  Working directory: {working_path}")
-    print(f"  States: {', '.join(state_name_list)}")
-    print(f"  Output molecule: {sbmol_name}")
+    print(f"  Structure: {aa_strfile_list[0]}")
+    print(f"  Molecule: {state_name}")
     print("=" * 60)
 
-    # Validate PDB compatibility before processing
-    print("\n  [Pre-check] Validating PDB file compatibility...")
-    try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
-        print("    ✓ All PDB files are compatible")
-    except ValueError as e:
-        print(e)
-        sys.exit(1)
-    except FileNotFoundError as e:
-        print(f"\n  ERROR: {e}")
-        sys.exit(1)
+    state_dir = working_path / state_name
+    if state_dir.exists():
+        raise ValueError(f'Error: Directory {state_name} exists!')
 
-    for aa_strfile, map_file, state_name in zip(aa_strfile_list, map_file_list, state_name_list):
-        state_dir = working_path / state_name
-        if state_dir.exists():
-            raise ValueError(f'Error: Directory {state_name} exists!')
-
-        _process_single_state(
-            working_path=working_path,
-            state_dir=state_dir,
-            aa_strfile=Path(aa_strfile),
-            map_file=map_file,
-            state_name=state_name,
-            ff=ff,
-            dssp=dssp,
-            other_params=other_params,
-            go_eps=go_eps,
-            go_low=go_low,
-            go_up=go_up,
-            convert_lj=False,
-        )
+    _process_single_state(
+        working_path=working_path,
+        state_dir=state_dir,
+        aa_strfile=Path(aa_strfile_list[0]),
+        map_file=map_file_list[0],
+        state_name=state_name,
+        ff=ff,
+        dssp=dssp,
+        other_params=other_params,
+        go_eps=go_eps,
+        go_low=go_low,
+        go_up=go_up,
+        convert_lj=False,
+    )
 
     print("\n" + "─" * 60)
-    print(f"  Combining {len(state_name_list)} states into single-basin potential...")
+    print(f"  Generating single-basin topology...")
     
-    mols_list: list[list[str]] = [
-        [f'{state_name}/system.top', state_name]
-        for state_name in state_name_list
-    ]
-    sbmol = GenSBPTop(mols_list, sbmol_name)
+    mols_list: list[list[str]] = [[f'{state_name}/system.top', state_name]]
+    sbmol = GenSBPTop(mols_list, state_name)
 
     if method.lower() != "sbp":
         raise ValueError(f'Error: Unsupported method: {method}')
 
     write_itp(sbmol)
-    print(f"  ✓ Topology written: {sbmol_name}.itp, {sbmol_name}_params.itp")
+    print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
     
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
     print("  Output files:")
-    for state_name in state_name_list:
-        print(f"    - {state_name}/{state_name}_cg.pdb")
-    print(f"    - {sbmol_name}.itp")
-    print(f"    - {sbmol_name}_params.itp")
+    print(f"    - {state_name}/{state_name}_cg.pdb")
+    print(f"    - {state_name}.itp")
+    print(f"    - {state_name}_params.itp")
     print("=" * 60)
 
 
@@ -505,7 +505,7 @@ def CTGOMartinize(
         )
     elif method.lower() == 'sbp':
         SBGOMartinize(
-            aa_strfile_list, map_file_list, state_name_list, sbmol_name=mbmol_name,
+            aa_strfile_list, map_file_list, state_name_list,
             method=method, dssp=dssp, ff=ff, other_params=other_params,
             go_eps=go_eps, go_low=go_low, go_up=go_up
         )

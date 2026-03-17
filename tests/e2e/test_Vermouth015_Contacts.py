@@ -229,7 +229,6 @@ class TestVermouth015Contacts:
             aa_strfile_list=["1GGG_1_clean.pdb"],
             map_file_list=["1GGG_1_clean.map"],
             state_name_list=["Open"],
-            sbmol_name="Protein",
             method="SBP",
             dssp=None,  # Use MDTraj
             ff="martini3001",
@@ -243,19 +242,19 @@ class TestVermouth015Contacts:
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         assert len(nb_contacts) > 0, "go_nbparams.itp has no contacts"
         
-        # Parse [contacts] from Protein.itp
-        protein_itp_file = os.path.join(temp_work_dir, "Protein.itp")
-        assert os.path.exists(protein_itp_file), "Protein.itp not found"
+        # Parse [contacts] from Open.itp
+        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
+        assert os.path.exists(protein_itp_file), "Open.itp not found"
         
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
-        assert len(protein_contacts) > 0, "Protein.itp has no [contacts]"
+        assert len(protein_contacts) > 0, "Open.itp has no [contacts]"
         
-        # Verify all go_nbparams contacts are in Protein.itp
+        # Verify all go_nbparams contacts are in Open.itp
         missing_in_protein = nb_contacts - protein_contacts
         extra_in_protein = protein_contacts - nb_contacts
         
         assert len(missing_in_protein) == 0, (
-            f"{len(missing_in_protein)} contacts missing in Protein.itp: "
+            f"{len(missing_in_protein)} contacts missing in Open.itp: "
             f"{list(missing_in_protein)[:5]}"
         )
         
@@ -300,7 +299,6 @@ class TestVermouth015Contacts:
             aa_strfile_list=["1GGG_1_clean.pdb"],
             map_file_list=["1GGG_1_clean.map"],
             state_name_list=["Open"],
-            sbmol_name="Protein",
             method="SBP",
             dssp=None,
             ff="martini3001",
@@ -309,7 +307,7 @@ class TestVermouth015Contacts:
         
         # Parse both files
         go_nbparams_file = os.path.join(temp_work_dir, "Open", "go_nbparams.itp")
-        protein_itp_file = os.path.join(temp_work_dir, "Protein.itp")
+        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
         
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
@@ -366,7 +364,6 @@ class TestVermouth015Contacts:
             aa_strfile_list=["1GGG_1_clean.pdb"],
             map_file_list=["1GGG_1_clean.map"],
             state_name_list=["Open"],
-            sbmol_name="Protein",
             method="SBP",
             dssp=None,
             ff="martini3001",
@@ -374,7 +371,7 @@ class TestVermouth015Contacts:
         )
         
         # Check that virtual site IDs in contacts are in correct range
-        protein_itp_file = os.path.join(temp_work_dir, "Protein.itp")
+        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
         
         with open(protein_itp_file) as f:
             content = f.read()
