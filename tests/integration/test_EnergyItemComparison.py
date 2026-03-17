@@ -11,7 +11,7 @@ These tests ensure force field implementations are equivalent.
 import os
 from ctgomartini.api import MartiniTopFile
 from .function import *
-from ctgomartini.data.run_ctgomartini import generate_restraints, add_restraints
+from ctgomartini.core.simulation.base import generate_restraints, add_restraints
 from tests.conftest import WorkingDirectoryContext
 
 

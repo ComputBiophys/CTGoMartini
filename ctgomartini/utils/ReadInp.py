@@ -96,6 +96,10 @@ class _OpenMMReadInputs:
         # Electrostatics
         self.epsilon_r: float = 15.0
 
+        # REMD parameters
+        self.remd: str = 'no'           # REMD mode (yes/no)
+        self.exc_freq: int | None = None  # Exchange frequency for REMD
+
     def read(self, input_file: str) -> _OpenMMReadInputs:
         """
         Parse input parameters from a file.
@@ -274,6 +278,12 @@ class _OpenMMReadInputs:
         elif param == 'EPSILON_R':
             self.epsilon_r = float(value)
 
+        # REMD parameters
+        elif param == 'REMD':
+            self.remd = 'yes' if value.upper() == 'YES' else 'no'
+        elif param == 'EXC_FREQ':
+            self.exc_freq = int(value)
+
 
 def read_inputs(input_file: str) -> _OpenMMReadInputs:
     """
@@ -284,5 +294,17 @@ def read_inputs(input_file: str) -> _OpenMMReadInputs:
         
     Returns:
         Parsed input parameters object with all settings as attributes.
+        
+    Raises:
+        ValueError: If REMD is enabled but exc_freq is not specified.
     """
-    return _OpenMMReadInputs().read(input_file)
+    inputs = _OpenMMReadInputs().read(input_file)
+    
+    # Validate REMD configuration
+    if inputs.remd == 'yes' and inputs.exc_freq is None:
+        raise ValueError(
+            "REMD is enabled (REMD = yes) but exc_freq is not specified. "
+            "Please add 'exc_freq = <number>' to your input file."
+        )
+    
+    return inputs
