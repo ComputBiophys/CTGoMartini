@@ -37,11 +37,260 @@ import subprocess
 import shutil
 from pathlib import Path
 from typing import Any
+from dataclasses import dataclass
 
 import ctgomartini
 from ctgomartini.api import GenMBPTop, GenSBPTop
 from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
 from ctgomartini.utils.contacts import gen_go_contacts
+
+
+@dataclass
+class ResidueInfo:
+    """Information about a single residue in a PDB file."""
+    res_num: int
+    res_name: str
+    chain_id: str
+    atom_count: int
+    atom_names: list[str]
+
+
+@dataclass 
+class PDBSummary:
+    """Summary information extracted from a PDB file."""
+    filename: str
+    residues: list[ResidueInfo]
+    total_atoms: int
+    chains: list[str]
+    
+    @property
+    def residue_count(self) -> int:
+        return len(self.residues)
+    
+    @property
+    def residue_sequence(self) -> list[tuple[str, int]]:
+        """Return list of (res_name, res_num) tuples."""
+        return [(r.res_name, r.res_num) for r in self.residues]
+
+
+def parse_pdb_file(pdb_path: Path) -> PDBSummary:
+    """
+    Parse a PDB file and extract residue information.
+    
+    Args:
+        pdb_path: Path to the PDB file.
+        
+    Returns:
+        PDBSummary containing extracted information.
+    """
+    residues: dict[tuple[str, int], ResidueInfo] = {}
+    total_atoms = 0
+    chains: set[str] = set()
+    
+    with open(pdb_path, 'r') as f:
+        for line in f:
+            line = line.rstrip('\n\r')
+            
+            # Parse ATOM and HETATM records
+            if line.startswith('ATOM  ') or line.startswith('HETATM'):
+                if len(line) < 54:
+                    continue
+                    
+                atom_name = line[12:16].strip()
+                res_name = line[17:20].strip()
+                chain_id = line[21] if len(line) > 21 else ' '
+                try:
+                    res_num = int(line[22:26].strip())
+                except ValueError:
+                    continue
+                
+                total_atoms += 1
+                chains.add(chain_id)
+                
+                key = (chain_id, res_num)
+                if key not in residues:
+                    residues[key] = ResidueInfo(
+                        res_num=res_num,
+                        res_name=res_name,
+                        chain_id=chain_id,
+                        atom_count=0,
+                        atom_names=[]
+                    )
+                
+                residues[key].atom_count += 1
+                residues[key].atom_names.append(atom_name)
+    
+    # Sort residues by chain and residue number
+    sorted_residues = [residues[k] for k in sorted(residues.keys())]
+    
+    return PDBSummary(
+        filename=str(pdb_path),
+        residues=sorted_residues,
+        total_atoms=total_atoms,
+        chains=sorted(chains)
+    )
+
+
+def validate_pdb_compatibility(
+    pdb_files: list[str | Path],
+    state_names: list[str] | None = None
+) -> None:
+    """
+    Validate that multiple PDB files are compatible for MBP topology generation.
+    
+    Checks:
+    1. Same number of residues in each file
+    2. Same residue sequence (name and numbering)
+    3. Similar atom counts per residue
+    
+    Args:
+        pdb_files: List of PDB file paths to validate.
+        state_names: Optional list of state names for error messages.
+        
+    Raises:
+        ValueError: If PDB files are not compatible, with detailed error message.
+    """
+    if len(pdb_files) < 2:
+        return  # Nothing to compare
+    
+    if state_names is None:
+        state_names = [f"State{i+1}" for i in range(len(pdb_files))]
+    
+    # Parse all PDB files
+    summaries: list[PDBSummary] = []
+    for pdb_file in pdb_files:
+        pdb_path = Path(pdb_file)
+        if not pdb_path.exists():
+            raise FileNotFoundError(f"PDB file not found: {pdb_path}")
+        summaries.append(parse_pdb_file(pdb_path))
+    
+    # Check 1: Residue count
+    residue_counts = [s.residue_count for s in summaries]
+    if len(set(residue_counts)) > 1:
+        error_msg = _format_residue_count_error(summaries, state_names)
+        raise ValueError(error_msg)
+    
+    # Check 2: Residue sequence
+    ref_summary = summaries[0]
+    for i, summary in enumerate(summaries[1:], 1):
+        mismatches = _find_residue_mismatches(ref_summary, summary)
+        if mismatches:
+            error_msg = _format_residue_mismatch_error(
+                ref_summary, summary, mismatches, state_names[0], state_names[i]
+            )
+            raise ValueError(error_msg)
+    
+    # Check 3: Atom count per residue (warning only for large differences)
+    for i, summary in enumerate(summaries[1:], 1):
+        for j, (ref_res, cmp_res) in enumerate(zip(ref_summary.residues, summary.residues)):
+            atom_diff = abs(ref_res.atom_count - cmp_res.atom_count)
+            if atom_diff > 5:  # Threshold for significant difference
+                print(
+                    f"\n⚠️  Warning: Significant atom count difference at residue "
+                    f"{ref_res.res_name}{ref_res.res_num}:\n"
+                    f"   {state_names[0]}: {ref_res.atom_count} atoms\n"
+                    f"   {state_names[i]}: {cmp_res.atom_count} atoms\n"
+                    f"   This may indicate different protonation states or missing atoms."
+                )
+
+
+def _find_residue_mismatches(
+    ref: PDBSummary, 
+    other: PDBSummary
+) -> list[tuple[int, ResidueInfo | None, ResidueInfo | None]]:
+    """Find residue mismatches between two PDB summaries."""
+    mismatches = []
+    min_len = min(len(ref.residues), len(other.residues))
+    
+    for i in range(min_len):
+        ref_res = ref.residues[i]
+        other_res = other.residues[i]
+        
+        if (ref_res.res_name != other_res.res_name or 
+            ref_res.res_num != other_res.res_num):
+            mismatches.append((i, ref_res, other_res))
+    
+    # Handle length differences
+    if len(ref.residues) > len(other.residues):
+        for i in range(min_len, len(ref.residues)):
+            mismatches.append((i, ref.residues[i], None))
+    elif len(other.residues) > len(ref.residues):
+        for i in range(min_len, len(other.residues)):
+            mismatches.append((i, None, other.residues[i]))
+    
+    return mismatches
+
+
+def _format_residue_count_error(
+    summaries: list[PDBSummary],
+    state_names: list[str]
+) -> str:
+    """Format error message for residue count mismatch."""
+    lines = [
+        "\n" + "=" * 70,
+        "  ERROR: PDB files have different numbers of residues",
+        "=" * 70,
+        "\nResidue counts:"
+    ]
+    
+    for summary, name in zip(summaries, state_names):
+        lines.append(f"  - {name}: {summary.residue_count} residues ({summary.filename})")
+    
+    lines.extend([
+        "\nPossible causes:",
+        "  1. Missing or extra residues in one of the structures",
+        "  2. One structure contains ligands/waters while the other does not",
+        "  3. Different chain breaks or insertions",
+        "\nPlease ensure all PDB files have the same residue sequence.",
+        "=" * 70
+    ])
+    
+    return "\n".join(lines)
+
+
+def _format_residue_mismatch_error(
+    ref: PDBSummary,
+    other: PDBSummary,
+    mismatches: list[tuple[int, ResidueInfo | None, ResidueInfo | None]],
+    ref_name: str,
+    other_name: str
+) -> str:
+    """Format error message for residue sequence mismatch."""
+    lines = [
+        "\n" + "=" * 70,
+        "  ERROR: PDB files have different residue sequences",
+        "=" * 70,
+        f"\nComparing '{ref_name}' with '{other_name}':"
+    ]
+    
+    # Show first few mismatches
+    max_show = 5
+    lines.append(f"\nFirst {min(len(mismatches), max_show)} mismatches:")
+    
+    for idx, ref_res, other_res in mismatches[:max_show]:
+        res_num = ref_res.res_num if ref_res else other_res.res_num if other_res else idx + 1
+        ref_str = f"{ref_res.res_name}{ref_res.res_num}" if ref_res else "<missing>"
+        other_str = f"{other_res.res_name}{other_res.res_num}" if other_res else "<missing>"
+        
+        lines.append(f"  Position {idx + 1} (residue {res_num}):")
+        lines.append(f"    {ref_name}:  {ref_str}")
+        lines.append(f"    {other_name}: {other_str}")
+    
+    if len(mismatches) > max_show:
+        lines.append(f"  ... and {len(mismatches) - max_show} more mismatches")
+    
+    lines.extend([
+        "\nPossible causes:",
+        "  1. Mutations or different sequences",
+        "  2. Different residue numbering schemes",
+        "  3. Missing residues in one structure",
+        "  4. Different protonation states causing residue name changes",
+        "\nPlease ensure both structures have identical residue sequences",
+        "and consistent numbering before generating MBP topology.",
+        "=" * 70
+    ])
+    
+    return "\n".join(lines)
 
 
 def Martinize2(
@@ -246,6 +495,18 @@ def MBGOMartinize(
     print(f"  Output molecule: {mbmol_name}")
     print("=" * 60)
 
+    # Validate PDB compatibility before processing
+    print("\n  [Pre-check] Validating PDB file compatibility...")
+    try:
+        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        print("    ✓ All PDB files are compatible")
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\n  ERROR: {e}")
+        sys.exit(1)
+
     # For MB mode: use -noscfix
     mb_other_params = f'{other_params} -noscfix'.strip()
 
@@ -326,6 +587,18 @@ def SBGOMartinize(
     print(f"  Output molecule: {sbmol_name}")
     print("=" * 60)
 
+    # Validate PDB compatibility before processing
+    print("\n  [Pre-check] Validating PDB file compatibility...")
+    try:
+        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        print("    ✓ All PDB files are compatible")
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\n  ERROR: {e}")
+        sys.exit(1)
+
     for aa_strfile, map_file, state_name in zip(aa_strfile_list, map_file_list, state_name_list):
         state_dir = working_path / state_name
         if state_dir.exists():
@@ -395,6 +668,18 @@ def SwitchingGOMartinize(
     print(f"  Working directory: {working_path}")
     print(f"  States: {', '.join(state_name_list)}")
     print("=" * 60)
+
+    # Validate PDB compatibility before processing
+    print("\n  [Pre-check] Validating PDB file compatibility...")
+    try:
+        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        print("    ✓ All PDB files are compatible")
+    except ValueError as e:
+        print(e)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"\n  ERROR: {e}")
+        sys.exit(1)
 
     for aa_strfile, map_file, state_name in zip(aa_strfile_list, map_file_list, state_name_list):
         state_dir = working_path / state_name
