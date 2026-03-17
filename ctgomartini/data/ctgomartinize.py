@@ -34,6 +34,7 @@ from ctgomartini.utils.pdb_validation import (
     validate_pdb_compatibility,
     PDBCompatibilityValidator
 )
+from ctgomartini.utils.constraints_to_bonds import convert_constraints_to_bonds
 
 
 def Martinize2(
@@ -226,6 +227,7 @@ def MBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Generate multiple-basin Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -293,7 +295,23 @@ def MBGOMartinize(
 
     write_itp(mbmol)
     print(f"  ✓ Topology written: {mbmol_name}.itp, {mbmol_name}_params.itp")
-    
+
+    # Post-process: convert constraints to bonds in final topology
+    if constraints2bonds is not None:
+        print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+        try:
+            final_itp = Path(f"{mbmol_name}.itp")
+            if final_itp.exists():
+                n_converted = convert_constraints_to_bonds(
+                    final_itp, mbmol_name, fc=constraints2bonds
+                )
+                if n_converted > 0:
+                    print(f"    ✓ Converted {n_converted} constraints to bonds")
+                else:
+                    print(f"    ℹ No constraints found in {mbmol_name}")
+        except Exception as e:
+            print(f"    ! Warning: Failed to convert constraints: {e}")
+
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
@@ -317,6 +335,7 @@ def SBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Generate single-basin Go-Martini topology from a single PDB.
     
@@ -377,7 +396,23 @@ def SBGOMartinize(
 
     write_itp(sbmol)
     print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
-    
+
+    # Post-process: convert constraints to bonds in final topology
+    if constraints2bonds is not None:
+        print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+        try:
+            final_itp = Path(f"{state_name}.itp")
+            if final_itp.exists():
+                n_converted = convert_constraints_to_bonds(
+                    final_itp, state_name, fc=constraints2bonds
+                )
+                if n_converted > 0:
+                    print(f"    ✓ Converted {n_converted} constraints to bonds")
+                else:
+                    print(f"    ℹ No constraints found in {state_name}")
+        except Exception as e:
+            print(f"    ! Warning: Failed to convert constraints: {e}")
+
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
@@ -401,6 +436,7 @@ def SwitchingGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Generate switching Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -453,6 +489,22 @@ def SwitchingGOMartinize(
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
 
+        # Post-process: convert constraints to bonds for this state
+        if constraints2bonds is not None:
+            print(f"  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
+            try:
+                state_itp = Path(f"{state_name}.itp")
+                if state_itp.exists():
+                    n_converted = convert_constraints_to_bonds(
+                        state_itp, state_name, fc=constraints2bonds
+                    )
+                    if n_converted > 0:
+                        print(f"    ✓ Converted {n_converted} constraints to bonds")
+                    else:
+                        print(f"    ℹ No constraints found")
+            except Exception as e:
+                print(f"    ! Warning: Failed to convert constraints: {e}")
+
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
     print("=" * 60)
@@ -477,25 +529,29 @@ def CTGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    constraints2bonds: float | None = None,
 ) -> None:
     """Main entry point for Go-Martini topology generation."""
     if method.lower() == 'switching':
         SwitchingGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     elif method.lower() in ['exp', 'ham']:
         MBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     elif method.lower() == 'sbp':
         SBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list,
             method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up
+            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            constraints2bonds=constraints2bonds
         )
     else:
         raise ValueError(f'Error: unsupported method: {method}!')
@@ -527,6 +583,12 @@ Usage examples:
 
     # Use provided contact map files instead of auto-generation
     ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+
+    # Convert constraints to bonds (allows slight flexibility, default FC=50000)
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds
+
+    # Convert constraints with custom force constant
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds 2000
 
 Notes:
     - SBP mode: Requires exactly one PDB file and one molecule name
@@ -571,6 +633,11 @@ Notes:
                         help='Lower cutoff for Go contacts in nm (default: 0.3)')
     parser.add_argument('-go-up', dest='go_up', default=1.1, type=float,
                         help='Upper cutoff for Go contacts in nm (default: 1.1)')
+    parser.add_argument('-constraints2bonds', dest='constraints2bonds',
+                        nargs='?', const=50000.0, default=None, type=float, metavar='FC',
+                        help='Convert constraints to bonds with force constant FC (kJ/(mol·nm²)). '
+                             'Use -constraints2bonds for default FC=50000, or '
+                             '-constraints2bonds 2000 for custom value.')
     args = parser.parse_args()
 
     # Handle -m parameter
@@ -598,7 +665,8 @@ Notes:
         args.strfile, map_file_list, args.moltype, args.mbmoltype,
         dict_cutoffs, method=args.method, dssp=args.dssp, ff=args.ff,
         other_params=args.other_params, go_eps=args.go_eps,
-        go_low=args.go_low, go_up=args.go_up
+        go_low=args.go_low, go_up=args.go_up,
+        constraints2bonds=args.constraints2bonds
     )
 
 
