@@ -15,7 +15,7 @@ Key differences:
   4. CMs format may differ slightly
 
 This module provides functions to convert rCSU web-server contact map files
-to the format expected by martinize2 -go option (vermouth >= 0.15.0).
+to the format expected by martinize2 -go option.
 """
 
 import re

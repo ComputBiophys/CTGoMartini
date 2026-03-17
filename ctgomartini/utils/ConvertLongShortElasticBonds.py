@@ -69,7 +69,7 @@ def convert_long_short_elastic_bonds(
     """
     # Check files
     prot_itp = f"{prefix}.itp"
-    # For vermouth >= 0.15.0: use go_nbparams.itp instead of go-table_VirtGoSites.itp
+    # Use go_nbparams.itp (new format) instead of go-table_VirtGoSites.itp (legacy format)
     go_pair_file_new = f"go_nbparams.itp"
     go_pair_file_old = f"{prefix}_go-table_VirtGoSites.itp"
     exclusion_file_old = f"{prefix}_exclusions_VirtGoSites.itp"

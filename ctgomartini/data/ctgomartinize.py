@@ -9,7 +9,7 @@ simulations. It supports multiple methods:
 - Multiple-basin Go-Martini with Hamiltonian mixing (HAM): Exactly 2 structures
 - Switching Go-Martini: Generate separate topologies for each structure
 
-The script integrates with martinize2 (vermouth >= 0.15.0) to:
+The script integrates with martinize2 (vermouth >= 0.10.0) to:
 1. Convert all-atom structures to coarse-grained Martini models
 2. Generate Go-like contacts from various sources (auto, rCSU .map, martinize2 .out)
 3. Combine multiple states into multi-basin potential topologies
