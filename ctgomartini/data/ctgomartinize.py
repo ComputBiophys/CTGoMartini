@@ -533,6 +533,7 @@ Notes:
     - EXP/HAM/Switching modes: Require 2+ PDB files with matching residue sequences
     - -dssp: Use alone for MDTraj (default), or provide path to DSSP executable
     - -mbmol: Output molecule name for multi-basin modes (EXP, HAM, Switching)
+    - -other_params: For params starting with dash, use -other_params="-param" (e.g., -other_params="-nt")
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -562,7 +563,8 @@ Notes:
     parser.add_argument('-cutoff_contacts', dest='cutoff_contacts', default=0.06, type=float,
                         help='Sigma cutoff of contacts (default: 0.06 nm)')
     parser.add_argument('-other_params', dest='other_params', default='', type=str,
-                        help='Other parameters for martinize2')
+                        help='Other parameters for martinize2. '
+                             'Use -other_params="-param" for params starting with dash (e.g., -other_params="-nt")')
     parser.add_argument('-go-eps', dest='go_eps', default=12.0, type=float,
                         help='Epsilon value for Go contacts (default: 12.0)')
     parser.add_argument('-go-low', dest='go_low', default=0.3, type=float,
