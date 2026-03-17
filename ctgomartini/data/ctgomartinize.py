@@ -4,29 +4,17 @@ CTGoMartini topology generation script.
 
 This script generates Go-Martini topology files for coarse-grained molecular dynamics
 simulations. It supports multiple methods:
-- Single-basin Go-Martini (SBP)
-- Multiple-basin Go-Martini with exponential mixing (EXP)
-- Multiple-basin Go-Martini with Hamiltonian mixing (HAM)
-- Switching Go-Martini
+- Single-basin Go-Martini (SBP): Convert one structure to Go-Contact format
+- Multiple-basin Go-Martini with exponential mixing (EXP): 2+ structures
+- Multiple-basin Go-Martini with Hamiltonian mixing (HAM): Exactly 2 structures
+- Switching Go-Martini: Generate separate topologies for each structure
 
 The script integrates with martinize2 (vermouth >= 0.15.0) to:
 1. Convert all-atom structures to coarse-grained Martini models
 2. Generate Go-like contacts from various sources (auto, rCSU .map, martinize2 .out)
 3. Combine multiple states into multi-basin potential topologies
-
-Usage examples:
-    # Auto-generate contacts for multiple-basin
-    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB \\
-        -mbmol protein -ff martini3001 -method exp
-
-    # Use provided contact map files
-    ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map \\
-        -mol StateA StateB -mbmol protein -ff martini3001 -method exp
-
-    # Single-basin Go-Martini
-    ctgomartinize -s protein.pdb -m auto -mol protein \\
-        -mbmol protein -ff martini3001 -method sbp
 """
+
 
 from __future__ import annotations
 
@@ -523,15 +511,28 @@ def main() -> None:
      - rCSU web-server .map files (will be converted)
      - martinize2/contact_map.out files (used directly)
 
-Examples:
-  # Multiple-basin Go-Martini with auto-generated contacts
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+Usage examples:
 
-  # Multiple-basin with user-provided contact files  
-  ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+    # Single-basin Go-Martini (SBP) - single structure
+    ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp
+    
+    # Multiple-basin Go-Martini with exponential mixing (EXP) - 2+ structures
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+    
+    # Multiple-basin Go-Martini with Hamiltonian mixing (HAM) - exactly 2 structures
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method ham
+    
+    # Switching Go-Martini - generates separate topologies for each structure
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -dssp -method switching
 
-  # Switching Go-Martini
-  ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -ff martini3001 -dssp -method switching
+    # Use provided contact map files instead of auto-generation
+    ctgomartinize -s StateA.pdb StateB.pdb -m StateA.map StateB.map -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp
+
+Notes:
+    - SBP mode: Requires exactly one PDB file and one molecule name
+    - EXP/HAM/Switching modes: Require 2+ PDB files with matching residue sequences
+    - -dssp: Use alone for MDTraj (default), or provide path to DSSP executable
+    - -mbmol: Output molecule name for multi-basin modes (EXP, HAM, Switching)
 """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
