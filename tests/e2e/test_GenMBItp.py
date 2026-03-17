@@ -179,7 +179,7 @@ class TestMBMartiniTIP:
             
             with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
                 # Fetch ctgomarinize
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'data/ctgomartinize.py')} .")
+                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/ctgomartinize.py')} .")
                 
                 # Check which DSSP command is available (prefer mkdssp for compatibility)
                 dssp_cmd = None
@@ -205,7 +205,7 @@ class TestMBMartiniTIP:
             
             with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
                 # Fetch ctgomarinize
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'data/ctgomartinize.py')} .")
+                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/ctgomartinize.py')} .")
                 
                 # Check which DSSP command is available (prefer mkdssp for compatibility)
                 dssp_cmd = None

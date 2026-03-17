@@ -19,7 +19,7 @@ import shutil
 import pytest
 
 import ctgomartini
-from ctgomartini.data.ctgomartinize import SBGOMartinize
+from ctgomartini.cli.ctgomartinize import SBGOMartinize
 from ctgomartini.utils import convert_map_format
 
 

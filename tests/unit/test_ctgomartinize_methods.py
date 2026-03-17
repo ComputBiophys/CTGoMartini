@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 
 # Import the functions to test
-from ctgomartini.data.ctgomartinize import (
+from ctgomartini.cli.ctgomartinize import (
     SBGOMartinize,
     MBGOMartinize,
     SwitchingGOMartinize,

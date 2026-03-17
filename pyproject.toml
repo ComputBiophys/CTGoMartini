@@ -45,8 +45,8 @@ dev = [
 ]
 
 [project.scripts]
-ctgomartinize = "ctgomartini.data.ctgomartinize:main"
-run_ctgomartini = "ctgomartini.run_ctgomartini:main"
+ctgomartinize = "ctgomartini.cli.ctgomartinize:main"
+run_ctgomartini = "ctgomartini.cli.run_ctgomartini:main"
 
 [project.urls]
 Homepage = "https://github.com/ComputBiophys/CTGoMartini"

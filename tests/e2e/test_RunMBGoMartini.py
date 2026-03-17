@@ -42,7 +42,7 @@ class TestMBMartini:
             
             with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
                 # Fetch run_ctgomartini.py
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'data/run_ctgomartini.py')} .")
+                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
                 # Generate Itp
                 RunScript("python run_ctgomartini.py -i npt.inp > npt.log")
                 RunScript("python run_ctgomartini.py -i md.inp > md.log")
@@ -56,7 +56,7 @@ class TestMBMartini:
             
             with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
                 # Fetch run_ctgomartini.py
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'data/run_ctgomartini.py')} .")
+                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
                 # Generate Itp
                 RunScript("python run_ctgomartini.py -i npt.inp > npt.log")
                 RunScript("python run_ctgomartini.py -i md.inp > md.log")
