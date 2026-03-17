@@ -167,10 +167,10 @@ class ValidationReport:
         
         lines.extend([
             "\nPossible specific causes:",
-            "  1. One structure has missing terminal residues",
-            "  2. Different loop conformations with missing residues",
-            "  3. One structure includes ligands/binding partners",
-            "  4. Different crystallographic constructs (expression systems)",
+            "  1. Missing terminal residues (N-terminal or C-terminal truncation)",
+            "  2. Missing loop residues (unresolved flexible regions)",
+            "  3. One structure includes tags or purification handles (His-tag, etc.)",
+            "  4. Different protein constructs (truncation variants, fusion proteins)",
         ])
         
         return lines
@@ -222,11 +222,10 @@ class ValidationReport:
         
         lines.extend([
             "\nPossible specific causes:",
-            "  1. Point mutations between structures",
-            "  2. Different protonation states (e.g., HSE vs HIS)",
-            "  3. Different residue numbering schemes (offset or insertion codes)",
-            "  4. One structure has engineered mutations",
-            "  5. Different isoforms or splice variants",
+            "  1. Amino acid mutations (point mutations or sequence variants)",
+            "  2. Different protonation states (e.g., HSE/HID/HIE vs HIS)",
+            "  3. Different residue numbering (offset or missing insertion codes)",
+            "  4. Different protein isoforms or splice variants",
         ])
         
         return lines
