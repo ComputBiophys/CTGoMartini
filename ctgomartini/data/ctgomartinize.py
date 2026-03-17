@@ -345,7 +345,7 @@ def SBGOMartinize(
     # Validate PDB compatibility before processing
     print("\n  [Pre-check] Validating PDB file compatibility...")
     try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
         print("    ✓ All PDB files are compatible")
     except ValueError as e:
         print(e)
@@ -427,7 +427,7 @@ def SwitchingGOMartinize(
     # Validate PDB compatibility before processing
     print("\n  [Pre-check] Validating PDB file compatibility...")
     try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list)
+        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
         print("    ✓ All PDB files are compatible")
     except ValueError as e:
         print(e)
@@ -460,7 +460,7 @@ def SwitchingGOMartinize(
 
         # Generate single-basin topology for switching (inside state dir)
         print(f"\n  Generating single-basin topology for {state_name}...")
-        mols_list: list[list[str]] = [[f'system.top', state_name]]
+        mols_list: list[list[str]] = [[str(state_dir / 'system.top'), state_name]]
         sbmol = GenSBPTop(mols_list, state_name)
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
