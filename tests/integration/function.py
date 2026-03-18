@@ -11,7 +11,7 @@ import numpy as np
 
 from ctgomartini.topology import MartiniTopFile
 
-def OMM_setSimulation(
+def setup_openmm_simulation(
         strfile,
         topfile,
         epsilon_r=15.0,
@@ -62,7 +62,7 @@ def OMM_setSimulation(
     return simulation
 
 
-def OMM_calStrfile(strfile, simulation, prefix='conf', isEnergy=True, isForces=True, set_vsite=True):
+def calculate_openmm_state(strfile, simulation, prefix='conf', isEnergy=True, isForces=True, set_vsite=True):
     """
     Calculate and save the energy and forces from the simulation.
 
@@ -110,7 +110,7 @@ def OMM_calStrfile(strfile, simulation, prefix='conf', isEnergy=True, isForces=T
         np.savetxt(f"forces_{prefix}.dat", forces_array)
 
 # generate run_gmx.sh
-def GMX_set(
+def setup_gromacs_simulation(
     strfile='minimized.gro',
     trjfile='minimized.gro',
     topfile='system.top',
@@ -214,7 +214,7 @@ gen_vel                  = no
             fp.write(line)
 
 
-def GMX_run(run_file='run_gmx.sh', prefix='conf'):
+def run_gromacs_calculation(run_file='run_gmx.sh', prefix='conf'):
     result = subprocess.run(
         f'bash {run_file}', shell=True, capture_output=True, text=True)
     if result.returncode != 0:
@@ -255,28 +255,28 @@ def GMX_run(run_file='run_gmx.sh', prefix='conf'):
     np.savetxt(f'forces_{prefix}.dat', forces_array)
 
 
-def Clean(prefix='conf'):
+def clean_files(prefix='conf'):
     try:
         os.remove(f'energy_{prefix}.dat')
         os.remove(f'forces_{prefix}.dat')
     except:
         pass
 
-def Load_energy(prefix='conf', clean=False):
+def load_energy_data(prefix='conf', clean=False):
     energy = np.loadtxt(f"energy_{prefix}.dat", ndmin=2)
     if clean:
         os.remove(f"energy_{prefix}.dat")
     return energy
 
 
-def Load_forces(prefix='conf', clean=False):
+def load_forces_data(prefix='conf', clean=False):
     forces = np.loadtxt(f"forces_{prefix}.dat", ndmin=2)
     if clean:
         os.remove(f"forces_{prefix}.dat")
     return forces
 
 
-def Compare_energy(energy1, energy2, isPrint=True, isReturn=False):
+def compare_energy_values(energy1, energy2, isPrint=True, isReturn=False):
     energy1 = float(np.array(energy1, dtype=float).ravel()[0])
     energy2 = float(np.array(energy2, dtype=float).ravel()[0])
 
@@ -304,7 +304,7 @@ def Compare_energy(energy1, energy2, isPrint=True, isReturn=False):
         else:
             return False
 
-def Compare_energy_array(energy_array1, energy_array2, isPrint=True):
+def compare_energy_arrays(energy_array1, energy_array2, isPrint=True):
     # shape check:
     if energy_array1.shape != energy_array2.shape:
         raise ValueError(
@@ -318,7 +318,7 @@ def Compare_energy_array(energy_array1, energy_array2, isPrint=True):
         energy2 = energy_array2[i, 1]
         if isPrint:
             print(f"###Frame {frame}###")
-        result = Compare_energy(energy1, energy2, isPrint=isPrint)
+        result = compare_energy_values(energy1, energy2, isPrint=isPrint)
         if isPrint:
             print()
 
@@ -337,7 +337,7 @@ def Compare_energy_array(energy_array1, energy_array2, isPrint=True):
         return True
 
 
-# def Compare_forces(forces1, forces2, isPrint=True):
+# def compare_forces_values(forces1, forces2, isPrint=True):
 #     '''forces1 and forces2 should be the calculated force and standard forces, respectively.'''
 #     average = 0.5*np.linalg.norm(forces1, axis=1) + 0.5*np.linalg.norm(forces2, axis=1)
 
@@ -369,7 +369,7 @@ def Compare_energy_array(energy_array1, energy_array2, isPrint=True):
 #             print("Error: Forces do not match!")
 #         return False 
 
-def Compare_forces(forces1, forces2, isPrint=True, isReturn=False):
+def compare_forces_values(forces1, forces2, isPrint=True, isReturn=False):
     '''forces1 and forces2 should be the calculated force and standard forces, respectively.'''
     # Don't consider zero forces (virtual site atoms)
     nonzero_index = (np.linalg.norm(forces1, axis=1) != 0) & (np.linalg.norm(forces2, axis=1) != 0)
@@ -413,7 +413,7 @@ def Compare_forces(forces1, forces2, isPrint=True, isReturn=False):
         else:
             return False 
 
-def Compare_forces_array(forces_array1, forces_array2, isPrint=True):
+def compare_forces_arrays(forces_array1, forces_array2, isPrint=True):
     # shape check:
     if forces_array1.shape != forces_array2.shape:
         raise ValueError(
@@ -428,7 +428,7 @@ def Compare_forces_array(forces_array1, forces_array2, isPrint=True):
 
         if isPrint:
             print(f"###Frame {frame}###")
-        result = Compare_forces(forces1, forces2, isPrint=isPrint)
+        result = compare_forces_values(forces1, forces2, isPrint=isPrint)
         if isPrint:
             print()
         result_list.append(result)

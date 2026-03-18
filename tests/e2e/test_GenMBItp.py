@@ -24,14 +24,15 @@ import subprocess
 from tests.conftest import WorkingDirectoryContext
 
 
-def Comparison_ITP(working_dir, molname, topfile):
+def compare_itp_topology(working_dir, molname, topfile):
+    """Compare ITP topology between test and reference directories."""
     with WorkingDirectoryContext(os.path.join(working_dir, "test")):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
     
     with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    Comparison_Top(mbmol_ref, mbmol_test)
+    compare_topology_sections(mbmol_ref, mbmol_test)
 
 
 def category_sort(fields, category):
@@ -114,7 +115,7 @@ def compare_with_tolerance(ref_list, test_list, key_func, abs_tol=1e-4, category
     return True, "OK"
 
 
-def Comparison_Top(mbmol_ref, mbmol_test):
+def compare_topology_sections(mbmol_ref, mbmol_test):
     categories_list = list(set(list(mbmol_ref._topology.keys()) + list(mbmol_test._topology.keys())))
     for category in categories_list:
         ref_data = mbmol_ref._topology[category]
@@ -155,23 +156,16 @@ def Comparison_Top(mbmol_ref, mbmol_test):
         assert same, f"Error: comparison of {category} between test and ref is not the same: {msg}"
 
 
-def Comparison_ITP(working_dir, molname, topfile):
-    os.chdir(os.path.join(working_dir, "test"))
-    mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
-
-    os.chdir(os.path.join(working_dir, "ref"))
-    mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
-
-    Comparison_Top(mbmol_ref, mbmol_test)
 
 
-class TestMBMartiniTIP:
+
+class TestGenMBItp:
     """
-    Test the ITP file of multiple baisn GoMartini
+    Test the ITP file of multiple basin GoMartini.
     """
     path = os.path.dirname(__file__)
 
-    def test_GenMBItp_EXP(self):
+    def test_generate_mb_itp_exp(self):
         working_dir = os.path.join(self.path, "../fixtures/WriteItp/EXP")
         
         with WorkingDirectoryContext(working_dir):
@@ -195,9 +189,9 @@ class TestMBMartiniTIP:
                                shell=True)
         
         # Check Comparison
-        Comparison_ITP(working_dir, 'gbp', 'system.top')
+        compare_itp_topology(working_dir, 'gbp', 'system.top')
 
-    def test_GenMBItp_HAM(self):
+    def test_generate_mb_itp_ham(self):
         working_dir = os.path.join(self.path, "../fixtures/WriteItp/HAM")
         
         with WorkingDirectoryContext(working_dir):
@@ -221,4 +215,4 @@ class TestMBMartiniTIP:
                                shell=True)
         
         # Check Comparison
-        Comparison_ITP(working_dir, 'gbp', 'system.top')   
+        compare_itp_topology(working_dir, 'gbp', 'system.top')

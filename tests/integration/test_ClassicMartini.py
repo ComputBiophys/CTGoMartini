@@ -19,27 +19,27 @@ def CompareResults(working_dir, epsilon_r=15):
         strfile = "minimized.gro"
         topfile = "system.top"
 
-        Clean() # Remove the forces.dat and energy.dat
-        simulation = OMM_setSimulation(strfile, topfile, epsilon_r=epsilon_r, temperature=310.15, double_precision=True)
-        OMM_calStrfile(strfile, simulation, set_vsite=True)
+        clean_files() # Remove the forces.dat and energy.dat
+        simulation = setup_openmm_simulation(strfile, topfile, epsilon_r=epsilon_r, temperature=310.15, double_precision=True)
+        calculate_openmm_state(strfile, simulation, set_vsite=True)
 
-        omm_energy=Load_energy(clean=False)
-        omm_forces=Load_forces(clean=False)
+        omm_energy=load_energy_data(clean=False)
+        omm_forces=load_forces_data(clean=False)
         
     # gmx
     with WorkingDirectoryContext(os.path.join(working_dir, "gmx")):
         # Use the results from the last run
-        # Clean()
-        # GMX_set(CreateMDP=False, double_precision=True)
-        # GMX_run()
+        # clean_files()
+        # setup_gromacs_simulation(CreateMDP=False, double_precision=True)
+        # run_gromacs_calculation()
 
-        gmx_energy=Load_energy(clean=False)
-        gmx_forces=Load_forces(clean=False)   
+        gmx_energy=load_energy_data(clean=False)
+        gmx_forces=load_forces_data(clean=False)
 
     # Compare
     print("########################################")
-    result_energy=Compare_energy(omm_energy[:,1:], gmx_energy[:,1:], isPrint=True)
-    result_forces=Compare_forces(omm_forces[:,1:], gmx_forces[:,1:], isPrint=True)
+    result_energy=compare_energy_values(omm_energy[:,1:], gmx_energy[:,1:], isPrint=True)
+    result_forces=compare_forces_values(omm_forces[:,1:], gmx_forces[:,1:], isPrint=True)
     if not (result_energy and result_forces):
         raise AssertionError("Energies or forces do not match.")
     

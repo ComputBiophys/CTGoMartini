@@ -19,22 +19,22 @@ import subprocess
 from tests.conftest import WorkingDirectoryContext
 
 
-def RunScript(script_string):
+def run_script(script_string):
+    """Run a shell script and check for errors."""
     output = subprocess.run(script_string,
     shell=True, capture_output=True, encoding='utf-8')
-    # print(output.args)
     if output.returncode != 0:
         stdout = output.stdout
         stderr = output.stderr
         raise Exception(f'Error! {output.args} {stdout} {stderr}')
 
-class TestMBMartini:
+class TestRunMBGoMartini:
     """
-    Test running the multiple baisn GoMartini
+    Test running the multiple basin GoMartini simulation.
     """
     path = os.path.dirname(__file__)
 
-    def test_GenMBRun_EXP(self):
+    def test_run_mb_exp(self):
         working_dir = os.path.join(self.path, "../fixtures/MDRun/EXP")
         
         with WorkingDirectoryContext(working_dir):
@@ -44,11 +44,11 @@ class TestMBMartini:
                 # Fetch run_ctgomartini.py
                 os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
                 # Generate Itp
-                RunScript("python run_ctgomartini.py -i npt.inp > npt.log")
-                RunScript("python run_ctgomartini.py -i md.inp > md.log")
-                RunScript("python run_ctgomartini.py -i md_cpi.inp >> md.log")
+                run_script("python run_ctgomartini.py -i npt.inp > npt.log")
+                run_script("python run_ctgomartini.py -i md.inp > md.log")
+                run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")
     
-    def test_GenMBRun_HAM(self):
+    def test_run_mb_ham(self):
         working_dir = os.path.join(self.path, "../fixtures/MDRun/HAM")
         
         with WorkingDirectoryContext(working_dir):
@@ -58,6 +58,6 @@ class TestMBMartini:
                 # Fetch run_ctgomartini.py
                 os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
                 # Generate Itp
-                RunScript("python run_ctgomartini.py -i npt.inp > npt.log")
-                RunScript("python run_ctgomartini.py -i md.inp > md.log")
-                RunScript("python run_ctgomartini.py -i md_cpi.inp >> md.log")
+                run_script("python run_ctgomartini.py -i npt.inp > npt.log")
+                run_script("python run_ctgomartini.py -i md.inp > md.log")
+                run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")

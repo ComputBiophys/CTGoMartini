@@ -14,62 +14,41 @@ from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
 from tests.conftest import WorkingDirectoryContext
 
 
-class TestMBMartiniTIP:
-    """Context manager to save and restore working directory."""
-    def __init__(self, new_dir):
-        self.new_dir = new_dir
-        self.original_dir = None
-    
-    def __enter__(self):
-        self.original_dir = os.getcwd()
-        os.chdir(self.new_dir)
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        os.chdir(self.original_dir)
-        return False
-
-
-def Comparison_ITP(working_dir, molname, topfile):
-    with WorkingDirectoryContext(os.path.join(working_dir, "test")):
-        mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
-    
-    with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
-        mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
-
-    Comparison_Top(mbmol_ref, mbmol_test)
-
-def Angles_Dihedrals_Sort(fields, category):
+def angles_dihedrals_sort(fields, category):
+    """Sort angle/dihedral fields for consistent comparison."""
     if category in ['angles', 'multi_angles']:
-        if int(fields[0]) >  int(fields[2]):
+        if int(fields[0]) > int(fields[2]):
             fields = fields[2::-1] + fields[3:]
     elif category in ['dihedrals', 'multi_dihedrals']:
         if int(fields[0]) > int(fields[3]):
             fields = fields[3::-1] + fields[4:]
     return fields
 
-def Comparison_Top(mbmol_ref, mbmol_test):
+
+def compare_topology_sections(mbmol_ref, mbmol_test):
+    """Compare topology sections between reference and test molecules."""
     categories_list = list(set(list(mbmol_ref._topology.keys()) + list(mbmol_test._topology.keys())))
     for category in categories_list:
-        # if category == 'atoms': continue
         if category in ['angles', 'dihedrals', 'multi_angles', 'multi_dihedrals']:
-            Angles_Dihedrals_Sort_partial = partial(Angles_Dihedrals_Sort, category=category)
-            mbmol_ref._topology[category] = list(map(Angles_Dihedrals_Sort_partial, mbmol_ref._topology[category]))
-            mbmol_test._topology[category] = list(map(Angles_Dihedrals_Sort_partial, mbmol_test._topology[category]))
+            sort_partial = partial(angles_dihedrals_sort, category=category)
+            mbmol_ref._topology[category] = list(map(sort_partial, mbmol_ref._topology[category]))
+            mbmol_test._topology[category] = list(map(sort_partial, mbmol_test._topology[category]))
         same = SameListList([mbmol_ref._topology[category], mbmol_test._topology[category]], sort=True, precision=5)
         assert same is True, f"Error: comparison of {category} between test and ref is not the same!"
 
-def Comparison_ITP(working_dir, molname, topfile):
-    os.chdir(os.path.join(working_dir, "test"))
-    mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    os.chdir(os.path.join(working_dir, "ref"))
-    mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
+def compare_itp_topology(working_dir, molname, topfile):
+    """Compare ITP topology between test and reference directories."""
+    with WorkingDirectoryContext(os.path.join(working_dir, "test")):
+        mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
+    
+    with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
+        mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    Comparison_Top(mbmol_ref, mbmol_test)
+    compare_topology_sections(mbmol_ref, mbmol_test)
 
 
-class TestMBMartiniTIP:
+class TestConvertLongShortElasticBonds:
     """
     Test elastic bond conversion for multiple-basin GoMartini.
     
@@ -79,7 +58,7 @@ class TestMBMartiniTIP:
     
     path = os.path.dirname(__file__)
 
-    def test_GlnBP_ITP_LongShortElasticBonds(self):
+    def test_convert_elastic_bonds_glnbp(self):
         """
         Test long/short elastic bond conversion for GlnBP.
         
@@ -127,7 +106,7 @@ class TestMBMartiniTIP:
                 write_itp(mbmol)
 
         # Check Comparison
-        Comparison_ITP(working_dir, 'gbp', 'system.top')
+        compare_itp_topology(working_dir, 'gbp', 'system.top')
 
     
 
