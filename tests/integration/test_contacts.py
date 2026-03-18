@@ -16,7 +16,7 @@ from .function import *
 from tests.conftest import WorkingDirectoryContext
 
 
-def CompareResults(working_dir, epsilon_r=15):
+def compare_results(working_dir, epsilon_r=15):
     with WorkingDirectoryContext(os.path.join(working_dir, "Contacts")):
         strfile = "minimized.gro"
         topfile = "system.top"
@@ -54,32 +54,32 @@ class TestMartiniTopology:
     
     def test_KALP(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/KALP")
-        CompareResults(working_dir, epsilon_r = 15)    
+        compare_results(working_dir, epsilon_r = 15)    
 
     def test_1GB1(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/1GB1")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
 
     def test_1UBQ(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/1UBQ")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
     
     def test_GlnBP_Open(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Open")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
 
     def test_GlnBP_Closed(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Closed")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
 
     def test_AdK_Closed(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/AdK_Closed")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
 
     def test_Beta2AR_Active(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/Beta2AR_Active")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
 
     def test_TREK1_Down(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/TREK1_Down")
-        CompareResults(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)   
