@@ -23,7 +23,7 @@ from typing import TYPE_CHECKING
 import MDAnalysis as mda
 import numpy as np
 
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 
 if TYPE_CHECKING:
     from MDAnalysis.core.universe import Universe

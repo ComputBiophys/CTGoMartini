@@ -11,8 +11,8 @@ import numpy as np
 import openmm as mm
 import openmm.unit as unit
 
-from ctgomartini.core.bonded.bonds import ContactsLJ, Contacts6_12, Contacts10_12
-from ctgomartini.core.bonded.multi_state import (
+from ctgomartini.topology.interactions.bonds import ContactsLJ, Contacts6_12, Contacts10_12
+from ctgomartini.topology.interactions.multi_state import (
     MultiContactsLJ, MultiContacts6_12, MultiContacts10_12
 )
 

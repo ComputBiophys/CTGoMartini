@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 import ctgomartini
-from ctgomartini.api import GenMBPTop, GenSBPTop
+from ctgomartini.topology import create_mb_topology, create_sb_topology
 from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
 from ctgomartini.utils.contacts import gen_go_contacts
 from ctgomartini.utils.pdb_validation import (
@@ -282,7 +282,7 @@ def MBGOMartinize(
         [f'{state_name}/system.top', state_name]
         for state_name in state_name_list
     ]
-    mbmol = GenMBPTop(mols_list, mbmol_name, dict_cutoffs)
+    mbmol = create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
 
     # Modify multiple_basin parameters according to method
     if method.lower() == "ham":
@@ -389,7 +389,7 @@ def SBGOMartinize(
     print(f"  Generating single-basin topology...")
     
     mols_list: list[list[str]] = [[f'{state_name}/system.top', state_name]]
-    sbmol = GenSBPTop(mols_list, state_name)
+    sbmol = create_sb_topology(mols_list, state_name)
 
     if method.lower() != "sbp":
         raise ValueError(f'Error: Unsupported method: {method}')
@@ -485,7 +485,7 @@ def SwitchingGOMartinize(
         # Generate single-basin topology for switching (inside state dir)
         print(f"\n  Generating single-basin topology for {state_name}...")
         mols_list: list[list[str]] = [[str(state_dir / 'system.top'), state_name]]
-        sbmol = GenSBPTop(mols_list, state_name)
+        sbmol = create_sb_topology(mols_list, state_name)
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
 

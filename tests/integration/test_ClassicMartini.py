@@ -9,7 +9,7 @@ Note:
 """
 
 import os
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 from .function import *
 from tests.conftest import WorkingDirectoryContext
 

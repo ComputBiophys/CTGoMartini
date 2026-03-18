@@ -781,5 +781,7 @@ __all__ = [
     # Dihedral handlers
     "MultiPeriodicDihedral",
     # Contact handlers
-    "MultiContactLJ",
+    "MultiContactsLJ",
+    "MultiContacts6_12",
+    "MultiContacts10_12",
 ]

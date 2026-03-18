@@ -4,7 +4,6 @@ Base simulation runner module for CTGoMartini.
 Provides the SimulationRunner class with common functionality for MD and REMD simulations,
 including platform loading, structure loading, restraints, and barostat setup.
 
-This module consolidates functionality from data/Topology.py and data/run_ctgomartini.py.
 """
 
 from __future__ import annotations
@@ -21,7 +20,7 @@ import openmm as mm
 import openmm.unit as u
 from openmm.app import GromacsGroFile, PDBFile, Simulation
 
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 from ctgomartini.simulation.config import SimulationConfig, load_config
 
 if TYPE_CHECKING:

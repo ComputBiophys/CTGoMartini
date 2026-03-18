@@ -35,7 +35,7 @@ class SimulationConfig:
         
         # Velocity generation
         self.gen_vel: str = 'no'
-        self.gen_temp: float = 300.0
+        self.gen_temp: float = 310.15
         self.gen_seed: int | None = None
         
         # Simulation steps
@@ -79,7 +79,7 @@ class SimulationConfig:
         self.GPU_id: str | None = None
         
         # Thermodynamic parameters
-        self.temp: float = 310.0
+        self.temp: float = 310.15
         self.fric_coeff: float = 1.0
         self.nonbonded_cutoff: float = 1.1
         

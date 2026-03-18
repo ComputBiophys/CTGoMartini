@@ -9,7 +9,7 @@ These tests ensure force field implementations are equivalent.
 """
 
 import os
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 from .function import *
 from ctgomartini.simulation import generate_restraints, add_restraints
 from tests.conftest import WorkingDirectoryContext

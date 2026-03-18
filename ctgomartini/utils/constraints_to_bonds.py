@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ctgomartini.core import Molecule
+from ctgomartini.topology import Molecule
 
 
 def convert_constraints_to_bonds_in_molecule(
@@ -69,7 +69,7 @@ def convert_constraints_to_bonds(
         FileNotFoundError: If topology file doesn't exist.
         ValueError: If molecule not found in topology.
     """
-    from ctgomartini.api import MartiniTopFile
+    from ctgomartini.topology import MartiniTopFile
     from ctgomartini.utils import write_itp
 
     topology_path = Path(topology_path)

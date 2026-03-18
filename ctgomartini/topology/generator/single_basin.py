@@ -10,11 +10,11 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from ..core import Extract_contacts_from_top
-from .MartiniTopology import MartiniTopFile
+from .combiner import extract_contacts_from_topology
+from ..builder import MartiniTopFile
 
 
-def ChangeAtomType(
+def _change_atom_type(
     atoms: list[list[str]], 
     mol_name: str, 
     sbmol_name: str
@@ -51,7 +51,7 @@ def ChangeAtomType(
     return newatoms
     
 
-def GenSBPTop(
+def create_sb_topology(
     mols_list: list[list[str]], 
     sbmol_name: str
 ) -> Any:
@@ -90,7 +90,7 @@ def GenSBPTop(
         
         # Ensure all required topology sections exist
         if 'contacts' not in mol._topology:
-            contacts = Extract_contacts_from_top(top, mol_name)
+            contacts = extract_contacts_from_topology(top, mol_name)
             if contacts:
                 mol._topology['contacts'] = contacts
         if 'bonds' not in mol._topology:
@@ -135,7 +135,7 @@ def GenSBPTop(
     mol_name, mol = mols_pairs[0]
     
     # Copy and adapt atoms from the base molecule
-    sbmol._topology['atoms'] = ChangeAtomType(
+    sbmol._topology['atoms'] = _change_atom_type(
         mol._topology['atoms'], mol_name, sbmol_name
     )
 

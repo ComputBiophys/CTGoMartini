@@ -11,7 +11,7 @@ Systems tested:
 
 import os
 import pickle
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 from ctgomartini.utils import write_itp
 from .function import *
 from tests.conftest import WorkingDirectoryContext

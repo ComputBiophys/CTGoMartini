@@ -9,17 +9,22 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..core import (
-    Extract_contacts_from_top, 
-    CombineMols, 
-    DifferentiateAngles, 
-    DifferentiateDihedrals, 
+from .combiner import (
+    extract_contacts_from_topology, 
+    combine_atoms,
+    combine_bonds_constraints,
+    combine_exclusions,
+    combine_contacts,
+    combine_angles,
+    combine_dihedrals,
+    differentiate_angles, 
+    differentiate_dihedrals, 
     SameListList
 )
-from .MartiniTopology import MartiniTopFile
+from ..builder import MartiniTopFile
 
 
-def GenMBPTop(
+def create_mb_topology(
     mols_list: list[list[str]],
     mbmol_name: str,
     dict_cutoffs: dict[str, float] | None = None
@@ -78,7 +83,7 @@ def GenMBPTop(
         
         # Ensure all required topology sections exist
         if 'contacts' not in mol._topology:
-            contacts = Extract_contacts_from_top(top, mol_name)
+            contacts = extract_contacts_from_topology(top, mol_name)
             if contacts:
                 mol._topology['contacts'] = contacts        
         if 'bonds' not in mol._topology:
@@ -118,13 +123,13 @@ def GenMBPTop(
     
     # Combine atoms from all molecules
     mols_atoms_pairs = [[mol_name, mol._topology['atoms']] for (mol_name, mol) in mols_pairs]
-    mbatoms = CombineMols.combine_atoms(mbmol_name, mols_atoms_pairs)
+    mbatoms = combine_atoms(mbmol_name, mols_atoms_pairs)
     mbmol._topology['atoms'] = mbatoms
 
     # Add bonds and constraints from all molecules
     mols_bonds_list = [mol._topology['bonds'] for (_, mol) in mols_pairs]
     mols_constraints_list = [mol._topology['constraints'] for (_, mol) in mols_pairs]
-    mbbonds, mbconstraints = CombineMols.combine_bonds_constraints(
+    mbbonds, mbconstraints = combine_bonds_constraints(
         n_mols, mols_bonds_list, mols_constraints_list
     )
     mbmol._topology['bonds'] = mbbonds
@@ -134,14 +139,14 @@ def GenMBPTop(
     mols_BBB_angles_list: list[Any] = []
     mols_notBBB_angles_list: list[Any] = []
     for _, mol in mols_pairs:
-        mol_BBB_angles, mol_notBBB_angles = DifferentiateAngles(
+        mol_BBB_angles, mol_notBBB_angles = differentiate_angles(
             mol._topology['angles'], mol._topology['atoms']
         )
         mols_BBB_angles_list.append(mol_BBB_angles)
         mols_notBBB_angles_list.append(mol_notBBB_angles)
 
     # Combine BBB angles with cutoff, keep non-BBB angles unchanged
-    mb_BBB_angles, mbmulti_BBB_angles = CombineMols.combine_angles(
+    mb_BBB_angles, mbmulti_BBB_angles = combine_angles(
         n_mols, mols_BBB_angles_list, dict_cutoffs['cutoff_BBB_angles']
     )
     assert SameListList(mols_notBBB_angles_list, sort=True), (
@@ -156,7 +161,7 @@ def GenMBPTop(
     mols_SSSS_dihedrals_list: list[Any] = []
     mols_SBBS_dihedrals_list: list[Any] = []
     for _, mol in mols_pairs:
-        mols_BBBB_dihedrals, mols_SSSS_dihedrals, mols_SBBS_dihedrals = DifferentiateDihedrals(
+        mols_BBBB_dihedrals, mols_SSSS_dihedrals, mols_SBBS_dihedrals = differentiate_dihedrals(
             mol._topology['dihedrals'], mol._topology['atoms']
         )
         mols_BBBB_dihedrals_list.append(mols_BBBB_dihedrals)
@@ -164,7 +169,7 @@ def GenMBPTop(
         mols_SBBS_dihedrals_list.append(mols_SBBS_dihedrals)
 
     # Combine BBBB dihedrals with cutoff, keep SSSS and SBBS dihedrals unchanged
-    mb_BBBB_dihdedrals, mbmulti_BBBB_dihedrals = CombineMols.combine_dihedrals(
+    mb_BBBB_dihdedrals, mbmulti_BBBB_dihedrals = combine_dihedrals(
         n_mols, mols_BBBB_dihedrals_list, dict_cutoffs['cutoff_BBBB_dihedrals']
     )
     assert SameListList(mols_SSSS_dihedrals_list, sort=True), (
@@ -181,7 +186,7 @@ def GenMBPTop(
 
     # Add contacts and multi-contacts
     mols_contacts_list = [mol._topology['contacts'] for (_, mol) in mols_pairs]
-    mbcontacts, mbmulti_contacts = CombineMols.combine_contacts(
+    mbcontacts, mbmulti_contacts = combine_contacts(
         n_mols, mols_contacts_list, dict_cutoffs['cutoff_contacts']
     )
     mbmol._topology['contacts'] = mbcontacts
@@ -189,7 +194,7 @@ def GenMBPTop(
 
     # Add exclusions
     mols_exclusions_list = [mol._topology['exclusions'] for (_, mol) in mols_pairs]
-    mbexclusions = CombineMols.combine_exclusions(mols_exclusions_list)
+    mbexclusions = combine_exclusions(mols_exclusions_list)
     mbmol._topology['exclusions'] = mbexclusions
 
     # Process other topology categories
@@ -204,7 +209,7 @@ def GenMBPTop(
         'angles', 'dihedrals', 'contacts', 'exclusions'
     ]
     for processed_category in processed_categories:
-        if processed_category in categories_list:
+        if processed_category in processed_categories:
             categories_list.remove(processed_category)
     
     # Check remaining categories are identical and add to MB topology

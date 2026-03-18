@@ -11,8 +11,8 @@ Note:
 import os
 from functools import partial
 
-from ctgomartini.api import GenMBPTop, MartiniTopFile
-from ctgomartini.core import SameListList
+from ctgomartini.topology import create_mb_topology, MartiniTopFile
+from ctgomartini.topology.generator.combiner import SameListList
 from ctgomartini.utils import write_itp
 from tests.conftest import WorkingDirectoryContext
 
@@ -109,7 +109,7 @@ class TestMBMartiniTIP:
                 'cutoff_BBBB_dihedrals': 30,
                 'cutoff_SBBS_dihedrals': 30,
                 'cutoff_contacts': 0.06 }
-            mbmol =  GenMBPTop(mols_list, mbmol_name, dict_cutoffs)
+            mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
             write_itp(mbmol)
         
         Comparison_ITP(working_dir, 'gbp', 'system.top')

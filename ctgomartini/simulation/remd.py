@@ -39,7 +39,7 @@ from ctgomartini.simulation.base import (
 )
 
 # Import MartiniTopFile here to avoid circular imports
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 
 
 class REMDRunner(SimulationRunner):

@@ -4,8 +4,8 @@ Molecule 类使用示例
 展示如何创建、填充和初始化分子拓扑
 """
 
-from ctgomartini.core import Molecule, Molecule_Category
-from ctgomartini.core.Molecule import Bonded_Categories, Molecule_Categories
+from ctgomartini.topology import Molecule
+from ctgomartini.topology.models import Molecule_Category, Bonded_Categories, Molecule_Categories
 
 # ============================================
 # 示例 1: 创建一个简单的分子

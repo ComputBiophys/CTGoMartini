@@ -5,7 +5,7 @@ simulations, including bonds, angles, dihedrals, constraints, virtual sites,
 and specialized multi-state interactions.
 
 Examples:
-    >>> from ctgomartini.core.bonded import HarmonicBonds, InteractionError
+    >>> from ctgomartini.topology.interactions import HarmonicBonds, InteractionError
     >>> hb = HarmonicBonds()
     >>> hb.add_interaction(['1', '2', '1', '0.5', '1000.0'])
     >>> 
@@ -82,6 +82,23 @@ from .registry import (
     NonLocalBondedInteractionDict,
     LocalBondedInteractionDict,
     build_interaction_dicts,
+    rebuild_interaction_dicts,
+)
+from .nonbonded import (
+    Interaction as NonbondedInteractionBase,
+    Nonbonded_interaction,
+    ES_self_excl_interaction,
+    ES_except_interaction,
+    LJ_except_interaction,
+)
+from .vsites import (
+    LinearSite,
+    COMLinearSite,
+    NonLinearSite,
+    OutOfPlane,
+    NormalizedInPlaneSite,
+    NormalizedInPlaneTwoParticleSite,
+    VSiteManager,
 )
 
 __all__ = [
@@ -97,7 +114,9 @@ __all__ = [
     "HarmonicBonds",
     "Constraints",
     "Pairs",
-    "Contacts",
+    "ContactsLJ",
+    "Contacts6_12",
+    "Contacts10_12",
     "Exclusions",
     # Angles
     "DEG_TO_RAD",
@@ -118,6 +137,14 @@ __all__ = [
     "VirtualSites3",
     "VirtualSites3fd",
     "VirtualSites3out",
+    # Virtual Site Data Classes
+    "LinearSite",
+    "COMLinearSite",
+    "NonLinearSite",
+    "OutOfPlane",
+    "NormalizedInPlaneSite",
+    "NormalizedInPlaneTwoParticleSite",
+    "VSiteManager",
     # Multi-state core
     "MULTI_DEG_TO_RAD",
     "MultiStateError",
@@ -129,7 +156,9 @@ __all__ = [
     "MultiG96Angle",
     "MultiRestrictedAngle",
     "MultiPeriodicDihedral",
-    "MultiContactLJ",
+    "MultiContactsLJ",
+    "MultiContacts6_12",
+    "MultiContacts10_12",
     # Mixing
     "MixingError",
     "EXPInteraction",
@@ -138,4 +167,11 @@ __all__ = [
     "NonLocalBondedInteractionDict",
     "LocalBondedInteractionDict",
     "build_interaction_dicts",
+    "rebuild_interaction_dicts",
+    # Nonbonded
+    "NonbondedInteractionBase",
+    "Nonbonded_interaction",
+    "ES_self_excl_interaction",
+    "ES_except_interaction",
+    "LJ_except_interaction",
 ]

@@ -6,7 +6,7 @@ from typing import Any
 
 import openmm as mm
 
-from ..vsites import (
+from .vsites import (
     COMLinearSite,
     LinearSite,
     NormalizedInPlaneSite,

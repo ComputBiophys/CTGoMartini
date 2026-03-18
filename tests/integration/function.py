@@ -9,7 +9,7 @@ import subprocess
 import MDAnalysis as mda
 import numpy as np
 
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import MartiniTopFile
 
 def OMM_setSimulation(
         strfile,

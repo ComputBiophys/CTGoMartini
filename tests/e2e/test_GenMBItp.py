@@ -16,8 +16,8 @@ import os
 from functools import partial
 
 import ctgomartini
-from ctgomartini.api import GenMBPTop, MartiniTopFile
-from ctgomartini.core import SameListList
+from ctgomartini.topology import create_mb_topology, MartiniTopFile
+from ctgomartini.topology.generator.combiner import SameListList
 from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
 import subprocess
 

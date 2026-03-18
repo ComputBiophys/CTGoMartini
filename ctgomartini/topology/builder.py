@@ -17,14 +17,29 @@ import openmm as mm
 import openmm.unit as unit
 from openmm.app import Topology as mm_Topology
 
-from ..core import *
+from .parser import TopologyParser
+from .interactions import (
+    Nonbonded_interaction,
+    ES_self_excl_interaction,
+    ES_except_interaction,
+    LJ_except_interaction,
+    VSiteManager,
+    LinearSite,
+    OutOfPlane,
+    NormalizedInPlaneSite,
+    NormalizedInPlaneTwoParticleSite,
+    NonLocalBondedInteractionDict,
+    LocalBondedInteractionDict,
+    EXPInteraction,
+    HAMInteraction,
+)
 
 
-class MartiniTopFile(Topology):
+class MartiniTopFile(TopologyParser):
     """
     A class for loading and processing Martini topology files with extended functionality.
     
-    This class extends the Topology class to provide functionality for creating
+    This class extends the TopologyParser class to provide functionality for creating
     OpenMM systems from Martini topology files, including support for Multiple
     Basin potentials, virtual sites, and various interaction types.
     """

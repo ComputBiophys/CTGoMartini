@@ -20,11 +20,10 @@ try:
 except ImportError:
     from distutils.spawn import find_executable as which
 
-from .Molecule import Molecule
-from .ForceField import ForceField
+from .models import Molecule, ForceField
 
 
-class Topology:
+class TopologyParser:
     """
     Parse a GROMACS Martini topology file.
     
@@ -94,7 +93,7 @@ class Topology:
         with open(file) as lines:
             for line in lines:
                 if line.strip().endswith("\\"):
-                    append = f"{append} {line[: line.rfind('\\')]}"
+                    append = f"{append} {line[: line.rfind('\\')]})"
                 else:
                     self._process_line(append + " " + line, file)
                     append = ""

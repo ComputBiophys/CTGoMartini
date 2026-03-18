@@ -27,7 +27,7 @@ start_time=datetime.datetime.now() # start time
 
 
 def GetNativeContacts(topfile, mol_name, state_id):
-    from ctgomartini.api import MartiniTopFile
+    from ctgomartini.topology import MartiniTopFile
     """ Get native contacts and mol.atoms."""
 
     top = MartiniTopFile(topfile)
