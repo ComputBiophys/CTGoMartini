@@ -127,7 +127,7 @@ CTGoMartini/
 │   ├── e2e/
 │   └── fixtures/
 │
-├── Tutorial/                 # Tutorial examples
+├── tutorials/                # Tutorial examples
 │   ├── GlnBP/
 │   └── TRAAK/
 │

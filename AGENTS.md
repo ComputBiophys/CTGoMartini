@@ -95,7 +95,7 @@ CTGoMartini/
 │       ├── Membrane/
 │       └── Soluble/
 │
-├── Tutorial/                 # Tutorial examples
+├── tutorials/                # Tutorial examples
 │   ├── GlnBP/
 │   └── TRAAK/
 ├── pyproject.toml
