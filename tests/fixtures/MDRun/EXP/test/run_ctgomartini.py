@@ -6,7 +6,6 @@ Provides a single entry point for running both standard MD and REMD simulations.
 Automatically detects the simulation mode based on the REMD parameter in the
 input file. Supports the --append flag for continuing existing simulations.
 
-Authors: Song Yang
 """
 
 from __future__ import annotations
