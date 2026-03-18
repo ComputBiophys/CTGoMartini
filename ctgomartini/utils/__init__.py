@@ -7,7 +7,6 @@ virtual site generation, contact map conversion, and constraints conversion.
 
 from .write_itp import write_itp
 from .convert_long_short_elastic_bonds import convert_long_short_elastic_bonds, bb_distance
-from .go_virt_multimer import create_go_virt_for_multimer
 from .convert_map_format import convert_map_format
 from .constraints_to_bonds import (
     convert_constraints_to_bonds,
@@ -22,7 +21,6 @@ __all__ = [
     'write_itp',
     'convert_long_short_elastic_bonds',
     'bb_distance',
-    'create_go_virt_for_multimer',
     'convert_map_format',
     'convert_constraints_to_bonds',
     'convert_constraints_to_bonds_in_molecule',
