@@ -42,57 +42,78 @@ CTGoMartini is a Python package for simulating protein conformational transition
 CTGoMartini/
 ├── ctgomartini/              # Main package directory
 │   ├── __init__.py           # Package initialization
-│   ├── _version.py           # Version information (0.5.0)
-│   ├── api/                  # High-level API classes
-│   │   ├── MartiniTopology.py    # MartiniTopFile class for topology handling
-│   │   ├── MBMoleculeTop.py      # GenMBPTop for multiple-basin topologies
-│   │   └── SBMoleculeTop.py      # GenSBPTop for single-basin topologies
-│   ├── core/                 # Core functionality modules (formerly func/)
-│   │   ├── Topology.py           # GROMACS topology parser
-│   │   ├── Molecule.py           # Molecule representation
-│   │   ├── ForceField.py         # Force field parameter handling
-│   │   ├── Bonded_interaction.py # Bonded force terms
-│   │   ├── Nonbonded_interaction.py  # Non-bonded force terms
-│   │   ├── CombineMols.py        # Molecule combination utilities
-│   │   └── vsites.py             # Virtual site handling
-│   ├── utils/                # Utility functions (formerly util/)
-│   │   ├── WriteItp.py           # ITP file generation
-│   │   ├── ReadInp.py            # Input file parser
-│   │   ├── convert_map_format.py # rCSU .map to martinize2 converter
-│   │   ├── ConvertLongShortElasticBonds.py
-│   │   └── Create_goVirt_for_multimer.py
+│   ├── _version.py           # Version information
+│   ├── topology/             # Topology parsing and construction
+│   │   ├── parser.py         # TopologyParser (GROMACS .top parser)
+│   │   ├── models.py         # Molecule, ForceField classes
+│   │   ├── builder.py        # MartiniTopFile (OpenMM system builder)
+│   │   ├── generator/        # Topology generators
+│   │   │   ├── single_basin.py   # create_sb_topology
+│   │   │   ├── multi_basin.py    # create_mb_topology
+│   │   │   └── combiner.py       # combine_* functions
+│   │   └── interactions/     # Bonded and non-bonded interactions
+│   │       ├── base.py
+│   │       ├── bonds.py
+│   │       ├── angles.py
+│   │       ├── dihedrals.py
+│   │       ├── contacts.py
+│   │       ├── virtual_sites.py
+│   │       ├── multi_state.py
+│   │       ├── mixing.py
+│   │       ├── registry.py
+│   │       └── vsites.py
+│   │
+│   ├── simulation/           # Simulation execution
+│   │   ├── config.py         # SimulationConfig, load_config
+│   │   ├── base.py           # SimulationRunner base class
+│   │   ├── md.py             # MDRunner (standard MD)
+│   │   └── remd.py           # REMDRunner (replica exchange)
+│   │
+│   ├── cli/                  # Command-line interface
+│   │   ├── run_ctgomartini.py   # Unified simulation runner
+│   │   └── ctgomartinize.py     # Topology generation
+│   │
+│   ├── utils/                # Utility functions
+│   │   ├── write_itp.py
+│   │   ├── contacts.py
+│   │   ├── convert_map_format.py
+│   │   ├── convert_long_short_elastic_bonds.py
+│   │   ├── constraints_to_bonds.py
+│   │   └── pdb_validation.py
+│   │
 │   ├── analysis/             # Analysis tools
-│   │   ├── QValueAnalysis.py     # Native contact (Q-value) analysis
-│   │   └── MBAnalysis_v*.py      # Multiple-basin analysis scripts
-│   └── data/                 # Data files and executable scripts
-│       ├── run_ctgomartini.py    # Main simulation script
-│       ├── ctgomartinize.py      # Topology generation script
-│       ├── run_REMD.py           # Replica exchange MD script
-│       ├── run_REMD_restart.py   # REMD restart script
-│       ├── OVrCSU.py             # Contact map generation (OV+rCSU method)
-│       ├── ForceFields/Martini300/   # Martini 3.0 force field
-│       ├── Membrane/             # Membrane system input templates
-│       └── Soluble/              # Soluble protein input templates
+│   │   ├── QValueAnalysis.py
+│   │   ├── drms_analysis.py
+│   │   ├── remd_drms_analysis.py
+│   │   ├── remd_exchange_ratio.py
+│   │   ├── remd_free_energy.py
+│   │   ├── remd_mbar_analysis.py
+│   │   └── remd_replica_state.py
+│   │
+│   └── data/                 # Data files and templates
+│       ├── ForceFields/Martini300/
+│       ├── Membrane/
+│       └── Soluble/
+│
 ├── Tutorial/                 # Tutorial examples
-│   ├── GlnBP/                # GlnBP conformational transition example
-│   └── TRAAK/                # TRAAK channel example
-├── pyproject.toml            # Package configuration (modern Python packaging)
-├── setup.py                  # Minimal setup.py (backward compatibility only)
-├── tests/                    # Test suite (unit/integration/e2e)
-├── MIGRATION_GUIDE.md        # API migration guide (func/→core/, util/→utils/)
-├── REFACTORING_STATUS.md     # Refactoring progress and known issues
-└── README.md                 # Project documentation
+│   ├── GlnBP/
+│   └── TRAAK/
+├── pyproject.toml
+├── tests/                    # Test suite
+├── MIGRATION_GUIDE.md
+└── README.md
 ```
 
 ### Module Organization
 
 | Module | Purpose | Key Classes/Functions |
 |--------|---------|----------------------|
-| `api/` | High-level user API | `MartiniTopFile`, `GenMBPTop`, `GenSBPTop` |
-| `core/` | Core algorithms and data structures | `Topology`, `Molecule`, `ForceField`, interaction classes |
-| `utils/` | I/O utilities and helpers | `read_inputs`, `write_itp`, `convert_long_short_elastic_bonds` |
-| `data/` | Executable scripts and templates | `run_ctgomartini.py`, `ctgomartinize.py` |
-| `analysis/` | Post-simulation analysis | `NativeContanceAnalysis`, `MBAnalysis_v3_argparse.py` |
+| `topology/` | Topology parsing, building, and interactions | `TopologyParser`, `MartiniTopFile`, `Molecule`, `ForceField`, `create_sb_topology`, `create_mb_topology` |
+| `simulation/` | Simulation execution | `SimulationRunner`, `MDRunner`, `REMDRunner`, `SimulationConfig`, `load_config` |
+| `cli/` | Command-line interface | `run_ctgomartini`, `ctgomartinize` |
+| `utils/` | I/O utilities and helpers | `write_itp`, `convert_map_format`, `convert_long_short_elastic_bonds` |
+| `analysis/` | Post-simulation analysis | `NativeContanceAnalysis`, `DRMSAnalyzer`, `remd_*` |
+| `data/` | Data files and templates | Force fields, membrane/soluble templates |
 
 ## Build and Installation
 
@@ -136,11 +157,8 @@ Key configurations:
 ### Running Tests
 
 ```bash
-# Run unit tests for ITP writing
+# Run all tests
 pytest tests/
-
-# Run pytest (if tests/ directory exists)
-pytest
 
 # Run with coverage
 pytest --cov=ctgomartini
@@ -148,25 +166,17 @@ pytest --cov=ctgomartini
 
 ### Test Structure
 
-1. **In-repo tests**: `tests/unit/` - Unit tests for ITP writing and other utilities
-2. **Test suite**: `tests/` directory with unit, integration, and e2e tests
-
-### Known Test Issues
-
-From `REFACTORING_STATUS.md`:
-- 3 out of 40 external tests fail due to incomplete test data (not code issues)
-- GlnBP and Beta2AR test topologies missing `multi_angles`/`multi_contacts` sections
-- MBP core functionality verified through `test_Beta2AR_HAM`
+| Category | Description |
+|----------|-------------|
+| `tests/unit/` | Unit tests for individual functions |
+| `tests/integration/` | Integration tests |
+| `tests/e2e/` | End-to-end workflow tests |
 
 ### Vermouth Version Compatibility
 
-**Recommended**: `vermouth>=0.10.0,<0.14.0`
+**Recommended**: `vermouth>=0.15.0`
 
-**Note on vermouth >= 0.14.0**:
-- vermouth 0.14.0+ modified the protein parameters for Proline residues
-- CTGoMartini code supports vermouth >= 0.14.0, but the test reference data was generated with older versions
-- Tests may fail due to slight differences in Proline-related bonded parameters
-- For production use with vermouth >= 0.14.0, the code will work correctly, but reference values in tests need updating
+**Note**: vermouth 0.15.0+ uses MDTraj by default for secondary structure assignment.
 
 ## Code Style Guidelines
 
@@ -186,31 +196,26 @@ The project uses modern Python formatting and linting tools configured in `pypro
 - Ignored rules: D100, D104, D105, D107 (docstring requirements)
 - Google-style docstrings enforced
 
-**MyPy Configuration**:
-- Python version: 3.12
-- `warn_return_any = true`
-- `ignore_missing_imports = true` (for external libraries)
-
 ### Naming Conventions
 
-**Current Convention** (post-refactoring):
+**Current Convention**:
 - Module names: `snake_case.py`
 - Class names: `PascalCase`
 - Function names: `snake_case`
 - Variable names: `snake_case`
 
-**Note**: Some API functions retain PascalCase for backward compatibility:
-- `GenMBPTop` (function)
-- `GenSBPTop` (function)
-- `MartiniTopFile` (class)
+**Key Classes**:
+- `TopologyParser` (was `Topology`)
+- `MartiniTopFile`
+- `Molecule`
+- `ForceField`
+- `SimulationRunner`
 
-**Migration from old naming**:
-| Old (camelCase) | New (snake_case) |
-|-----------------|------------------|
-| `WriteItp` | `write_itp` |
-| `ConvertLongShortElasticBonds` | `convert_long_short_elastic_bonds` |
-| `LoadStructure` | `load_structure` |
-| `gen_restraints` | `generate_restraints` |
+**Key Functions**:
+- `create_sb_topology` (was `GenSBPTop`)
+- `create_mb_topology` (was `GenMBPTop`)
+- `load_config` (was `read_inputs`)
+- `write_itp` (was `WriteItp`)
 
 ### Type Annotations
 
@@ -266,12 +271,11 @@ def create_system(
 ### 3. Generate Multiple-Basin Topology
 
 ```bash
-python ctgomartini/data/ctgomartinize.py \
+ctgomartinize \
     -s state1.pdb state2.pdb \
     -m state1.map state2.map \
     -mol State1Name State2Name \
     -mbmol CombinedName \
-    -dssp path/to/dssp \
     -ff martini3001 \
     -method exp
 ```
@@ -282,8 +286,6 @@ python ctgomartini/data/ctgomartinize.py \
 - Prepare input files (`npt.inp` for equilibration, `md.inp` for production)
 
 ### Input File Format (.inp)
-
-GROMACS-style parameter files:
 
 ```ini
 mini_nstep  = 10000         ; Minimization steps
@@ -301,44 +303,46 @@ plumed      = no            ; PLUMED support
 
 ```bash
 # Minimization and equilibration
-python ctgomartini/data/run_ctgomartini.py -i npt.inp
+run_ctgomartini -i npt.inp
 
 # Production run
-python ctgomartini/data/run_ctgomartini.py -i md.inp
+run_ctgomartini -i md.inp
 ```
 
 ### 6. Analysis
 
 ```bash
 # Native contact analysis
-python MBAnalysis_v3_argparse.py \
+python -m ctgomartini.analysis.QValueAnalysis \
     -s npt.pdb -f md.xtc \
     -r state1.pdb state2.pdb \
     -sel "name BB" \
     -prefix output_prefix
+
+# REMD analysis
+python -m ctgomartini.analysis.remd_replica_state -f output.nc
 ```
 
 ## Development Conventions
 
 ### Adding New Features
 
-1. API functions go in `api/` directory
-2. Core algorithms go in `core/` directory
-3. Utilities go in `utils/` directory
-4. Analysis tools go in `analysis/` directory
-5. Executable scripts go in `data/` directory
+1. **Topology functions**: Add to `topology/generator/` or `topology/interactions/`
+2. **Simulation features**: Add to `simulation/` directory
+3. **CLI commands**: Update `cli/` directory
+4. **Utilities**: Add to `utils/` directory
+5. **Analysis tools**: Add to `analysis/` directory
 
 ### Import Patterns
 
 ```python
 # Preferred: Import from package level
-from ctgomartini.core import Topology, Molecule
-from ctgomartini.utils import read_inputs, write_itp
-from ctgomartini.api import MartiniTopFile
+from ctgomartini.topology import TopologyParser, MartiniTopFile, create_mb_topology
+from ctgomartini.simulation import load_config, MDRunner
+from ctgomartini.utils import write_itp, convert_map_format
 
-# For data scripts
-from ctgomartini.api import MartiniTopFile
-from ctgomartini.utils import read_inputs
+# For internal use
+from ctgomartini.topology.interactions import HarmonicBonds, ContactsLJ
 ```
 
 ### Error Handling
@@ -356,10 +360,8 @@ from ctgomartini.utils import read_inputs
 ## Known Limitations
 
 1. **Global Parameters**: The `beta`, `C1`, `C2` parameters are global, supporting only one EXP system at a time
-2. **Vermouth Compatibility**: Locked to vermouth == 0.9.6 due to API instability
-3. **DSSP Compatibility**: vermouth 0.9.6 only supports DSSP <4.0 (use `mkdssp` instead of `dssp` v4+)
-4. **Constraint Tolerance**: Default constraint tolerance may need adjustment for some systems
-5. **CUDA Compatibility**: OpenMM 8.4 may have compatibility issues with CUDA 12.6
+2. **Constraint Tolerance**: Default constraint tolerance may need adjustment for some systems
+3. **CUDA Compatibility**: OpenMM 8.4 may have compatibility issues with CUDA 12.6
 
 ## Troubleshooting
 
@@ -368,7 +370,6 @@ from ctgomartini.utils import read_inputs
 1. **DSSP version**: Must use dssp < 4.0 or mkdssp (different command-line interface in v4+)
 2. **GPU Platform**: CUDA/OpenCL platform availability depends on hardware/drivers
 3. **Ion naming**: insane.py may generate incorrect ion names (use sed to fix)
-4. **Virtual sites**: Multimer systems may have CA/BB extraction issues
 
 ### Debug Tips
 
@@ -379,16 +380,17 @@ from ctgomartini.utils import read_inputs
 
 ## Migration Notes
 
-If migrating from older versions (<0.6.0):
+If migrating from older versions (<1.0.0):
 
 ```python
 # Old imports (NO LONGER WORK)
-from ctgomartini.func import Topology, Molecule
+from ctgomartini.api import MartiniTopFile, GenMBPTop
+from ctgomartini.core import Topology, Molecule
 from ctgomartini.util import read_inputs
 
 # New imports
-from ctgomartini.core import Topology, Molecule
-from ctgomartini.utils import read_inputs
+from ctgomartini.topology import TopologyParser, MartiniTopFile, create_mb_topology
+from ctgomartini.simulation import load_config
 ```
 
 See `MIGRATION_GUIDE.md` for complete migration instructions.

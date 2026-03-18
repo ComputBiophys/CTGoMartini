@@ -1,8 +1,80 @@
 # CTGoMartini Migration Guide
 
-This document describes the breaking changes in the recent refactoring and provides a mapping from old to new APIs.
+This document describes the breaking changes and provides a mapping from old to new APIs.
 
-## Module Structure Changes
+## Version 1.0.0 Major Changes
+
+### Module Structure Overhaul
+
+The biggest change in v1.0.0 is the consolidation of `api/` and `core/` into a unified `topology/` module:
+
+| Old Path (0.6.x) | New Path (1.0.0) | Status |
+|------------------|------------------|--------|
+| `ctgomartini/api/` | `ctgomartini/topology/` | ✅ Reorganized |
+| `ctgomartini/core/` | `ctgomartini/topology/` | ✅ Merged into topology |
+| `ctgomartini/data/*.py` | `ctgomartini/cli/` | ✅ Moved to CLI module |
+| `ctgomartini/data/run_*.py` | Deleted | ✅ Replaced by CLI commands |
+
+### Import Statement Updates (1.0.0)
+
+```python
+# Old imports (0.6.x - NO LONGER WORK)
+from ctgomartini.api import MartiniTopFile, GenMBPTop, GenSBPTop
+from ctgomartini.core import Topology, Molecule, ForceField
+from ctgomartini.util import read_inputs
+
+# New imports (1.0.0)
+from ctgomartini.topology import (
+    TopologyParser,      # was Topology
+    MartiniTopFile,
+    Molecule,
+    ForceField,
+    create_sb_topology,  # was GenSBPTop
+    create_mb_topology,  # was GenMBPTop
+)
+from ctgomartini.simulation import load_config  # was read_inputs
+```
+
+### New Modules in 1.0.0
+
+| Module | Purpose | Key Components |
+|--------|---------|----------------|
+| `ctgomartini.simulation` | Simulation execution | `SimulationRunner`, `MDRunner`, `REMDRunner`, `load_config` |
+| `ctgomartini.cli` | Command-line interface | `run_ctgomartini`, `ctgomartinize` |
+| `ctgomartini.topology.generator` | Topology generation | `create_sb_topology`, `create_mb_topology`, `combine_*` |
+| `ctgomartini.topology.interactions` | Force interactions | All bonded/non-bonded interaction classes |
+
+### Function Name Changes (1.0.0)
+
+| Old Name (0.6.x) | New Name (1.0.0) | Location |
+|------------------|------------------|----------|
+| `Topology` | `TopologyParser` | `topology.parser` |
+| `GenMBPTop` | `create_mb_topology` | `topology.generator` |
+| `GenSBPTop` | `create_sb_topology` | `topology.generator` |
+| `read_inputs` | `load_config` | `simulation.config` |
+| `mdrun` | `run_ctgomartini` (CLI) | `cli` |
+
+### CLI Changes (1.0.0)
+
+Old way (0.6.x):
+```bash
+python ctgomartini/data/run_ctgomartini.py -i npt.inp
+python ctgomartini/data/ctgomartinize.py -s protein.pdb ...
+```
+
+New way (1.0.0):
+```bash
+# Installed as entry points
+run_ctgomartini -i npt.inp
+ctgomartinize -s protein.pdb ...
+
+# Or as module
+python -m ctgomartini.cli.run_ctgomartini -i npt.inp
+```
+
+---
+
+## Historical Changes (0.5.x → 0.6.x)
 
 ### Directory Renaming
 
@@ -11,7 +83,7 @@ This document describes the breaking changes in the recent refactoring and provi
 | `ctgomartini/func/` | `ctgomartini/core/` | Core functionality modules |
 | `ctgomartini/util/` | `ctgomartini/utils/` | Utility functions |
 
-### Import Statement Updates
+### Import Statement Updates (0.6.x)
 
 ```python
 # Old imports (NO LONGER WORK)
@@ -20,16 +92,16 @@ from ctgomartini.func import WriteItp, ConvertLongShortElasticBonds
 from ctgomartini.util import read_inputs
 from ctgomartini.util import SameListList
 
-# New imports
+# New imports (0.6.x)
 from ctgomartini.core import Topology, Molecule
 from ctgomartini.utils import WriteItp, ConvertLongShortElasticBonds
 from ctgomartini.utils import read_inputs
 from ctgomartini.core import SameListList  # Note: SameListList is in core
 ```
 
-## Function Name Changes
+### Function Name Changes (0.6.x)
 
-### `data/run_ctgomartini.py`
+#### `data/run_ctgomartini.py`
 
 | Old Name | New Name | Description |
 |----------|----------|-------------|
@@ -44,28 +116,28 @@ from ctgomartini.core import SameListList  # Note: SameListList is in core
 | `LoadPlatform` | `load_platform` | Configure OpenMM platform |
 | `GenerateTopology` | `generate_topology` | Generate topology from input |
 
-### `utils/WriteItp.py`
+#### `utils/WriteItp.py`
 
 | Old Name | New Name | Description |
 |----------|----------|-------------|
 | `WriteItp` | `write_itp` | Write GROMACS ITP files |
 
-### `utils/ConvertLongShortElasticBonds.py`
+#### `utils/ConvertLongShortElasticBonds.py`
 
 | Old Name | New Name | Description |
 |----------|----------|-------------|
 | `BB_Distance` | `bb_distance` | Calculate backbone distance |
 | `ConvertLongShortElasticBonds` | `convert_long_short_elastic_bonds` | Convert elastic bonds |
 
-### `utils/Create_goVirt_for_multimer.py`
+#### `utils/Create_goVirt_for_multimer.py`
 
 | Old Name | New Name | Description |
 |----------|----------|-------------|
 | `Create_goVirt_for_multimer` | `create_go_virt_for_multimer` | Create virtual sites for multimer |
 
-## Class and Function Location Reference
+### Class and Function Location Reference (0.6.x)
 
-### `ctgomartini.core` (Core Functionality)
+#### `ctgomartini.core` (Core Functionality)
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -81,7 +153,7 @@ from ctgomartini.core import SameListList  # Note: SameListList is in core
 | `CombineMols` | Class | Molecule combination utilities |
 | `BondedInteraction_types` | List | Registered bonded interaction types |
 
-### `ctgomartini.utils` (Utilities)
+#### `ctgomartini.utils` (Utilities)
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -90,7 +162,7 @@ from ctgomartini.core import SameListList  # Note: SameListList is in core
 | `ConvertLongShortElasticBonds` | Class | Bond conversion utility |
 | `Create_goVirt_for_multimer` | Function | Multimer virtual site generation |
 
-### `ctgomartini.api` (High-level API)
+#### `ctgomartini.api` (High-level API - 0.6.x)
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -98,112 +170,115 @@ from ctgomartini.core import SameListList  # Note: SameListList is in core
 | `GenMBPTop` | Function | Generate multiple-basin topology |
 | `GenSBPTop` | Function | Generate single-basin topology |
 
-### `ctgomartini.data` (Executable Scripts)
+---
 
-| Name | Type | Description |
-|------|------|-------------|
-| `mdrun` | Function | Main MD simulation runner |
-| `generate_topology` | Function | Generate OpenMM topology |
-| `report_time` | Function | Report simulation time |
-| `load_structure` | Function | Load molecular structure |
-| `generate_restraints` | Function | Generate restraint files |
-| `add_restraints` | Function | Add restraints to system |
-| `backup_file` | Function | Backup existing files |
-| `write_output` | Function | Write simulation output |
-| `write_checkpoint` | Function | Write checkpoint files |
-| `cleanup` | Function | Cleanup on interrupt |
-| `load_platform` | Function | Load OpenMM platform |
+## Migrating from 0.6.x to 1.0.0
 
-## Type Annotations
-
-All public functions now have full type annotations using Python 3.10+ syntax:
+### Step 1: Update Topology Imports
 
 ```python
-def load_structure(str_file: str) -> tuple[GromacsGroFile | PDBFile, mm.Vec3 | None]:
-    ...
+# Before (0.6.x)
+from ctgomartini.api import MartiniTopFile, GenMBPTop, GenSBPTop
+from ctgomartini.core import Topology, Molecule, ForceField
 
-def generate_restraints(
-    str_file: str, 
-    atomname: str, 
-    fc: float = 1000.0, 
-    rest_file: str = "restraints.txt"
-) -> None:
-    ...
+# After (1.0.0)
+from ctgomartini.topology import (
+    TopologyParser,      # Topology was renamed
+    MartiniTopFile,
+    Molecule,
+    ForceField,
+    create_sb_topology,  # GenSBPTop renamed
+    create_mb_topology,  # GenMBPTop renamed
+)
 ```
 
-## Example Migration
+### Step 2: Update Simulation Imports
 
-### Before
 ```python
-from ctgomartini.func import Topology, Molecule, WriteItp
-from ctgomartini.util import read_inputs, SameListList
-from ctgomartini.data.run_ctgomartini import mdrun, LoadStructure, gen_restraints
+# Before (0.6.x)
+from ctgomartini.utils import read_inputs
 
-def main():
-    inputs = read_inputs('npt.inp')
-    conf, box = LoadStructure(inputs.input)
-    gen_restraints(inputs.input, 'BB', 1000, 'restraints.txt')
+# After (1.0.0)
+from ctgomartini.simulation import load_config
 ```
 
-### After
+### Step 3: Update Function Calls
+
 ```python
+# Before (0.6.x)
+from ctgomartini.api import GenMBPTop
+mbmol = GenMBPTop(mols_list, mbmol_name, dict_cutoffs)
+
+# After (1.0.0)
+from ctgomartini.topology import create_mb_topology
+mbmol = create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
+```
+
+### Step 4: Update Scripts to CLI Commands
+
+```bash
+# Before (0.6.x)
+python ctgomartini/data/run_ctgomartini.py -i npt.inp
+
+# After (1.0.0)
+run_ctgomartini -i npt.inp
+```
+
+---
+
+## Complete Example Migration
+
+### Before (0.6.x)
+```python
+from ctgomartini.api import MartiniTopFile, GenMBPTop
 from ctgomartini.core import Topology, Molecule
 from ctgomartini.utils import read_inputs, write_itp
 from ctgomartini.core import SameListList
-from ctgomartini.data.run_ctgomartini import mdrun, load_structure, generate_restraints
 
 def main():
     inputs = read_inputs('npt.inp')
-    conf, box = load_structure(inputs.input)
-    generate_restraints(inputs.input, 'BB', 1000, 'restraints.txt')
+    top = MartiniTopFile(inputs.topol)
+    mbmol = GenMBPTop(mols_list, 'MBMol', dict_cutoffs)
+    write_itp(mbmol)
 ```
 
-## Development Tools
+### After (1.0.0)
+```python
+from ctgomartini.topology import (
+    MartiniTopFile, 
+    create_mb_topology,
+    write_itp
+)
+from ctgomartini.simulation import load_config
 
-The package now uses modern Python packaging:
-- `pyproject.toml` for package configuration
-- `setup.py` is minimal (backward compatibility only)
-- Full type annotations throughout
-- Google-style docstrings
-- MIT License
+def main():
+    inputs = load_config('npt.inp')
+    top = MartiniTopFile(inputs.topol)
+    mbmol = create_mb_topology(mols_list, 'MBMol', dict_cutoffs)
+    write_itp(mbmol)
+```
 
-## Migrating from 0.6.0 to 1.0.0
+---
 
-### Vermouth Upgrade (>= 0.15.0)
+## Vermouth Upgrade (>= 0.15.0)
 
-CTGoMartini 1.0.0 requires vermouth >= 0.15.0, which has significant changes from 0.9.6:
+CTGoMartini 1.0.0 requires vermouth >= 0.15.0:
 
-#### 1. DSSP Handling
+### DSSP Handling
 
 | Version | Command | Behavior |
 |---------|---------|----------|
 | 0.9.6 | `-dssp /path/to/dssp` | Requires external DSSP executable |
 | 0.15.0 | `-dssp` (no argument) | Uses MDTraj (no external dependency) |
 
-**Migration**: DSSP parameter is now optional in `ctgomartinize.py`:
-```bash
-# Old (0.6.0)
-python ctgomartinize.py -s protein.pdb -m contact.map -mol State1 -dssp /usr/bin/dssp
-
-# New (1.0.0) - uses MDTraj by default
-python ctgomartinize.py -s protein.pdb -m contact.map -mol State1
-
-# Or explicitly provide DSSP path
-python ctgomartinize.py -s protein.pdb -m contact.map -mol State1 -dssp /usr/bin/dssp
-```
-
-#### 2. Side-Chain Fix (`-scfix`)
+### Side-Chain Fix (`-scfix`)
 
 | Version | Default | To Enable | To Disable |
 |---------|---------|-----------|------------|
 | 0.9.6 | Disabled | Add `-scfix` | (default) |
 | 0.15.0 | **Enabled** | (default) | Add `-noscfix` |
 
-**Note**: CTGoMartini 1.0.0 removes explicit `-scfix` from martinize2 calls since it's now the default.
-
-#### 3. Go Contacts Workflow
-
-The Go contacts generation has been completely redesigned:
+### Go Contacts Workflow
 
 **Old Workflow (0.6.0)**:
 ```
@@ -219,36 +294,6 @@ The Go contacts generation has been completely redesigned:
 3. Generates: go_atomtypes.itp, go_nbparams.itp
 ```
 
-**Key Differences**:
-- Input format: rCSU `.map` → `contact_map.out` (OV+rCSU format)
-- Go parameters now specified in martinize2 command
-- Output files renamed and reformatted
-
-### New Utility Module
-
-Added `convert_map_format` for converting rCSU web-server contact maps:
-
-```python
-from ctgomartini.utils import convert_map_format
-
-# Convert .map to contact_map.out
-convert_map_format(
-    input_file='contact.map',
-    output_file='contact_map.out',
-    pdb_name='protein.pdb',
-    force=True
-)
-```
-
-### API Changes in ctgomartinize.py
-
-| Function | Change | Details |
-|----------|--------|---------|
-| `Martinize2()` | DSSP parameter now optional | `dssp: str \| None = None` |
-| `Martinize2()` | Removed `-scfix` | Now default in vermouth 0.15.0 |
-| `GenGoContacts()` | Complete rewrite | Now converts .map format instead of calling `create_go_virt_for_multimer` |
-| `ModifyFF()` | Updated includes | Now includes `go_atomtypes.itp` and `go_nbparams.itp` |
-
 ### File Output Changes
 
 | Old File (0.6.0) | New File (1.0.0) | Purpose |
@@ -256,10 +301,12 @@ convert_map_format(
 | `BB-part-def_VirtGoSites.itp` | `go_atomtypes.itp` | Go virtual site atom types |
 | `go-table_VirtGoSites.itp` | `go_nbparams.itp` | Go interaction parameters |
 
-### Position Restraints
+---
 
-Removed `position_restraints` section from final ITP in SB mode (not needed for production).
+## Version Information
 
-## Version
+- **This guide**: CTGoMartini >= 1.0.0
+- **Latest stable**: 1.0.0
+- **Python requirement**: >= 3.12
 
-This migration guide applies to CTGoMartini >= 1.0.0
+For questions or issues, please refer to the [GitHub repository](https://github.com/ComputBiophys/CTGoMartini).
