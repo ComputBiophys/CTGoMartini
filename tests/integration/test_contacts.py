@@ -53,33 +53,33 @@ class TestMartiniTopology:
     path = os.path.dirname(__file__)
 
     def test_KALP(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/KALP")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/KALP")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_1GB1(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/1GB1")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/1GB1")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_1UBQ(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/1UBQ")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/1UBQ")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_GlnBP_Open(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Open")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/GlnBP_Open")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_GlnBP_Closed(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Closed")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/GlnBP_Closed")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_AdK_Closed(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/AdK_Closed")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/AdK_Closed")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_Beta2AR_Active(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/Beta2AR_Active")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/Beta2AR_Active")
         compare_results(working_dir, epsilon_r = 15)
 
     def test_TREK1_Down(self):
-        working_dir = os.path.join(self.path, "../fixtures/Contacts/TREK1_Down")
+        working_dir = os.path.join(self.path, "../fixtures/contacts/TREK1_Down")
         compare_results(working_dir, epsilon_r = 15)

@@ -188,7 +188,7 @@ class TestMultipleBasinPotential:
     path = os.path.dirname(__file__)
 
     def test_mbp_exp_glnbp(self):
-        base_dir = os.path.join(self.path, "../fixtures/MBGoMartini/GlnBP/")
+        base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/GlnBP/")
         EXP_parameters_list = [['True', 'exp', '2', '1/300', '-300', '0'],
                                 ['True', 'exp', '2', '1/500', '-300', '0'],
                                 ['True', 'exp', '2', '1/300', '-600', '0'],
@@ -214,7 +214,7 @@ class TestMultipleBasinPotential:
                 pickle.dump(results, f)
 
     def test_mbp_ham_glnbp(self):
-        base_dir = os.path.join(self.path, "../fixtures/MBGoMartini/GlnBP/")
+        base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/GlnBP/")
         HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
                                 ['True', 'ham', '2', '600', '-200', '0'],
                                 ['True', 'ham', '2', '100', '-900', '0'],
@@ -240,7 +240,7 @@ class TestMultipleBasinPotential:
                 pickle.dump(results, f)
 
     def test_mbp_exp_beta2ar(self):
-        base_dir = os.path.join(self.path, "../fixtures/MBGoMartini/Beta2AR/")
+        base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/Beta2AR/")
         EXP_parameters_list = [['True', 'exp', '2', '1/300', '-300', '0'],
                                 ['True', 'exp', '2', '1/500', '-300', '0'],
                                 ['True', 'exp', '2', '1/300', '-600', '0'],
@@ -268,7 +268,7 @@ class TestMultipleBasinPotential:
 
 
     def test_mbp_ham_beta2ar(self):
-        base_dir = os.path.join(self.path, "../fixtures/MBGoMartini/Beta2AR/")
+        base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/Beta2AR/")
         HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
                                 ['True', 'ham', '2', '600', '-200', '0'],
                                 ['True', 'ham', '2', '100', '-900', '0'],

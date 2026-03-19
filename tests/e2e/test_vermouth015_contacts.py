@@ -33,7 +33,7 @@ class TestVermouth015Contacts:
         """Path to test data directory."""
         return os.path.join(
             os.path.dirname(__file__),
-            "../fixtures/WriteItp/WriteItp/ref"
+            "../fixtures/write_itp/WriteItp/ref"
         )
 
     @pytest.fixture

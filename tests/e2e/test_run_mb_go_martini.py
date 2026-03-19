@@ -35,7 +35,7 @@ class TestRunMBGoMartini:
     path = os.path.dirname(__file__)
 
     def test_run_mb_exp(self):
-        working_dir = os.path.join(self.path, "../fixtures/MDRun/EXP")
+        working_dir = os.path.join(self.path, "../fixtures/md_run/EXP")
 
         with WorkingDirectoryContext(working_dir):
             os.system('rm -r test 2>/dev/null; cp -a template test')
@@ -49,7 +49,7 @@ class TestRunMBGoMartini:
                 run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")
 
     def test_run_mb_ham(self):
-        working_dir = os.path.join(self.path, "../fixtures/MDRun/HAM")
+        working_dir = os.path.join(self.path, "../fixtures/md_run/HAM")
 
         with WorkingDirectoryContext(working_dir):
             os.system('rm -r test 2>/dev/null; cp -a template test')

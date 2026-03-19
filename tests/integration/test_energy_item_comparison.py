@@ -79,10 +79,10 @@ class TestEnergyItemComparison:
     path = os.path.dirname(__file__)
 
     def test_pull_code(self):
-        working_dir = os.path.join(self.path, "../fixtures/EnergyItemComparison/PullCode/GlnBP/")
+        working_dir = os.path.join(self.path, "../fixtures/energy_item_comparison/PullCode/GlnBP/")
         compare_openmm_gromacs(working_dir, strfile='md.gro', epsilon_r=15)
 
     def test_restraints(self):
-        working_dir = os.path.join(self.path, "../fixtures/EnergyItemComparison/Restraints/GlnBP_Open/")
+        working_dir = os.path.join(self.path, "../fixtures/energy_item_comparison/Restraints/GlnBP_Open/")
         compare_openmm_gromacs(working_dir, strfile='minimized.gro', epsilon_r=15, rest=True)
 

@@ -29,7 +29,7 @@ def sort_dihedral(fields):
     return tuple(fields)
 
 def main():
-    exp_dir = '/home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/EXP'
+    exp_dir = '/home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/write_itp/EXP'
     
     print("Loading REF topology...")
     ref_top = load_topology(os.path.join(exp_dir, 'ref'), 'gbp')

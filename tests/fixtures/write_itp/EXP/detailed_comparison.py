@@ -135,7 +135,7 @@ def compare_category(category, ref_data, test_data, output_file):
         output_file.write(f"\n  Total differences in common items: {diff_count}\n")
 
 def main():
-    exp_dir = '/home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/EXP'
+    exp_dir = '/home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/write_itp/EXP'
     
     print("Loading REF topology...")
     ref_top = load_topology(os.path.join(exp_dir, 'ref'), 'gbp')

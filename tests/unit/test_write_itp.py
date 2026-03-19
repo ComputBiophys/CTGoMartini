@@ -71,7 +71,7 @@ class TestWriteItp:
         Raises:
             AssertionError: If topology sections don't match reference.
         """
-        working_dir = os.path.join(self.path, "../fixtures/WriteItp/WriteItp")
+        working_dir = os.path.join(self.path, "../fixtures/write_itp/write_itp_basic")
 
         with WorkingDirectoryContext(os.path.join(working_dir, "test")):
             topfileA = 'system_open.top'

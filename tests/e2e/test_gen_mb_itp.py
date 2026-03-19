@@ -175,7 +175,7 @@ class TestGenMBItp:
 
     # Temporarily skipped - see class docstring
     # def test_generate_mb_itp_exp(self):
-    #     working_dir = os.path.join(self.path, "../fixtures/WriteItp/EXP")
+    #     working_dir = os.path.join(self.path, "../fixtures/write_itp/EXP")
     #
     #     with WorkingDirectoryContext(working_dir):
     #         os.system('rm -r test 2>/dev/null; cp -a template test')
@@ -194,7 +194,7 @@ class TestGenMBItp:
 
     # Temporarily skipped - see class docstring
     # def test_generate_mb_itp_ham(self):
-    #     working_dir = os.path.join(self.path, "../fixtures/WriteItp/HAM")
+    #     working_dir = os.path.join(self.path, "../fixtures/write_itp/HAM")
     #
     #     with WorkingDirectoryContext(working_dir):
     #         os.system('rm -r test 2>/dev/null; cp -a template test')

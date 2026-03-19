@@ -68,7 +68,7 @@ class TestConvertLongShortElasticBonds:
         Raises:
             AssertionError: If converted topology doesn't match reference.
         """
-        working_dir = os.path.join(self.path, "../fixtures/WriteItp/LongShortElasticBondsConversion")
+        working_dir = os.path.join(self.path, "../fixtures/write_itp/LongShortElasticBondsConversion")
 
         with WorkingDirectoryContext(working_dir):
             os.system('rm -r test')
