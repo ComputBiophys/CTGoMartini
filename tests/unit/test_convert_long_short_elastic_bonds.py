@@ -41,7 +41,7 @@ def compare_itp_topology(working_dir, molname, topfile):
     """Compare ITP topology between test and reference directories."""
     with WorkingDirectoryContext(os.path.join(working_dir, "test")):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
-    
+
     with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
@@ -51,29 +51,29 @@ def compare_itp_topology(working_dir, molname, topfile):
 class TestConvertLongShortElasticBonds:
     """
     Test elastic bond conversion for multiple-basin GoMartini.
-    
+
     Attributes:
         path (str): Base path to test data directory.
     """
-    
+
     path = os.path.dirname(__file__)
 
     def test_convert_elastic_bonds_glnbp(self):
         """
         Test long/short elastic bond conversion for GlnBP.
-        
+
         Converts elastic bonds based on open and closed reference structures,
         then generates and validates the resulting ITP file.
-        
+
         Raises:
             AssertionError: If converted topology doesn't match reference.
         """
         working_dir = os.path.join(self.path, "../fixtures/WriteItp/LongShortElasticBondsConversion")
-        
+
         with WorkingDirectoryContext(working_dir):
             os.system('rm -r test')
             os.system('cp -a template test')
-            
+
             # Process OpenItp
             with WorkingDirectoryContext(os.path.join(working_dir, 'test/OpenItp/')):
                 prefix = 'gbp_open'
@@ -97,7 +97,7 @@ class TestConvertLongShortElasticBonds:
                     [topfileA, mol_nameA],
                     [topfileB, mol_nameB]
                 ]
-                dict_cutoffs = { 
+                dict_cutoffs = {
                     'cutoff_BBB_angles': 15,
                     'cutoff_BBBB_dihedrals': 30,
                     'cutoff_SBBS_dihedrals': 30,
@@ -108,5 +108,5 @@ class TestConvertLongShortElasticBonds:
         # Check Comparison
         compare_itp_topology(working_dir, 'gbp', 'system.top')
 
-    
+
 

@@ -160,7 +160,7 @@ echo pot | gmx energy -f {prefix} -o energy_{prefix}
 echo 0 | gmx traj -f {prefix} -s {prefix} -of forces_{prefix}
 rm mdout.mdp
 rm {prefix}.edr {prefix}.log {prefix}.tpr {prefix}.trr
-"""        
+"""
 
     with open(run_file, 'w') as fp:
         fp.write(line)
@@ -367,7 +367,7 @@ def compare_energy_arrays(energy_array1, energy_array2, isPrint=True):
 #     else:
 #         if isPrint:
 #             print("Error: Forces do not match!")
-#         return False 
+#         return False
 
 def compare_forces_values(forces1, forces2, isPrint=True, isReturn=False):
     '''forces1 and forces2 should be the calculated force and standard forces, respectively.'''
@@ -411,7 +411,7 @@ def compare_forces_values(forces1, forces2, isPrint=True, isReturn=False):
         if isReturn:
             return (False, max_allclose, abs_force_error, relative_force_error )
         else:
-            return False 
+            return False
 
 def compare_forces_arrays(forces_array1, forces_array2, isPrint=True):
     # shape check:

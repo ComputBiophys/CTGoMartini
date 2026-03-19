@@ -49,7 +49,7 @@ def combine_mbp_ham_forces(forces1, forces2, energy1, energy2, delta, C1, C2):
     forces=C*forces1+(1-C)*forces2
     return forces
 
-    
+
 def get_mbp_parameters(working_dir, topfile='system.top'):
     """
     get MBP Parameters
@@ -136,11 +136,11 @@ def calculate_mbp_results(energy_stateA, forces_stateA, energy_stateB, forces_st
         energy_mbp[:,1:], energy_mbp_cal, isPrint=True, isReturn=True)
     result_forces, max_allclose, abs_force_error, relative_force_error = compare_forces_values(
         forces_mbp[:,1:], forces_mbp_cal, isPrint=True, isReturn=True)
-    
+
     if not (result_energy and result_forces):
         raise AssertionError("Energies or forces do not match.")
-    
-    return (result_energy, abs_energy_error, relative_energy_error, 
+
+    return (result_energy, abs_energy_error, relative_energy_error,
             result_forces, max_allclose, abs_force_error, relative_force_error)
 
 def compare_results(base_dir, strfile='strfile_No1.gro', epsilon_r=15,
@@ -158,7 +158,7 @@ def compare_results(base_dir, strfile='strfile_No1.gro', epsilon_r=15,
     # Compare results
     return calculate_mbp_results(energy_stateA, forces_stateA, energy_stateB, forces_stateB,
                                energy_mbp, forces_mbp, mbp_param)
-    
+
 
 
 def calculate_sbp_states(base_dir, strfile='strfile_No1.gro', epsilon_r=15):
@@ -201,7 +201,7 @@ class TestMultipleBasinPotential:
         for j, EXP_parameters in enumerate(EXP_parameters_list):
             print(os.getcwd())
             print(EXP_parameters)
-            
+
             # Set MBP parameters once before parallel execution to avoid race conditions
             working_dir = os.path.join(base_dir, 'EXP')
             set_mbp_parameters(working_dir, topfile='system.top', mbp_parameters=EXP_parameters)
@@ -209,7 +209,7 @@ class TestMultipleBasinPotential:
             Compare_per_frame = partial(compare_frame, base_dir=base_dir, mixing_parameters=EXP_parameters, prefix_strfile='GlnBP')
             with Pool(max(cpu_count(),10)) as pool:
                 results = pool.map(Compare_per_frame, range(10))
-                
+
             with open(os.path.join(base_dir, f'./EXP/EXP_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
 
@@ -264,7 +264,7 @@ class TestMultipleBasinPotential:
 
             with open(os.path.join(base_dir, f'./EXP/EXP_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
-            
+
 
 
     def test_mbp_ham_beta2ar(self):

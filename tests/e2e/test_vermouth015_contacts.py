@@ -46,10 +46,10 @@ class TestVermouth015Contacts:
     def parse_go_nbparams(self, filepath: str) -> set:
         """
         Parse go_nbparams.itp and return set of contacts.
-        
+
         Args:
             filepath: Path to go_nbparams.itp file
-            
+
         Returns:
             Set of ((atom1, atom2), sigma) tuples
         """
@@ -73,19 +73,19 @@ class TestVermouth015Contacts:
     def parse_protein_contacts(self, filepath: str) -> set:
         """
         Parse Protein.itp [contacts] section and return set of contacts.
-        
-        Virtual site IDs (starting from 513) are converted back to 
+
+        Virtual site IDs (starting from 513) are converted back to
         atom IDs by subtracting 512.
-        
+
         Args:
             filepath: Path to Protein.itp file
-            
+
         Returns:
             Set of ((atom1, atom2), sigma) tuples
         """
         contacts = set()
         in_contacts = False
-        
+
         with open(filepath) as f:
             for line in f:
                 line = line.strip()
@@ -116,15 +116,15 @@ class TestVermouth015Contacts:
         # Copy input files
         pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
         map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-        
+
         if not os.path.exists(map_file):
             pytest.skip(f"Test data not found: {map_file}")
-        
+
         work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
         work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
         shutil.copy(pdb_file, work_pdb)
         shutil.copy(map_file, work_map)
-        
+
         # Convert map format
         output_file = os.path.join(temp_work_dir, "contact_map.out")
         result = convert_map_format(
@@ -133,10 +133,10 @@ class TestVermouth015Contacts:
             pdb_name="1GGG_1_clean.pdb",
             force=True
         )
-        
+
         # Verify output file exists
         assert os.path.exists(result), "contact_map.out was not created"
-        
+
         # Verify file has correct header format
         with open(result) as f:
             content = f.read()
@@ -151,15 +151,15 @@ class TestVermouth015Contacts:
         # Copy input files
         pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
         map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-        
+
         if not os.path.exists(map_file):
             pytest.skip(f"Test data not found: {map_file}")
-        
+
         work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
         work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
         shutil.copy(pdb_file, work_pdb)
         shutil.copy(map_file, work_map)
-        
+
         # Convert map format first
         contact_map = os.path.join(temp_work_dir, "contact_map.out")
         convert_map_format(
@@ -168,7 +168,7 @@ class TestVermouth015Contacts:
             pdb_name="1GGG_1_clean.pdb",
             force=True
         )
-        
+
         # Run martinize2 with -go
         os.chdir(temp_work_dir)
         result = subprocess.run(
@@ -180,13 +180,13 @@ class TestVermouth015Contacts:
             capture_output=True,
             encoding='utf-8'
         )
-        
+
         assert result.returncode == 0, f"martinize2 failed: {result.stderr}"
-        
+
         # Verify go files are generated
         assert os.path.exists(os.path.join(temp_work_dir, "go_atomtypes.itp"))
         assert os.path.exists(os.path.join(temp_work_dir, "go_nbparams.itp"))
-        
+
         # Verify go_nbparams has correct format
         nbparams = self.parse_go_nbparams(
             os.path.join(temp_work_dir, "go_nbparams.itp")
@@ -196,7 +196,7 @@ class TestVermouth015Contacts:
     def test_sbgomartinize_contacts_conversion(self, test_data_dir, temp_work_dir):
         """
         Test SBGOMartinize correctly converts go_nbparams to [contacts]
-        
+
         This is the core test validating that:
         1. martinize2 -go generates go_nbparams.itp with LJ parameters
         2. GenSBPTop reads the topology including go_nbparams
@@ -206,15 +206,15 @@ class TestVermouth015Contacts:
         # Copy input files
         pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
         map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-        
+
         if not os.path.exists(map_file):
             pytest.skip(f"Test data not found: {map_file}")
-        
+
         work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
         work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
         shutil.copy(pdb_file, work_pdb)
         shutil.copy(map_file, work_map)
-        
+
         # Copy force field
         ff_source = os.path.join(
             ctgomartini.__path__[0],
@@ -222,7 +222,7 @@ class TestVermouth015Contacts:
         )
         ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
         shutil.copy(ff_source, ff_dest)
-        
+
         # Run SBGOMartinize
         os.chdir(temp_work_dir)
         SBGOMartinize(
@@ -234,35 +234,35 @@ class TestVermouth015Contacts:
             ff="martini3001",
             other_params=""
         )
-        
+
         # Parse go_nbparams.itp from Open directory
         go_nbparams_file = os.path.join(temp_work_dir, "Open", "go_nbparams.itp")
         assert os.path.exists(go_nbparams_file), "go_nbparams.itp not found"
-        
+
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         assert len(nb_contacts) > 0, "go_nbparams.itp has no contacts"
-        
+
         # Parse [contacts] from Open.itp
         protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
         assert os.path.exists(protein_itp_file), "Open.itp not found"
-        
+
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
         assert len(protein_contacts) > 0, "Open.itp has no [contacts]"
-        
+
         # Verify all go_nbparams contacts are in Open.itp
         missing_in_protein = nb_contacts - protein_contacts
         extra_in_protein = protein_contacts - nb_contacts
-        
+
         assert len(missing_in_protein) == 0, (
             f"{len(missing_in_protein)} contacts missing in Open.itp: "
             f"{list(missing_in_protein)[:5]}"
         )
-        
+
         assert len(extra_in_protein) == 0, (
             f"{len(extra_in_protein)} extra contacts in Protein.itp: "
             f"{list(extra_in_protein)[:5]}"
         )
-        
+
         # Verify counts match
         assert len(nb_contacts) == len(protein_contacts), (
             f"Contact count mismatch: go_nbparams={len(nb_contacts)}, "
@@ -276,15 +276,15 @@ class TestVermouth015Contacts:
         # Copy input files
         pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
         map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-        
+
         if not os.path.exists(map_file):
             pytest.skip(f"Test data not found: {map_file}")
-        
+
         work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
         work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
         shutil.copy(pdb_file, work_pdb)
         shutil.copy(map_file, work_map)
-        
+
         # Copy force field
         ff_source = os.path.join(
             ctgomartini.__path__[0],
@@ -292,7 +292,7 @@ class TestVermouth015Contacts:
         )
         ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
         shutil.copy(ff_source, ff_dest)
-        
+
         # Run SBGOMartinize
         os.chdir(temp_work_dir)
         SBGOMartinize(
@@ -304,18 +304,18 @@ class TestVermouth015Contacts:
             ff="martini3001",
             other_params=""
         )
-        
+
         # Parse both files
         go_nbparams_file = os.path.join(temp_work_dir, "Open", "go_nbparams.itp")
         protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
-        
+
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
-        
+
         # Find common contacts and compare sigma values
         nb_dict = {k: s for k, s in nb_contacts}
         protein_dict = {k: s for k, s in protein_contacts}
-        
+
         sigma_mismatches = []
         for key in nb_dict:
             if key in protein_dict:
@@ -323,7 +323,7 @@ class TestVermouth015Contacts:
                 protein_sigma = protein_dict[key]
                 if abs(nb_sigma - protein_sigma) > 1e-6:
                     sigma_mismatches.append((key, nb_sigma, protein_sigma))
-        
+
         assert len(sigma_mismatches) == 0, (
             f"{len(sigma_mismatches)} sigma value mismatches: "
             f"{sigma_mismatches[:5]}"
@@ -332,7 +332,7 @@ class TestVermouth015Contacts:
     def test_virtual_site_id_mapping(self, test_data_dir, temp_work_dir):
         """
         Test virtual site ID to atom ID mapping (512 offset)
-        
+
         In vermouth >= 0.15.0:
         - Atoms are numbered 1-512 (for 220 residues with Martini 3)
         - Virtual sites for Go contacts start at 513
@@ -341,15 +341,15 @@ class TestVermouth015Contacts:
         # Copy input files
         pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
         map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-        
+
         if not os.path.exists(map_file):
             pytest.skip(f"Test data not found: {map_file}")
-        
+
         work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
         work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
         shutil.copy(pdb_file, work_pdb)
         shutil.copy(map_file, work_map)
-        
+
         # Copy force field
         ff_source = os.path.join(
             ctgomartini.__path__[0],
@@ -357,7 +357,7 @@ class TestVermouth015Contacts:
         )
         ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
         shutil.copy(ff_source, ff_dest)
-        
+
         # Run SBGOMartinize
         os.chdir(temp_work_dir)
         SBGOMartinize(
@@ -369,10 +369,10 @@ class TestVermouth015Contacts:
             ff="martini3001",
             other_params=""
         )
-        
+
         # Check that virtual site IDs in contacts are in correct range
         protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
-        
+
         with open(protein_itp_file) as f:
             content = f.read()
             in_contacts = False

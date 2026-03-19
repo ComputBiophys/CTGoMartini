@@ -44,7 +44,7 @@ def compare_itp_topology(working_dir, molname, topfile):
     """Compare ITP topology between test and reference directories."""
     with WorkingDirectoryContext(os.path.join(working_dir, "test")):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
-    
+
     with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
@@ -54,20 +54,20 @@ def compare_itp_topology(working_dir, molname, topfile):
 class TestWriteItp:
     """
     Test ITP file generation for multiple-basin GoMartini.
-    
+
     Attributes:
         path (str): Base path to test data directory.
     """
-    
+
     path = os.path.dirname(__file__)
 
     def test_write_itp_glnbp(self):
         """
         Test ITP generation for GlnBP (Glutamine Binding Protein).
-        
+
         Generates ITP file for the multiple-basin model and compares
         against reference data for both open and closed states.
-        
+
         Raises:
             AssertionError: If topology sections don't match reference.
         """
@@ -83,19 +83,19 @@ class TestWriteItp:
                 [topfileA, mol_nameA],
                 [topfileB, mol_nameB]
             ]
-            dict_cutoffs = { 
+            dict_cutoffs = {
                 'cutoff_BBB_angles': 15,
                 'cutoff_BBBB_dihedrals': 30,
                 'cutoff_SBBS_dihedrals': 30,
                 'cutoff_contacts': 0.06 }
             mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
             write_itp(mbmol)
-        
+
         compare_itp_topology(working_dir, 'gbp', 'system.top')
 
 
-    
 
-    
 
-    
+
+
+

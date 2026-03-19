@@ -25,7 +25,7 @@ from ctgomartini.utils.pdb_validation import (
 
 class TestResidueInfo:
     """Tests for ResidueInfo dataclass."""
-    
+
     def test_residue_info_creation(self):
         """Test basic ResidueInfo creation."""
         residue = ResidueInfo(
@@ -37,7 +37,7 @@ class TestResidueInfo:
         )
         assert residue.atom_count == 8
         assert str(residue) == "MET1(A):8atoms"
-    
+
     def test_residue_info_empty_atoms(self):
         """Test ResidueInfo with empty atom list."""
         residue = ResidueInfo(
@@ -52,17 +52,17 @@ class TestResidueInfo:
 
 class TestPDBCompatibilityValidatorBasic:
     """Basic tests for PDBCompatibilityValidator."""
-    
+
     def test_validator_creation(self):
         """Test validator initialization."""
         validator = PDBCompatibilityValidator(verbose=True)
         assert validator.verbose is True
         assert validator.PROTONATION_VARIANTS is not None
-    
+
     def test_single_file_no_validation_needed(self):
         """Test that single file returns empty list."""
         validator = PDBCompatibilityValidator()
-        
+
         # Create a simple PDB
         pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
 ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
@@ -71,7 +71,7 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
             f.write(pdb_content)
             pdb_path = f.name
-        
+
         try:
             reports = validator.validate([pdb_path])
             assert reports == []
@@ -81,7 +81,7 @@ END
 
 class TestPDBCompatibilityMatching:
     """Tests for matching/compatible PDB files."""
-    
+
     def test_identical_pdbs_pass(self):
         """Test that identical PDBs pass validation."""
         pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -97,15 +97,15 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb_content)
             pdb1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb_content)
             pdb2 = f2.name
-        
+
         try:
             validator = PDBCompatibilityValidator(verbose=False)
             reports = validator.validate([pdb1, pdb2], ['StateA', 'StateB'])
-            
+
             assert len(reports) == 1
             assert reports[0].is_valid is True
             assert reports[0].ref_residue_count == 2
@@ -113,7 +113,7 @@ END
         finally:
             os.unlink(pdb1)
             os.unlink(pdb2)
-    
+
     def test_pdbs_with_different_coordinates_pass(self):
         """Test that PDBs with same sequence but different coordinates pass."""
         pdb1 = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -132,11 +132,11 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb1)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb2)
             path2 = f2.name
-        
+
         try:
             validate_pdb_compatibility([path1, path2], ['Open', 'Closed'], verbose=False)
             # Should not raise
@@ -147,7 +147,7 @@ END
 
 class TestPDBCompatibilityResidueCountMismatch:
     """Tests for residue count mismatch detection."""
-    
+
     def test_missing_terminal_residue(self):
         """Test detection of missing terminal residue."""
         pdb_full = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -169,17 +169,17 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb_full)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb_truncated)
             path2 = f2.name
-        
+
         try:
             validator = PDBCompatibilityValidator(verbose=False)
-            
+
             with pytest.raises(ValueError) as exc_info:
                 validator.validate([path1, path2], ['Full', 'Truncated'])
-            
+
             error_msg = str(exc_info.value)
             assert "RESIDUE COUNT MISMATCH" in error_msg
             assert "difference: 1" in error_msg
@@ -188,7 +188,7 @@ END
         finally:
             os.unlink(path1)
             os.unlink(path2)
-    
+
     def test_extra_residue_in_second_structure(self):
         """Test detection of extra residue in second structure."""
         pdb_short = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -210,15 +210,15 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb_short)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb_long)
             path2 = f2.name
-        
+
         try:
             with pytest.raises(ValueError) as exc_info:
                 validate_pdb_compatibility([path1, path2], ['Short', 'Long'], verbose=False)
-            
+
             error_msg = str(exc_info.value)
             assert "RESIDUE COUNT MISMATCH" in error_msg
             assert "LYS2" in error_msg
@@ -230,7 +230,7 @@ END
 
 class TestPDBCompatibilitySequenceMismatch:
     """Tests for residue sequence mismatch detection."""
-    
+
     def test_point_mutation_detection(self):
         """Test detection of point mutation (ALA vs GLY)."""
         pdb_wt = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -256,15 +256,15 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb_wt)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb_mutant)
             path2 = f2.name
-        
+
         try:
             with pytest.raises(ValueError) as exc_info:
                 validate_pdb_compatibility([path1, path2], ['WT', 'Mutant'], verbose=False)
-            
+
             error_msg = str(exc_info.value)
             assert "RESIDUE SEQUENCE MISMATCH" in error_msg
             assert "Position 2" in error_msg
@@ -274,7 +274,7 @@ END
         finally:
             os.unlink(path1)
             os.unlink(path2)
-    
+
     def test_multiple_sequence_differences(self):
         """Test detection of multiple sequence differences."""
         pdb1 = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -308,17 +308,17 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb1)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb2)
             path2 = f2.name
-        
+
         try:
             validator = PDBCompatibilityValidator(verbose=False)
-            
+
             with pytest.raises(ValueError) as exc_info:
                 validator.validate([path1, path2], ['Structure1', 'Structure2'])
-            
+
             error_msg = str(exc_info.value)
             # Should detect both mismatches
             assert "ALA" in error_msg and "GLY" in error_msg
@@ -330,7 +330,7 @@ END
 
 class TestPDBCompatibilityMultiFile:
     """Tests for validating multiple files at once."""
-    
+
     def test_three_file_validation(self):
         """Test validation of three PDB files."""
         pdb_base = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -345,10 +345,10 @@ END
                 with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
                     f.write(pdb_base)
                     paths.append(f.name)
-            
+
             validator = PDBCompatibilityValidator(verbose=False)
             reports = validator.validate(paths, ['State1', 'State2', 'State3'])
-            
+
             # Should have 2 reports (State2 vs State1, State3 vs State1)
             assert len(reports) == 2
             for report in reports:
@@ -356,7 +356,7 @@ END
         finally:
             for p in paths:
                 os.unlink(p)
-    
+
     def test_three_files_with_mismatch(self):
         """Test that mismatch is caught in multi-file validation."""
         pdb1 = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -371,17 +371,17 @@ END
 ATOM    102  CA  ALA A   1      10.500  10.500  10.500  1.00  0.00           C
 END
 """  # Different residue name
-        
+
         paths = []
         try:
             for content in [pdb1, pdb2, pdb3]:
                 with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
                     f.write(content)
                     paths.append(f.name)
-            
+
             with pytest.raises(ValueError) as exc_info:
                 validate_pdb_compatibility(paths, ['Good1', 'Good2', 'Bad'], verbose=False)
-            
+
             error_msg = str(exc_info.value)
             assert "MET" in error_msg and "ALA" in error_msg
         finally:
@@ -391,16 +391,16 @@ END
 
 class TestPDBCompatibilityErrors:
     """Tests for error conditions."""
-    
+
     def test_missing_file_raises_file_not_found(self):
         """Test that missing file raises FileNotFoundError."""
         validator = PDBCompatibilityValidator()
-        
+
         with pytest.raises(FileNotFoundError) as exc_info:
             validator.validate(['/nonexistent/path.pdb', '/another/missing.pdb'])
-        
+
         assert "/nonexistent/path.pdb" in str(exc_info.value)
-    
+
     def test_invalid_pdb_format(self):
         """Test handling of invalid PDB content."""
         invalid_pdb = """This is not a valid PDB file
@@ -409,7 +409,7 @@ Just some random text
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
             f.write(invalid_pdb)
             path = f.name
-        
+
         try:
             validator = PDBCompatibilityValidator()
             # Should not crash, just find no atoms
@@ -422,7 +422,7 @@ Just some random text
 
 class TestValidationReport:
     """Tests for ValidationReport formatting."""
-    
+
     def test_valid_report_format(self):
         """Test formatting of valid report."""
         report = ValidationReport(
@@ -434,10 +434,10 @@ class TestValidationReport:
             ref_residue_count=100,
             other_residue_count=100
         )
-        
+
         error_msg = report.format_error()
         assert error_msg == ""  # Valid report has no error
-    
+
     def test_report_with_warnings(self):
         """Test report with atom count warnings."""
         report = ValidationReport(
@@ -448,13 +448,13 @@ class TestValidationReport:
             other_file=Path("other.pdb"),
             warnings=["Residue X has significant atom count difference"]
         )
-        
+
         assert len(report.warnings) == 1
 
 
 class TestConvenienceFunction:
     """Tests for the validate_pdb_compatibility convenience function."""
-    
+
     def test_convenience_function_passes(self):
         """Test that convenience function works for valid case."""
         pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -464,18 +464,18 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
             f1.write(pdb_content)
             path1 = f1.name
-        
+
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
             f2.write(pdb_content)
             path2 = f2.name
-        
+
         try:
             # Should not raise
             validate_pdb_compatibility([path1, path2], ['A', 'B'], verbose=False)
         finally:
             os.unlink(path1)
             os.unlink(path2)
-    
+
     def test_convenience_function_single_file(self):
         """Test that single file returns immediately."""
         pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
@@ -484,7 +484,7 @@ END
         with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
             f.write(pdb_content)
             path = f.name
-        
+
         try:
             # Single file should not raise
             validate_pdb_compatibility([path], verbose=False)

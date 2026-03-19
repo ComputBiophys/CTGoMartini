@@ -157,10 +157,10 @@ Protein      3
 
         # Read and verify the modified file
         modified_content = top_file.read_text()
-        
+
         # Should not have constraints section anymore
         assert "[ constraints ]" not in modified_content
-        
+
         # Should have the constraint converted to bond
         assert "50000" in modified_content  # Force constant added
 
@@ -175,7 +175,7 @@ Protein      3
     def test_file_not_found(self, tmp_path):
         """Test FileNotFoundError for non-existent file."""
         non_existent = tmp_path / "does_not_exist.itp"
-        
+
         with pytest.raises(FileNotFoundError, match="does_not_exist.itp"):
             convert_constraints_to_bonds(non_existent, "Protein")
 
@@ -193,7 +193,7 @@ Protein      3
         top_file.write_text(sample_topology_with_constraints)
 
         convert_constraints_to_bonds(top_file, "Protein", fc=12345.6)
-        
+
         modified_content = top_file.read_text()
         assert "12345.6" in modified_content
 
@@ -204,11 +204,11 @@ class TestArgumentParsing:
     def test_argument_default_none(self):
         """Test that default is None (flag not provided)."""
         import argparse
-        
+
         parser = argparse.ArgumentParser()
         parser.add_argument('-constraints2bonds', dest='constraints2bonds',
                            nargs='?', const=50000.0, default=None, type=float)
-        
+
         # No flag
         args = parser.parse_args([])
         assert args.constraints2bonds is None
@@ -216,11 +216,11 @@ class TestArgumentParsing:
     def test_argument_flag_only(self):
         """Test -constraints2bonds without value uses const."""
         import argparse
-        
+
         parser = argparse.ArgumentParser()
         parser.add_argument('-constraints2bonds', dest='constraints2bonds',
                            nargs='?', const=50000.0, default=None, type=float)
-        
+
         # Flag only
         args = parser.parse_args(['-constraints2bonds'])
         assert args.constraints2bonds == 50000.0
@@ -228,11 +228,11 @@ class TestArgumentParsing:
     def test_argument_with_value(self):
         """Test -constraints2bonds with custom value."""
         import argparse
-        
+
         parser = argparse.ArgumentParser()
         parser.add_argument('-constraints2bonds', dest='constraints2bonds',
                            nargs='?', const=50000.0, default=None, type=float)
-        
+
         # Flag with value
         args = parser.parse_args(['-constraints2bonds', '2000'])
         assert args.constraints2bonds == 2000.0
@@ -240,11 +240,11 @@ class TestArgumentParsing:
     def test_argument_with_float_value(self):
         """Test -constraints2bonds with float value."""
         import argparse
-        
+
         parser = argparse.ArgumentParser()
         parser.add_argument('-constraints2bonds', dest='constraints2bonds',
                            nargs='?', const=50000.0, default=None, type=float)
-        
+
         # Flag with float value
         args = parser.parse_args(['-constraints2bonds', '12345.67'])
         assert args.constraints2bonds == 12345.67

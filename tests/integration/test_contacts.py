@@ -27,7 +27,7 @@ def compare_results(working_dir, epsilon_r=15):
 
         omm_energy=load_energy_data(clean=False)
         omm_forces=load_forces_data(clean=False)
-        
+
     # gmx
     with WorkingDirectoryContext(os.path.join(working_dir, "LJ")):
         # Use the results from the last run
@@ -44,42 +44,42 @@ def compare_results(working_dir, epsilon_r=15):
     result_forces=compare_forces_values(omm_forces[:,1:], gmx_forces[:,1:], isPrint=True)
     if not (result_energy and result_forces):
         raise AssertionError("Energies or forces do not match.")
-    
+
 
 class TestMartiniTopology:
     """
     Test that the MartiniTopology class is instantiated
     """
     path = os.path.dirname(__file__)
-    
+
     def test_KALP(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/KALP")
-        compare_results(working_dir, epsilon_r = 15)    
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_1GB1(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/1GB1")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_1UBQ(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/1UBQ")
-        compare_results(working_dir, epsilon_r = 15)   
-    
+        compare_results(working_dir, epsilon_r = 15)
+
     def test_GlnBP_Open(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Open")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_GlnBP_Closed(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/GlnBP_Closed")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_AdK_Closed(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/AdK_Closed")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_Beta2AR_Active(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/Beta2AR_Active")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)
 
     def test_TREK1_Down(self):
         working_dir = os.path.join(self.path, "../fixtures/Contacts/TREK1_Down")
-        compare_results(working_dir, epsilon_r = 15)   
+        compare_results(working_dir, epsilon_r = 15)

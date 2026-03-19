@@ -16,7 +16,7 @@ from tests.conftest import WorkingDirectoryContext
 
 
 def add_position_restraints(simulation):
-    
+
     # Add restraints
     class inputs:
         input = 'minimized.gro'
@@ -34,7 +34,7 @@ def add_position_restraints(simulation):
 
 def compare_openmm_gromacs(working_dir, strfile='md.gro', epsilon_r=15.0, **kwargs):
     print(working_dir)
-    
+
     with WorkingDirectoryContext(os.path.join(working_dir, "openmm")):
         # strfile = "md.gro"
         topfile = "system.top"
@@ -63,14 +63,14 @@ def compare_openmm_gromacs(working_dir, strfile='md.gro', epsilon_r=15.0, **kwar
         gmx_energy=load_energy_data(clean=False)
         gmx_forces=load_forces_data(clean=False)
     print(gmx_energy)
-    
+
     # Compare
     print("########################################")
     result_energy=compare_energy_values(omm_energy[:,1:], gmx_energy[:,1:], isPrint=True)
     result_forces=compare_forces_values(omm_forces[:,1:], gmx_forces[:,1:], isPrint=True)
     if not (result_energy and result_forces):
         raise AssertionError("Energies or forces do not match.")
-    
+
 
 class TestEnergyItemComparison:
     """
@@ -85,4 +85,4 @@ class TestEnergyItemComparison:
     def test_restraints(self):
         working_dir = os.path.join(self.path, "../fixtures/EnergyItemComparison/Restraints/GlnBP_Open/")
         compare_openmm_gromacs(working_dir, strfile='minimized.gro', epsilon_r=15, rest=True)
-    
+

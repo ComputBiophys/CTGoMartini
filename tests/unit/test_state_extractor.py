@@ -70,7 +70,7 @@ TestMB     1
 """
             top_file = Path(tmpdir) / "test_system.top"
             ff_file = Path(tmpdir) / "martini_v3.0.0.itp"
-            
+
             # Create minimal force field file
             ff_content = """[ defaults ]
 1   1   no   1.0   1.0
@@ -80,29 +80,29 @@ Qd   72.0   0.0000   A   0.0   0.0
 P4   72.0   0.0000   A   0.0   0.0
 AC2  72.0   0.0000   A   0.0   0.0
 """
-            
+
             with open(top_file, "w") as f:
                 f.write(top_content)
             with open(ff_file, "w") as f:
                 f.write(ff_content)
-            
+
             yield str(top_file), str(ff_file)
 
     def test_extract_state_topology_state1(self, sample_mb_topology):
         """Test extracting state 1 from multi-basin topology."""
         top_file, _ = sample_mb_topology
-        
+
         mol = extract_state_topology(top_file, "TestMB", state_id=1)
-        
+
         # Verify molecule name is preserved (keep_original_name=True)
         assert mol.name == "TestMB"
-        
+
         # Verify multi-basin sections are removed
         assert "multiple_basin" not in mol._topology
         assert "multi_contacts" not in mol._topology
         assert "multi_angles" not in mol._topology
         assert "multi_dihedrals" not in mol._topology
-        
+
         # Verify state 1 contacts are extracted
         contacts = mol._topology.get("contacts", [])
         assert len(contacts) > 0
@@ -113,12 +113,12 @@ AC2  72.0   0.0000   A   0.0   0.0
     def test_extract_state_topology_state2(self, sample_mb_topology):
         """Test extracting state 2 from multi-basin topology."""
         top_file, _ = sample_mb_topology
-        
+
         mol = extract_state_topology(top_file, "TestMB", state_id=2)
-        
+
         # Verify molecule name is preserved
         assert mol.name == "TestMB"
-        
+
         # Verify state 2 contacts are extracted
         contacts = mol._topology.get("contacts", [])
         assert len(contacts) > 0
@@ -129,14 +129,14 @@ AC2  72.0   0.0000   A   0.0   0.0
     def test_extract_state_topology_invalid_state(self, sample_mb_topology):
         """Test that invalid state_id raises ValueError."""
         top_file, _ = sample_mb_topology
-        
+
         with pytest.raises(ValueError, match="Invalid state_id"):
             extract_state_topology(top_file, "TestMB", state_id=3)
 
     def test_extract_state_topology_invalid_molecule(self, sample_mb_topology):
         """Test that invalid molecule name raises ValueError."""
         top_file, _ = sample_mb_topology
-        
+
         with pytest.raises(ValueError, match="not found"):
             extract_state_topology(top_file, "NonExistent", state_id=1)
 
@@ -166,32 +166,32 @@ Qd   72.0   0.0000   A   0.0   0.0
 """
             top_file = Path(tmpdir) / "test.top"
             ff_file = Path(tmpdir) / "martini_v3.0.0.itp"
-            
+
             with open(top_file, "w") as f:
                 f.write(top_content)
             with open(ff_file, "w") as f:
                 f.write(ff_content)
-            
+
             with pytest.raises(ValueError, match="not a multi-basin"):
                 extract_state_topology(str(top_file), "SingleMol", state_id=1)
 
     def test_extract_all_states(self, sample_mb_topology):
         """Test extracting all states at once."""
         top_file, _ = sample_mb_topology
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             output_prefix = str(Path(tmpdir) / "TestMB")
             output_files = extract_all_states(
-                top_file, 
-                "TestMB", 
+                top_file,
+                "TestMB",
                 output_prefix=output_prefix
             )
-            
+
             # Should generate 2 files for 2-state system
             assert len(output_files) == 2
             assert output_files[0] == f"{output_prefix}_stateA.itp"
             assert output_files[1] == f"{output_prefix}_stateB.itp"
-            
+
             # Verify files exist
             assert os.path.exists(output_files[0])
             assert os.path.exists(output_files[1])
@@ -199,15 +199,15 @@ Qd   72.0   0.0000   A   0.0   0.0
     def test_write_state_itp(self, sample_mb_topology):
         """Test writing extracted state to ITP file."""
         top_file, _ = sample_mb_topology
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             mol = extract_state_topology(top_file, "TestMB", state_id=1)
             output_file = Path(tmpdir) / "TestMB_state.itp"
-            
+
             write_state_itp(mol, output_file)
-            
+
             assert output_file.exists()
-            
+
             # Verify content by reading back
             content = output_file.read_text()
             assert "[ moleculetype ]" in content
@@ -216,13 +216,13 @@ Qd   72.0   0.0000   A   0.0   0.0
     def test_extract_all_states_default_prefix(self, sample_mb_topology):
         """Test extract_all_states with default prefix."""
         top_file, _ = sample_mb_topology
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             original_dir = os.getcwd()
             os.chdir(tmpdir)
             try:
                 output_files = extract_all_states(top_file, "TestMB")
-                
+
                 # Should use molecule name as prefix
                 assert len(output_files) == 2
                 assert "TestMB_stateA.itp" in output_files[0]
@@ -233,13 +233,13 @@ Qd   72.0   0.0000   A   0.0   0.0
     def test_extract_state_keep_original_name_false(self, sample_mb_topology):
         """Test extracting state with keep_original_name=False."""
         top_file, _ = sample_mb_topology
-        
+
         mol = extract_state_topology(
-            top_file, 
-            "TestMB", 
-            state_id=1, 
+            top_file,
+            "TestMB",
+            state_id=1,
             keep_original_name=False
         )
-        
+
         # Molecule name should have _stateA suffix
         assert mol.name == "TestMB_stateA"

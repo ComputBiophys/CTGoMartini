@@ -128,10 +128,10 @@ nstout = 5000
 nstdcd = 5000
 output = md.gro
 output_pdb = md.pdb
-odcd = 
+odcd =
 oxtc = md.xtc
 ochk = md.chk
-defines = 
+defines =
 rest = no
 rest_ref = npt.gro
 rest_file = restraints.txt
@@ -140,15 +140,15 @@ atomname = BB
 fc = 1000.0
 gen_rest_file = restraints.txt
 plumed = no
-plumed_file = 
+plumed_file =
 platform = CUDA
 precision = single
-GPU_id = 
+GPU_id =
 temp = 310
 fric_coeff = 0.1
 nonbonded_cutoff = 1.1
 epsilon_r = 15.0
-const_tol = 
+const_tol =
 pcouple = yes
 p_ref = 1.0
 p_type = isotropic
@@ -361,7 +361,7 @@ remd_unsampled_topfiles = system_stateA.top system_stateB.top
             f.write(inp_content)
 
         inputs = read_inputs(inp_file)
-        
+
         # Verify all parameters
         assert inputs.remd == "yes"
         assert inputs.exc_freq == 250
@@ -370,7 +370,7 @@ remd_unsampled_topfiles = system_stateA.top system_stateB.top
         assert inputs.replica_method == "exp"
         assert inputs.replica_temp == [310.0] * 11
         assert len(inputs.replica_coupling) == 11
-        assert inputs.replica_c1 == [-480.0, -440.0, -400.0, -360.0, -320.0, 
+        assert inputs.replica_c1 == [-480.0, -440.0, -400.0, -360.0, -320.0,
                                       -280.0, -240.0, -200.0, -160.0, -120.0, -80.0]
         assert inputs.replica_c2 == [0.0] * 11
         assert inputs.remd_output == "output.nc"

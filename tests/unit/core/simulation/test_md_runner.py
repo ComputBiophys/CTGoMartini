@@ -75,7 +75,7 @@ fric_coeff = 1.0
     def test_detect_existing_output_with_dcd(self, mock_inp_file, temp_dir):
         """Test detect_existing_output with existing DCD file."""
         runner = MDRunner(mock_inp_file)
-        
+
         # Create the DCD file in the correct location (relative to working dir)
         dcd_file = runner.config.odcd
         with open(dcd_file, "w") as f:
@@ -92,7 +92,7 @@ fric_coeff = 1.0
     def test_detect_existing_output_with_chk(self, mock_inp_file, temp_dir):
         """Test detect_existing_output with existing checkpoint file."""
         runner = MDRunner(mock_inp_file)
-        
+
         # Create the checkpoint file in the correct location
         chk_file = runner.config.ochk
         with open(chk_file, "w") as f:
