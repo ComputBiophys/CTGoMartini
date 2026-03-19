@@ -51,7 +51,7 @@ gen_rest_file = restraints.txt                  ; Output file for auto-generated
 
 ; REMD Parameters
 remd        = yes                               ; Enable replica exchange MD
-exc_freq    = 1000                              ; Exchange attempt frequency (steps)
+exc_freq    = 250                               ; Exchange attempt frequency (steps)
 replica_count   = 21                            ; Number of replicas
 replica_molname = MOL                           ; Target molecule name in topology
 replica_method  = exp                           ; Mixing method: exp or ham
@@ -60,14 +60,14 @@ replica_method  = exp                           ; Mixing method: exp or ham
 ; Single values are auto-expanded to all replicas
 ; Multiple values must match replica_count and be space-separated
 replica_temp    = 310.0                         ; Temperature(s) in K
-replica_coupling = 2.0                          ; Coupling: beta for exp, delta for ham
-replica_c1      = -2000 -1800 -1600 -1400 -1200 -1000 -800 -600 -400 -200 0 200 400 600 800 1000 1200 1400 1600 1800 2000
+replica_coupling = 1/300                        ; Coupling: beta for exp, delta for ham
+replica_c1      = -2000 -1800 -1600 -1400 -1200 -1000 -800 -600 -400 -200 0 200 400 600 800 1000 1200 1400 1600 1800 2000   ; Basin energy offset C1
 replica_c2      = 0                             ; Basin energy offset C2
 
 ; REMD Output and Advanced Settings
 remd_output = output.nc                         ; Main NetCDF output file
 remd_checkpoint_interval = 5                    ; Checkpoint interval (iterations)
-remd_online_analysis_interval = 2000            ; Online analysis interval (iterations)
+remd_online_analysis_interval = 20000           ; Online analysis interval (iterations)
 remd_mixing_scheme = swap-neighbors             ; Replica mixing: swap-neighbors or swap-all
 remd_reassign_velocities = no                   ; Reassign velocities at each move: yes or no
-remd_unsampled_topfiles =                       ; Unsampled state topology files (space separated)
+remd_unsampled_topfiles = system_stateA.top system_stateB.top          ; Unsampled state topology files (space separated)

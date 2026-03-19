@@ -1,0 +1,42 @@
+
+============================================================
+  CTGoMartini - Multiple-Basin Mode (EXP)
+============================================================
+  Working directory: /home/ys/CommonUse/Martini/CTGoMartini/tutorials/TRAAK/worked
+  States: Up, Down
+  Output molecule: TRAAK
+============================================================
+
+  [Pre-check] Validating PDB file compatibility...
+    ✓ All PDB files are compatible
+
+────────────────────────────────────────────────────────────
+  State: Up
+  Structure: 7LJB_clean.pdb
+  Contacts: 7LJB_clean.map
+────────────────────────────────────────────────────────────
+  [Step 1/4] Generating Go contacts...
+
+Converting rCSU .map format to martinize2 format: /home/ys/CommonUse/Martini/CTGoMartini/tutorials/TRAAK/worked/7LJB_clean.map
+Generated Go contacts: contact_map_Up.out
+    ✓ Go contacts generated: contact_map_Up.out
+  [Step 2/4] Running martinize2...
+martinize2 -f /home/ys/CommonUse/Martini/CTGoMartini/tutorials/TRAAK/worked/7LJB_clean.pdb -o system.top -x Up_cg.pdb -p backbone -ff martini3001 -cys auto -dssp -go /home/ys/CommonUse/Martini/CTGoMartini/tutorials/TRAAK/worked/Up/contact_map_Up.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -name Up -nt -cys 0.25 -maxwarn 1 -noscfix
+    ✓ Coarse-grained topology created: system.top
+  [Step 3/4] Setting up force field...
+    ✓ Force field configured with Go virtual sites
+  [Step 4/4] Converting long/short elastic bonds to LJ interactions...
+    ✓ Elastic bonds converted
+  ✓ State 'Up' processed successfully
+
+────────────────────────────────────────────────────────────
+  State: Down
+  Structure: 4WFE_clean.pdb
+  Contacts: 4WFE_clean.map
+────────────────────────────────────────────────────────────
+  [Step 1/4] Generating Go contacts...
+
+Converting rCSU .map format to martinize2 format: /home/ys/CommonUse/Martini/CTGoMartini/tutorials/TRAAK/worked/4WFE_clean.map
+Generated Go contacts: contact_map_Down.out
+    ✓ Go contacts generated: contact_map_Down.out
+  [Step 2/4] Running martinize2...

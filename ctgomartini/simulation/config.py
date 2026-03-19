@@ -309,7 +309,8 @@ class SimulationConfig:
         elif param == 'REPLICA_TEMP':
             self.replica_temp = [float(x) for x in value.split()]
         elif param == 'REPLICA_COUPLING':
-            self.replica_coupling = [float(x) for x in value.split()]
+            # Support mathematical expressions like "1/300" or "0.00333"
+            self.replica_coupling = [float(eval(x)) for x in value.split()]
         elif param == 'REPLICA_C1':
             self.replica_c1 = [float(x) for x in value.split()]
         elif param == 'REPLICA_C2':

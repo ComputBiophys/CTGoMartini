@@ -1,0 +1,70 @@
+; ============================================================================
+; CTGoMartini REMD Simulation Input File for Soluble Proteins
+; ============================================================================
+; This is a REMD input file for Hamiltonian Replica Exchange MD simulation
+; of soluble proteins using multiple-basin Go-Martini model.
+
+; Basic Simulation Parameters
+mini_nstep  = 0                                 ; Number of steps for minimization
+mini_Tol    = 1000.0                            ; Minimization energy tolerance
+
+gen_vel     = yes                               ; Generate initial velocities
+gen_temp    = 310                               ; Temperature for generating initial velocities (K)
+gen_seed    =                                   ; Random seed (empty for random)
+
+nstep       = 50000000                          ; Number of steps to run
+dt          = 0.020                             ; Time-step (ps)
+b_step      = 0                                 ; Beginning step count (for restart)
+
+input       = npt.gro                           ; Input structure file
+topol       = system.top                        ; Topology file
+ichk        =                                   ; Input checkpoint file (for restart)
+
+; Platform Settings
+platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
+precision   = single                            ; single, mixed, double (CUDA/OpenCL)
+GPU_id      =                                   ; GPU device ID(s), e.g., 0 or 0,1
+
+; System-Wide Parameters
+fric_coeff  = 0.1                               ; Friction coefficient for Langevin dynamics (1/ps)
+nonbonded_cutoff = 1.1                          ; Nonbonded cutoff (nm)
+epsilon_r   = 15.0                              ; Relative dielectric constant
+const_tol   = 1e-5                              ; Constraint tolerance
+
+; Pressure Coupling (Isotropic for soluble proteins)
+pcouple     = yes                               ; Turn on/off pressure coupling
+p_ref       = 1.0                               ; Reference pressure (bar)
+p_type      = isotropic                         ; Barostat type: isotropic
+p_freq      = 100                               ; Pressure coupling frequency (steps)
+
+; Position Restraints
+rest        = no                                ; Turn on/off restraints
+rest_ref    = npt.gro                           ; Reference structure file
+rest_file   = restraints.txt                    ; Restraint definition file
+gen_rest    = no                                ; Generate restraint file automatically
+atomname    = BB                                ; Atom name for auto-generated restraints
+fc          = 1000.0                            ; Restraint force constant (kJ/mol/nm^2)
+gen_rest_file = restraints.txt                  ; Output file for auto-generated restraints
+
+; REMD Parameters
+remd        = yes                               ; Enable replica exchange MD
+exc_freq    = 250                               ; Exchange attempt frequency (steps)
+replica_count   = 21                            ; Number of replicas
+replica_molname = MOL                           ; Target molecule name in topology
+replica_method  = exp                           ; Mixing method: exp or ham
+
+; Replica schedule (temperature, coupling, c1, c2)
+; Single values are auto-expanded to all replicas
+; Multiple values must match replica_count and be space-separated
+replica_temp    = 310.0                         ; Temperature(s) in K
+replica_coupling = 1/300                        ; Coupling: beta for exp, delta for ham
+replica_c1      = -2000 -1800 -1600 -1400 -1200 -1000 -800 -600 -400 -200 0 200 400 600 800 1000 1200 1400 1600 1800 2000   ; Basin energy offset C1
+replica_c2      = 0                             ; Basin energy offset C2
+
+; REMD Output and Advanced Settings
+remd_output = output.nc                         ; Main NetCDF output file
+remd_checkpoint_interval = 5                    ; Checkpoint interval (iterations)
+remd_online_analysis_interval = 20000           ; Online analysis interval (iterations)
+remd_mixing_scheme = swap-neighbors             ; Replica mixing: swap-neighbors or swap-all
+remd_reassign_velocities = no                   ; Reassign velocities at each move: yes or no
+remd_unsampled_topfiles = system_stateA.top system_stateB.top          ; Unsampled state topology files (space separated)

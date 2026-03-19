@@ -1,0 +1,14 @@
+#include "martini_v3.0.0.itp"
+#include "GlnBP_params.itp"
+#include "GlnBP.itp"
+#include "martini_v3.0.0_solvents_v1.itp"
+#include "martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+GlnBP in solvent
+
+[ molecules ]
+GlnBP            1
+W             6109
+NA              67
+CL              64

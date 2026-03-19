@@ -47,6 +47,7 @@ def Martinize2(
     go_up: float = 1.1,
     dssp: str | None = None,
     other_params: str = '',
+    go_res_dist: int = 0,
 ) -> None:
     """Run martinize2 to convert all-atom structure to coarse-grained model."""
     cmd = [
@@ -69,7 +70,8 @@ def Martinize2(
             '-go', str(go_file),
             '-go-low', str(go_low),
             '-go-up', str(go_up),
-            '-go-eps', str(go_eps)
+            '-go-eps', str(go_eps),
+            '-go-res-dist', str(go_res_dist),  # Disable martinize2's filtering
         ])
 
     cmd.extend(['-name', state_name])
@@ -132,6 +134,7 @@ def _process_single_state(
     go_low: float,
     go_up: float,
     convert_lj: bool = False,
+    min_seq_distance: int = 4,
 ) -> None:
     """Process a single state: generate contacts, run martinize2, setup forcefield.
     
@@ -166,7 +169,8 @@ def _process_single_state(
             str(aa_strfile_abs),
             str(map_file_path) if map_file_path else None,
             state_name,
-            go_eps=go_eps
+            go_eps=go_eps,
+            min_seq_distance=min_seq_distance,
         )
         print(f"    ✓ Go contacts generated: {go_file}")
 
@@ -183,7 +187,8 @@ def _process_single_state(
             go_low=go_low,
             go_up=go_up,
             dssp=dssp,
-            other_params=other_params
+            other_params=other_params,
+            go_res_dist=0,  # Disable martinize2's filtering; we do it ourselves
         )
         print(f"    ✓ Coarse-grained topology created: system.top")
 
@@ -228,6 +233,7 @@ def MBGOMartinize(
     go_low: float = 0.3,
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
+    min_seq_distance: int = 4,
 ) -> None:
     """Generate multiple-basin Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -273,6 +279,7 @@ def MBGOMartinize(
             go_low=go_low,
             go_up=go_up,
             convert_lj=True,
+            min_seq_distance=min_seq_distance,
         )
 
     print("\n" + "─" * 60)
@@ -290,7 +297,7 @@ def MBGOMartinize(
             "Error: HAM mixing scheme only supports multiple basins for two states."
         )
         mbmol._topology['multiple_basin'][0] = [
-            'True', 'ham', '2', 'delta', 'mbp_energy1', 'mbp_energy2'
+            'True', 'ham', '2', 'delta', 'C1', 'C2'
         ]
 
     write_itp(mbmol)
@@ -336,6 +343,7 @@ def SBGOMartinize(
     go_low: float = 0.3,
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
+    min_seq_distance: int = 4,
 ) -> None:
     """Generate single-basin Go-Martini topology from a single PDB.
     
@@ -383,6 +391,7 @@ def SBGOMartinize(
         go_low=go_low,
         go_up=go_up,
         convert_lj=False,
+        min_seq_distance=min_seq_distance,
     )
 
     print("\n" + "─" * 60)
@@ -437,6 +446,7 @@ def SwitchingGOMartinize(
     go_low: float = 0.3,
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
+    min_seq_distance: int = 4,
 ) -> None:
     """Generate switching Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -480,6 +490,7 @@ def SwitchingGOMartinize(
             go_low=go_low,
             go_up=go_up,
             convert_lj=False,
+            min_seq_distance=min_seq_distance,
         )
 
         # Generate single-basin topology for switching (inside state dir)
@@ -530,6 +541,7 @@ def CTGOMartinize(
     go_low: float = 0.3,
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
+    min_seq_distance: int = 4,
 ) -> None:
     """Main entry point for Go-Martini topology generation."""
     if method.lower() == 'switching':
@@ -537,21 +549,24 @@ def CTGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
             go_eps=go_eps, go_low=go_low, go_up=go_up,
-            constraints2bonds=constraints2bonds
+            constraints2bonds=constraints2bonds,
+            min_seq_distance=min_seq_distance,
         )
     elif method.lower() in ['exp', 'ham']:
         MBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
             go_eps=go_eps, go_low=go_low, go_up=go_up,
-            constraints2bonds=constraints2bonds
+            constraints2bonds=constraints2bonds,
+            min_seq_distance=min_seq_distance,
         )
     elif method.lower() == 'sbp':
         SBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list,
             method=method, dssp=dssp, ff=ff, other_params=other_params,
             go_eps=go_eps, go_low=go_low, go_up=go_up,
-            constraints2bonds=constraints2bonds
+            constraints2bonds=constraints2bonds,
+            min_seq_distance=min_seq_distance,
         )
     else:
         raise ValueError(f'Error: unsupported method: {method}!')
@@ -633,6 +648,13 @@ Notes:
                         help='Lower cutoff for Go contacts in nm (default: 0.3)')
     parser.add_argument('-go-up', dest='go_up', default=1.1, type=float,
                         help='Upper cutoff for Go contacts in nm (default: 1.1)')
+    parser.add_argument('-min-seq-distance', dest='min_seq_distance', default=4, type=int,
+                        help='Minimum sequence distance (PDB numbering) for intra-chain contacts. '
+                             'Contacts within the same chain with distance < min-seq-distance are '
+                             'filtered out. Inter-chain contacts are always kept. '
+                             'Set to 0 to disable filtering. '
+                             'Note: This replaces martinize2\'s -go-res-dist which has issues with '
+                             'disulfide bonds. (default: 4)')
     parser.add_argument('-constraints2bonds', dest='constraints2bonds',
                         nargs='?', const=50000.0, default=None, type=float, metavar='FC',
                         help='Convert constraints to bonds with force constant FC (kJ/(mol·nm²)). '
@@ -666,7 +688,8 @@ Notes:
         dict_cutoffs, method=args.method, dssp=args.dssp, ff=args.ff,
         other_params=args.other_params, go_eps=args.go_eps,
         go_low=args.go_low, go_up=args.go_up,
-        constraints2bonds=args.constraints2bonds
+        constraints2bonds=args.constraints2bonds,
+        min_seq_distance=args.min_seq_distance,
     )
 
 

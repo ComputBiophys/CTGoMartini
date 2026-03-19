@@ -857,7 +857,7 @@ TW 36.0 0.000 A 0.0 0.0
 U  24.0 0.000 A 0.0 0.0
 
 #ifdef GO_VIRT
-#include "BB-part-def_VirtGoSites.itp"
+#include "go_atomtypes.itp"
 #endif
 
 [ nonbond_params ]
@@ -356608,6 +356608,6 @@ U  24.0 0.000 A 0.0 0.0
  TX1er  SQ1n  1 3.780000e-01    3.098000e+00
  TX1er  TQ1n  1 3.660000e-01    4.422000e+00
 
-#ifdef GO_VIRT 
-#include "go-table_VirtGoSites.itp"
+#ifdef GO_VIRT
+#include "go_nbparams.itp"
 #endif
