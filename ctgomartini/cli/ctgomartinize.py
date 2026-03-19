@@ -28,7 +28,7 @@ from typing import Any
 
 import ctgomartini
 from ctgomartini.topology import create_mb_topology, create_sb_topology
-from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds
+from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds, extract_all_states
 from ctgomartini.utils.contacts import gen_go_contacts
 from ctgomartini.utils.pdb_validation import (
     validate_pdb_compatibility,
@@ -234,6 +234,7 @@ def MBGOMartinize(
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
+    extract_states: bool = False,
 ) -> None:
     """Generate multiple-basin Go-Martini topology for multiple states."""
     working_path = Path.cwd()
@@ -303,6 +304,21 @@ def MBGOMartinize(
     write_itp(mbmol)
     print(f"  ✓ Topology written: {mbmol_name}.itp, {mbmol_name}_params.itp")
 
+    # Extract single-state topologies if requested
+    if extract_states:
+        print(f"\n  [Extracting single-state topologies...")
+        try:
+            # Find the system.top file (should be in current directory)
+            system_top = working_path / 'system.top'
+            if system_top.exists():
+                state_files = extract_all_states(system_top, mbmol_name)
+                for state_file in state_files:
+                    print(f"    ✓ Extracted: {state_file}")
+            else:
+                print(f"    ! Warning: system.top not found, skipping state extraction")
+        except Exception as e:
+            print(f"    ! Warning: Failed to extract states: {e}")
+
     # Post-process: convert constraints to bonds in final topology
     if constraints2bonds is not None:
         print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
@@ -328,6 +344,10 @@ def MBGOMartinize(
         print(f"    - {state_name}/{state_name}.itp")
     print(f"    - {mbmol_name}.itp")
     print(f"    - {mbmol_name}_params.itp")
+    if extract_states:
+        for i in range(len(state_name_list)):
+            state_letter = chr(ord('A') + i)
+            print(f"    - {mbmol_name}_state{state_letter}.itp")
     print("=" * 60)
 
 
@@ -542,6 +562,7 @@ def CTGOMartinize(
     go_up: float = 1.1,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
+    extract_states: bool = False,
 ) -> None:
     """Main entry point for Go-Martini topology generation."""
     if method.lower() == 'switching':
@@ -559,6 +580,7 @@ def CTGOMartinize(
             go_eps=go_eps, go_low=go_low, go_up=go_up,
             constraints2bonds=constraints2bonds,
             min_seq_distance=min_seq_distance,
+            extract_states=extract_states,
         )
     elif method.lower() == 'sbp':
         SBGOMartinize(
@@ -604,6 +626,10 @@ Usage examples:
 
     # Convert constraints with custom force constant
     ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds 2000
+
+    # Extract single-state topologies for REMD unsampled states (EXP/HAM only)
+    ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp -extract-states
+    # Generates: protein.itp, protein_params.itp, protein_stateA.itp, protein_stateB.itp
 
 Notes:
     - SBP mode: Requires exactly one PDB file and one molecule name
@@ -660,6 +686,12 @@ Notes:
                         help='Convert constraints to bonds with force constant FC (kJ/(mol·nm²)). '
                              'Use -constraints2bonds for default FC=50000, or '
                              '-constraints2bonds 2000 for custom value.')
+    parser.add_argument('-extract-states', '-es', dest='extract_states',
+                        action='store_true',
+                        help='Extract single-state topologies from multi-basin system. '
+                             'Generates {mbmol}_stateA.itp, {mbmol}_stateB.itp, etc. '
+                             'for use as unsampled states in REMD simulations. '
+                             'Only applicable for EXP and HAM methods.')
     args = parser.parse_args()
 
     # Handle -m parameter
@@ -690,6 +722,7 @@ Notes:
         go_low=args.go_low, go_up=args.go_up,
         constraints2bonds=args.constraints2bonds,
         min_seq_distance=args.min_seq_distance,
+        extract_states=args.extract_states,
     )
 
 
