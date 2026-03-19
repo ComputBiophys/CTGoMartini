@@ -81,6 +81,7 @@ def gen_go_contacts(
     map_file: str | None,
     state_name: str,
     go_eps: float = 12.0,
+    min_seq_distance: int = 4,
 ) -> str | None:
     """Generate or prepare Go-like contacts for a protein structure.
     
@@ -95,6 +96,10 @@ def gen_go_contacts(
                  None is treated as 'auto'.
         state_name: Name of the state/molecule type.
         go_eps: Epsilon value for Go contacts (default: 12.0).
+        min_seq_distance: Minimum sequence distance (PDB numbering) for intra-chain
+                         contacts. Contacts with distance < min_seq_distance within
+                         the same chain are filtered out. Inter-chain contacts are
+                         always kept. Set to 0 to disable filtering. (default: 4)
         
     Returns:
         Path to the contact_map.out file for martinize2, or None if no contacts.
@@ -113,6 +118,7 @@ def gen_go_contacts(
             output_file=output_file,
             pdb_name=os.path.basename(aa_strfile),
             force=True,
+            min_seq_distance=min_seq_distance,
         )
         print(f'Generated Go contacts: {output_file}')
         return output_file
@@ -141,6 +147,7 @@ def gen_go_contacts(
             output_file=output_file,
             pdb_name=os.path.basename(aa_strfile),
             force=True,
+            min_seq_distance=min_seq_distance,
         )
         print(f'Generated Go contacts: {output_file}')
         return output_file

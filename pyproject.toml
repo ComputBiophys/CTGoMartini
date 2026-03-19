@@ -28,7 +28,7 @@ dependencies = [
     "numpy",
     "pandas",
     "matplotlib>=3.3.3",
-    "vermouth>=0.10.0,<0.14.0",
+    "vermouth>=0.14.0",
     "openmm>=8.1",
 ]
 

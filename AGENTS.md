@@ -174,9 +174,34 @@ pytest --cov=ctgomartini
 
 ### Vermouth Version Compatibility
 
+**Required**: `vermouth>=0.14.0`
+
 **Recommended**: `vermouth>=0.15.0`
 
 **Note**: vermouth 0.15.0+ uses MDTraj by default for secondary structure assignment.
+
+#### Important: Version 0.13.0 vs 0.14.0 Force Field Differences
+
+Starting from vermouth 0.14.0, the Martini 3.0 force field includes an important fix for proline (PRO) residues in helical conformations:
+
+| Feature | vermouth 0.13.0 | vermouth >=0.14.0 |
+|---------|-----------------|-------------------|
+| **Angle type for helical PRO** | Harmonic (type 2) | Restricted bending (type 10) |
+| **Physical behavior** | Allows angles approaching 180° | Prevents 180° angles (barrier at 180°) |
+| **Impact on helices** | PRO may adopt unrealistic flat angles | PRO maintains proper helical geometry |
+
+**Technical Details:**
+The change affects backbone angle potentials (`-BB BB +BB`) when proline is present in helical secondary structures (`cgsecstruct: "H|1|2|3"`). The new restricted bending potential (function type 10) ensures that:
+1. Proline's cyclic side chain does not conflict with helical dihedral constraints
+2. Unphysical 180° backbone angles are prevented
+3. Helical prolines maintain appropriate geometry
+
+**For Publication Reproducibility:**
+If your work was originally performed with vermouth 0.13.0 and you need to strictly reproduce those results:
+- Create a dedicated conda environment with `vermouth==0.13.0`
+- Note that 0.13.0 requires external DSSP (MDTraj integration was added in 0.15.0)
+
+For new studies, we strongly recommend using `vermouth>=0.14.0` (or ideally >=0.15.0) as the proline fix provides more physically accurate behavior, particularly for proteins containing proline-rich helical regions.
 
 ## Code Style Guidelines
 

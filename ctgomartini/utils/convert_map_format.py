@@ -162,6 +162,42 @@ def enforce_symmetric_contacts(contacts: list[dict[str, Any]]) -> list[dict[str,
     return symmetric
 
 
+def filter_by_sequence_distance(
+    contacts: list[dict[str, Any]], min_seq_distance: int = 4
+) -> list[dict[str, Any]]:
+    """
+    Filter contacts by sequence distance based on PDB numbering.
+    
+    Only applies to intra-chain contacts (same chain). Inter-chain contacts
+    are always kept regardless of sequence distance.
+    
+    Args:
+        contacts: List of contact dictionaries.
+        min_seq_distance: Minimum sequence distance (PDB numbering) to keep.
+                         Contacts with distance < min_seq_distance within the
+                         same chain are filtered out. Set to 0 to disable filtering.
+                         Default is 4 (exclude i, i+1, i+2, i+3 neighbors).
+    
+    Returns:
+        Filtered list of contact dictionaries.
+    """
+    if min_seq_distance <= 0:
+        return contacts
+    
+    filtered = []
+    for c in contacts:
+        # Only filter intra-chain contacts
+        if c['chain1'] == c['chain2']:
+            seq_dist = abs(c['ipdb1'] - c['ipdb2'])
+            if seq_dist >= min_seq_distance:
+                filtered.append(c)
+        else:
+            # Inter-chain contacts are always kept
+            filtered.append(c)
+    
+    return filtered
+
+
 def convert_to_output_format(contacts: list[dict[str, Any]]) -> list[str]:
     """
     Convert parsed contacts to output format.
@@ -204,6 +240,7 @@ def convert_map_format(
     pdb_name: str = "input.pdb",
     nresidues: int | None = None,
     force: bool = False,
+    min_seq_distance: int = 4,
 ) -> str:
     """
     Convert rCSU web-server .map format to OV+rCSU contact_map.out format.
@@ -217,6 +254,11 @@ def convert_map_format(
         pdb_name: PDB filename to display in header.
         nresidues: Number of residues. If None, auto-detect from max residue ID.
         force: Overwrite output file if it exists.
+        min_seq_distance: Minimum sequence distance (PDB numbering) to keep for
+                         intra-chain contacts. Contacts within the same chain with
+                         distance < min_seq_distance are filtered out. Inter-chain
+                         contacts are always kept. Set to 0 to disable filtering.
+                         Default is 4 (exclude i, i+1, i+2, i+3 neighbors).
 
     Returns:
         Path to the generated output file.
@@ -257,6 +299,12 @@ def convert_map_format(
     
     if not contacts:
         raise ValueError("No symmetric contacts found. Input must contain both (i,j) and (j,i) pairs.")
+    
+    # Filter by sequence distance (intra-chain only)
+    contacts = filter_by_sequence_distance(contacts, min_seq_distance)
+    
+    if not contacts:
+        raise ValueError(f"No contacts remain after sequence distance filtering (min_seq_distance={min_seq_distance}).")
 
     # Determine number of residues
     if nresidues is None:
@@ -300,6 +348,11 @@ Examples:
                         help='Number of residues (default: auto-detect from max residue ID)')
     parser.add_argument('-f', '--force', action='store_true',
                         help='Overwrite output file if it exists')
+    parser.add_argument('--min-seq-distance', type=int, default=4,
+                        help='Minimum sequence distance (PDB numbering) for intra-chain contacts. '
+                             'Contacts within the same chain with distance < min-seq-distance are '
+                             'filtered out. Inter-chain contacts are always kept. '
+                             'Set to 0 to disable filtering. (default: 4)')
 
     args = parser.parse_args()
 
@@ -310,6 +363,7 @@ Examples:
             pdb_name=args.pdb_name,
             nresidues=args.nresidues,
             force=args.force,
+            min_seq_distance=args.min_seq_distance,
         )
         print(f"Conversion completed: {output_path}")
     except (FileNotFoundError, FileExistsError, ValueError) as e:
