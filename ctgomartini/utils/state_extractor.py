@@ -18,6 +18,7 @@ def extract_state_topology(
     topfile: str | Path,
     molecule_name: str,
     state_id: int,
+    keep_original_name: bool = True,
 ) -> Any:
     """
     Extract a single-state topology from a multiple-basin topology.
@@ -30,6 +31,8 @@ def extract_state_topology(
         topfile: Path to the topology file (.top)
         molecule_name: Name of the multiple-basin molecule
         state_id: State number to extract (1-indexed, e.g., 1 for stateA)
+        keep_original_name: If True, keep original molecule name; 
+                           if False, append _stateA/_stateB etc.
         
     Returns:
         Molecule object with single-state topology
@@ -89,11 +92,12 @@ def extract_state_topology(
         if key in mol_top:
             mol_top.pop(key)
     
-    # Update molecule type name to indicate single state
-    state_letter = chr(ord('A') + state_id - 1)  # 1->A, 2->B, etc.
-    original_name = mol_top['moleculetype'][0][0]
-    mol_top['moleculetype'][0][0] = f"{original_name}_state{state_letter}"
-    mol.molname = mol_top['moleculetype'][0][0]
+    # Optionally update molecule type name to indicate single state
+    if not keep_original_name:
+        state_letter = chr(ord('A') + state_id - 1)  # 1->A, 2->B, etc.
+        original_name = mol_top['moleculetype'][0][0]
+        mol_top['moleculetype'][0][0] = f"{original_name}_state{state_letter}"
+        mol.molname = mol_top['moleculetype'][0][0]
     
     return mol
 
@@ -142,6 +146,7 @@ def extract_all_states(
     topfile: str | Path,
     mbmol_name: str,
     output_prefix: str | None = None,
+    keep_original_name: bool = True,
 ) -> list[str]:
     """
     Extract all single-state topologies from a multiple-basin topology.
@@ -150,6 +155,7 @@ def extract_all_states(
         topfile: Path to the topology file
         mbmol_name: Name of the multiple-basin molecule
         output_prefix: Prefix for output files (default: mbmol_name)
+        keep_original_name: If True, keep original molecule name
         
     Returns:
         List of output ITP filenames generated
@@ -173,7 +179,7 @@ def extract_all_states(
         
         # Extract and write this state
         # Note: We need to reload the topology each time to get a fresh copy
-        state_mol = extract_state_topology(topfile, mbmol_name, state_id)
+        state_mol = extract_state_topology(topfile, mbmol_name, state_id, keep_original_name)
         write_state_itp(state_mol, output_file)
         output_files.append(output_file)
     

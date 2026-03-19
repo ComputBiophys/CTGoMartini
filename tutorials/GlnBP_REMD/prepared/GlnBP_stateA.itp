@@ -2,7 +2,7 @@
 
 
 [ moleculetype ]
- GlnBP_stateA 1
+ GlnBP 1
 
 [ atoms ]
  1 Q5 1 LEU BB 1 1 72.0

@@ -95,36 +95,15 @@ For REMD, you need three system topology files:
 #include "FF/martini_v3.0.0_ions_v1.itp"
 ```
 
-**B. system_stateA.top** (State A - Open):
+**B. system_stateA.top (State A - Open) and system_stateB.top(State B - Closed)**
 
 ```
-#include "FF/martini_v3.0.0.itp"
-#include "GlnBP_params.itp"
-#include "GlnBP_stateA.itp"
-#include "FF/martini_v3.0.0_solvents_v1.itp"
-#include "FF/martini_v3.0.0_ions_v1.itp"
+cp system.top system_stateA.top
+sed -i 's/GlnBP.itp/GlnBP_stateA.itp/g' system_stateA.top
 
-[ molecules ]
-GlnBP_stateA       1
-W             6109
-NA              67
-CL              64
-```
 
-**C. system_stateB.top** (State B - Closed):
-
-```
-#include "FF/martini_v3.0.0.itp"
-#include "GlnBP_params.itp"
-#include "GlnBP_stateB.itp"
-#include "FF/martini_v3.0.0_solvents_v1.itp"
-#include "FF/martini_v3.0.0_ions_v1.itp"
-
-[ molecules ]
-GlnBP_stateB       1
-W             6109
-NA              67
-CL              64
+cp system.top system_stateB.top
+sed -i 's/GlnBP.itp/GlnBP_stateB.itp/g' system_stateB.top
 ```
 
 ---
@@ -208,46 +187,3 @@ python -m ctgomartini.analysis.drms_analysis \
 python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
 ```
 
----
-
-### Key Concepts
-
-**1. Hamiltonian Replica Exchange**
-
-Unlike temperature REMD, we use Hamiltonian REMD where replicas differ in the energy surface (controlled by C1 parameter). Each replica samples a different bias toward open/closed states.
-
-**2. Unsampled States**
-
-The single-state topologies (`GlnBP_stateA.itp`, `GlnBP_stateB.itp`) are not directly simulated. Instead, they are used as reference states to compute the relative free energy of open vs closed conformations using MBAR analysis.
-
-**3. Exchange Frequency**
-
-`exc_freq = 250` means exchange attempts occur every 250 steps (5 ps with dt=0.02). This should be tuned based on the acceptance ratio (target ~20-30%).
-
-**4. C1 Gradient**
-
-The `replica_c1` values create a linear gradient from -2000 to 2000. Replica 0 strongly favors state A (Open), replica 20 strongly favors state B (Closed), and middle replicas sample both.
-
----
-
-### Troubleshooting
-
-**Low exchange acceptance:**
-- Increase `exc_freq` (less frequent exchanges)
-- Adjust C1 gradient range (make it narrower)
-
-**Poor sampling:**
-- Increase number of replicas
-- Extend simulation time (increase `nstep`)
-
-**Analysis issues:**
-- Ensure `remd_unsampled_topfiles` point to valid topology files
-- Check that molecule names match in topologies
-
----
-
-### References
-
-1. CTGoMartini documentation
-2. OpenMM documentation for REMD: http://docs.openmm.org
-3. MBAR method: Shirts & Chodera, J. Chem. Phys. 129, 124105 (2008)

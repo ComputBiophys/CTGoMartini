@@ -49,7 +49,7 @@ gen_rest_file = restraints.txt                  ; Output file for auto-generated
 ; REMD Parameters
 remd        = yes                               ; Enable replica exchange MD
 exc_freq    = 250                               ; Exchange attempt frequency (steps)
-replica_count   = 21                            ; Number of replicas
+replica_count   = 11                            ; Number of replicas
 replica_molname = GlnBP                         ; Target molecule name in topology
 replica_method  = exp                           ; Mixing method: exp or ham
 
@@ -58,7 +58,7 @@ replica_method  = exp                           ; Mixing method: exp or ham
 ; Multiple values must match replica_count and be space-separated
 replica_temp    = 310.0                         ; Temperature(s) in K
 replica_coupling = 1/300                        ; Coupling: beta for exp, delta for ham
-replica_c1      = -2000 -1800 -1600 -1400 -1200 -1000 -800 -600 -400 -200 0 200 400 600 800 1000 1200 1400 1600 1800 2000
+replica_c1      = -480 -440 -400 -360 -320 -280 -240 -200 -160 -120 -80
 replica_c2      = 0                             ; Basin energy offset C2
 
 ; REMD Output and Advanced Settings
