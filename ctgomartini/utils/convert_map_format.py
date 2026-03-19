@@ -98,22 +98,6 @@ def generate_output_header(pdb_name: str = "input.pdb", nresidues: int = 220) ->
         Header string for contact_map.out file.
     """
     header = f"""                         CONTACT MAPS FROM PDB FILES                          
-                                                                              
- This software is written by:                                                
-       Rodrigo Azevedo Moreira da Silva                                      
-                                                                              
- Copyright (c) 2020 - IPPT-PAN                                              
-       Institute of Fundamental Techonological Research                     
-       Polish Academy of Sciences                                          
- MIT LICENSE, check out LICENSE for more informations.                      
-                                                                              
-Reading file:    uploads/xxx/{pdb_name}
-pdb natoms:      1714
-pdb nresidues:   {nresidues}
-Memory usage:     6.88 MB
-Fibonacci grid:  610
-ALPHA:           1.24
-WATER_RADIUS:    2.80
 
 Residue-Residue Contacts
 
@@ -133,6 +117,58 @@ MODEL    - model number
 ============================================================================================
 """
     return header
+
+
+def enforce_symmetric_contacts(contacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """
+    Enforce symmetric contacts by keeping only pairs where both (i,j) and (j,i) exist.
+    
+    For residue pairs (i,j), only keep if both directions are present in input.
+    Output both (i,j) and (j,i) directions, using the first encountered contact's properties.
+    
+    Args:
+        contacts: List of contact dictionaries.
+        
+    Returns:
+        List of symmetric contact dictionaries (both directions).
+    """
+    # Dictionary to store pairs, key is sorted residue pair (min, max)
+    pairs: dict[tuple[int, int], dict[str, Any]] = {}
+    
+    for contact in contacts:
+        i1, i2 = contact['i1'], contact['i2']
+        key = (min(i1, i2), max(i1, i2))
+        direction = 'forward' if i1 < i2 else 'reverse'
+        
+        if key not in pairs:
+            pairs[key] = {'forward': None, 'reverse': None}
+        
+        # Keep first encountered contact for each direction
+        if pairs[key][direction] is None:
+            pairs[key][direction] = contact
+    
+    # Only keep pairs where both directions exist, output both directions
+    symmetric = []
+    for key, pair in pairs.items():
+        if pair['forward'] is not None and pair['reverse'] is not None:
+            forward = pair['forward']
+            
+            # Output forward (i1 < i2)
+            symmetric.append(forward)
+            
+            # Construct reverse (i1 > i2) by swapping relevant fields
+            reverse = forward.copy()
+            reverse['i1'], reverse['i2'] = forward['i2'], forward['i1']
+            reverse['aa1'], reverse['aa2'] = forward['aa2'], forward['aa1']
+            reverse['chain1'], reverse['chain2'] = forward['chain2'], forward['chain1']
+            reverse['ipdb1'], reverse['ipdb2'] = forward['ipdb2'], forward['ipdb1']
+            
+            symmetric.append(reverse)
+    
+    # Sort by (i1, i2) for consistent output order
+    symmetric.sort(key=lambda x: (x['i1'], x['i2']))
+    
+    return symmetric
 
 
 def convert_to_output_format(contacts: list[dict[str, Any]]) -> list[str]:
@@ -224,6 +260,12 @@ def convert_map_format(
 
     if not contacts:
         raise ValueError("No contacts found. Please check the file format.")
+    
+    # Enforce symmetric contacts - only keep pairs where both (i,j) and (j,i) exist
+    contacts = enforce_symmetric_contacts(contacts)
+    
+    if not contacts:
+        raise ValueError("No symmetric contacts found. Input must contain both (i,j) and (j,i) pairs.")
 
     # Determine number of residues
     if nresidues is None:
