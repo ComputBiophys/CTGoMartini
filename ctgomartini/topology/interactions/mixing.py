@@ -149,19 +149,17 @@ class HAMInteraction:
             )
         
         delta = float(coupling_constant)
-        mbp_energy1 = float(basin_energy_list[0])
-        mbp_energy2 = float(basin_energy_list[1])
-        deltaV = mbp_energy2 - mbp_energy1
+        C1 = float(basin_energy_list[0])
+        C2 = float(basin_energy_list[1])
 
         part2_list = []
         for state, force_set in mbp_force_dict.items():
             energy_combined = ' + '.join([f'state{state}_force{j+1}' for j in range(len(force_set))])
             part2_list.append(f"energy{state} = {energy_combined};")
 
-        # Use named variables for parameters: delta and deltaV
         part1 = '(energy1+energy2+deltaV)/2 - sqrt(((energy1-energy2-deltaV)/2)^2+delta^2);'
         part2 = '\n'.join(part2_list)
-        energy = f"""{part1}\n{part2}\ndelta={delta};\ndeltaV={deltaV};"""
+        energy = f"""{part1}\n{part2}\ndelta={delta};\ndeltaV=C2-C1;\nC1={C1};\nC2={C2};"""
         print(energy)
 
         self.mm_force = mm.CustomCVForce(energy)
