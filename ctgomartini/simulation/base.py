@@ -12,6 +12,7 @@ import datetime
 import os
 import signal
 import sys
+import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
@@ -28,20 +29,15 @@ if TYPE_CHECKING:
     from openmm.app import Topology
 
 
-def report_time(start_time: datetime.datetime) -> None:
+def report_time(label: str, start_time: datetime.datetime) -> None:
     """Report elapsed time between start and current time.
 
     Args:
+        label: Description of the operation that completed.
         start_time: The starting datetime to calculate elapsed time from.
     """
-    end_time = datetime.datetime.now()
-    elapsed = (end_time - start_time).total_seconds()
-
-    start_time_str = start_time.__format__("%Y-%m-%d %H:%M:%S")
-    end_time_str = end_time.__format__("%Y-%m-%d %H:%M:%S")
-    print(f"  Start Time: {start_time_str}")
-    print(f"    End Time: {end_time_str}")
-    print(f"Elapsed Time: {elapsed:.2f}")
+    elapsed = (datetime.datetime.now() - start_time).total_seconds()
+    print(f"[{label}] {elapsed:.2f}s")
 
 
 def load_structure(str_file: str) -> tuple[GromacsGroFile | PDBFile, mm.Vec3 | None]:
@@ -172,25 +168,29 @@ def write_output(output_file: str, simulation: Simulation, strfile: str) -> None
         simulation: Simulation object containing current state.
         strfile: Reference structure file for topology.
     """
-    # Get current state information
-    state = simulation.context.getState(
-        getPositions=True, getVelocities=True, enforcePeriodicBox=True
-    )
-    crd = state.getPositions(asNumpy=True).value_in_unit(u.angstrom)
-    velocities = state.getVelocities(asNumpy=True).value_in_unit(
-        u.angstrom / u.picosecond
-    )
-    box_vectors = state.getPeriodicBoxVectors(asNumpy=True).value_in_unit(u.angstrom)[
-        [0, 1, 2], [0, 1, 2]
-    ]
+    # Suppress MDAnalysis PDB warnings for coarse-grained models
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=UserWarning)
+        
+        # Get current state information
+        state = simulation.context.getState(
+            getPositions=True, getVelocities=True, enforcePeriodicBox=True
+        )
+        crd = state.getPositions(asNumpy=True).value_in_unit(u.angstrom)
+        velocities = state.getVelocities(asNumpy=True).value_in_unit(
+            u.angstrom / u.picosecond
+        )
+        box_vectors = state.getPeriodicBoxVectors(asNumpy=True).value_in_unit(u.angstrom)[
+            [0, 1, 2], [0, 1, 2]
+        ]
 
-    # Create MDAnalysis universe and update with current simulation state
-    mda_u = mda.Universe(strfile)
-    mda_u.atoms.positions = crd
-    mda_u.trajectory[0].velocities = True
-    mda_u.dimensions[:3] = box_vectors  # only for rectangular/cubic box
-    mda_u.atoms.velocities = velocities
-    mda_u.atoms.write(output_file)
+        # Create MDAnalysis universe and update with current simulation state
+        mda_u = mda.Universe(strfile)
+        mda_u.atoms.positions = crd
+        mda_u.trajectory[0].velocities = True
+        mda_u.dimensions[:3] = box_vectors  # only for rectangular/cubic box
+        mda_u.atoms.velocities = velocities
+        mda_u.atoms.write(output_file)
 
 
 def write_checkpoint(simulation: Simulation, input_ochk: str) -> None:
@@ -236,24 +236,24 @@ def load_platform(config: SimulationConfig) -> tuple[mm.Platform, dict[str, str]
     """
     if config.platform == "CPU":
         platform = mm.Platform.getPlatformByName("CPU")
-        print("\nUsing platform: CPU, Precision: default")
+        print("\n[Platform] CPU")
         platform_properties: dict[str, str] = {}
     elif config.platform == "Reference":
         platform = mm.Platform.getPlatformByName("Reference")
-        print("\nUsing platform: Reference, Precision: double")
+        print("\n[Platform] Reference (double precision)")
         platform_properties = {}
     elif config.platform == "CUDA":
         platform = mm.Platform.getPlatformByName("CUDA")
         platform_properties = {"CudaPrecision": f"{config.precision}"}
-        print(f"\nUsing platform: CUDA, Precision: {config.precision}")
+        print(f"\n[Platform] CUDA ({config.precision} precision)")
         if config.GPU_id:
             platform_properties["UseBlockingSync"] = "false"
             platform_properties["DeviceIndex"] = config.GPU_id
-            print(f"Using GPU_id: {config.GPU_id}")
+            print(f"  GPU: {config.GPU_id}")
     elif config.platform == "OpenCL":
         platform = mm.Platform.getPlatformByName("OpenCL")
         platform_properties = {"Precision": f"{config.precision}"}
-        print(f"\nUsing platform: OpenCL, Precision: {config.precision}")
+        print(f"\n[Platform] OpenCL ({config.precision} precision)")
         if config.GPU_id:
             platform_properties["DeviceIndex"] = config.GPU_id
             print(f"Using GPU_id: {config.GPU_id}")
@@ -385,8 +385,6 @@ class SimulationRunner(ABC):
 
             system.addForce(barostat)
 
-        # System Loading Finishes!
-        print("\nLoading system finishes!")
-        report_time(start_time)
+        report_time("Topology", start_time)
 
         return system, top.topology, box_vectors

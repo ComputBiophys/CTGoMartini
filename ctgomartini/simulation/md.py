@@ -130,8 +130,7 @@ class MDRunner(SimulationRunner):
                     simulation.context.loadCheckpoint(f.read())
             print(f"\nLoaded checkpoint file: {self.config.ichk}")
 
-        print("\nLoading system finishes!")
-        report_time(start_time)
+        report_time("Simulation Setup", start_time)
 
         return simulation
 
@@ -205,11 +204,11 @@ class MDRunner(SimulationRunner):
         # Calculate initial energy
         state = self.simulation.context.getState(getEnergy=True)
         energy = state.getPotentialEnergy().value_in_unit(u.kilojoule_per_mole)
-        print(f"\nInitial system energy: {energy:.3f} kJ/mol")
+        print(f"\n[Initial Energy] {energy:.3f} kJ/mol")
 
         # Energy minimization
         if self.config.mini_nstep > 0:
-            print(f"\nEnergy minimization: {self.config.mini_nstep} steps")
+            print(f"\n[Minimization] {self.config.mini_nstep} steps")
             self.simulation.minimizeEnergy(
                 tolerance=self.config.mini_Tol,
                 maxIterations=self.config.mini_nstep,
@@ -219,12 +218,12 @@ class MDRunner(SimulationRunner):
                 .getPotentialEnergy()
                 .value_in_unit(u.kilojoule_per_mole)
             )
-            print(f"Minimized system energy: {energy:.3f} kJ/mol")
-            report_time(start_time)
+            print(f"  Energy: {energy:.3f} kJ/mol")
+            report_time("Minimization", start_time)
 
         # Generate initial velocities
         if self.config.gen_vel == "yes":
-            print(f"\nGenerating initial velocities: {self.config.gen_temp} K")
+            print(f"\n[Initial Velocities] T = {self.config.gen_temp} K")
             if self.config.gen_seed:
                 self.simulation.context.setVelocitiesToTemperature(
                     self.config.gen_temp * u.kelvin, self.config.gen_seed
@@ -246,9 +245,7 @@ class MDRunner(SimulationRunner):
             end_step = self.config.nstep
             remaining_steps = end_step - begin_step
 
-            print(
-                f"\nMD run: begin {begin_step}, end {end_step}, total {remaining_steps}"
-            )
+            print(f"\n[Production MD] {remaining_steps} steps ({begin_step} → {end_step})")
 
             # Setup reporters (not appending for new simulation)
             self._setup_reporters(self.simulation, append=False)
@@ -257,8 +254,8 @@ class MDRunner(SimulationRunner):
             try:
                 self.simulation.step(remaining_steps)
             except KeyboardInterrupt:
-                print("\nSimulation interrupted!")
-                report_time(start_time)
+                print("\n[Interrupted]")
+                report_time("Simulation", start_time)
                 _cleanup_handler(signal.SIGINT, self.simulation, self.config)
 
         # Write final output
@@ -272,8 +269,8 @@ class MDRunner(SimulationRunner):
         if self.config.ochk:
             write_checkpoint(self.simulation, self.config.ochk)
 
-        print("\nSimulation finished!")
-        report_time(start_time)
+        print(f"\n[Completed]")
+        report_time("Total", start_time)
 
     def extend(self, n_iterations: int | None = None) -> None:
         """Continue an existing MD simulation (append mode).
@@ -328,8 +325,8 @@ class MDRunner(SimulationRunner):
         try:
             self.simulation.step(remaining_steps)
         except KeyboardInterrupt:
-            print("\nSimulation interrupted!")
-            report_time(start_time)
+            print("\n[Interrupted]")
+            report_time("Extension", start_time)
             _cleanup_handler(signal.SIGINT, self.simulation, self.config)
 
         # Write final output
@@ -343,5 +340,5 @@ class MDRunner(SimulationRunner):
         if self.config.ochk:
             write_checkpoint(self.simulation, self.config.ochk)
 
-        print("\nSimulation extension finished!")
-        report_time(start_time)
+        print("\n[Extension Complete]")
+        report_time("Extension", start_time)

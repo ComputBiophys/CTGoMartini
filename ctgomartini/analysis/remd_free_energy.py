@@ -15,10 +15,19 @@ import argparse
 import os
 import pickle
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
 import matplotlib.pyplot as plt
-from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
+
+if TYPE_CHECKING:
+    from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
+
+
+def _import_openmmtools_analysis():
+    """Lazy import openmmtools to avoid import-time warnings."""
+    from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
+    return MultiStateReporter, ReplicaExchangeAnalyzer
 
 
 def load_free_energy_data(
@@ -34,6 +43,7 @@ def load_free_energy_data(
     Returns:
         Dictionary containing free energy data.
     """
+    MultiStateReporter, ReplicaExchangeAnalyzer = _import_openmmtools_analysis()
     reporter = MultiStateReporter(str(output_file), open_mode="r")
     analyzer = ReplicaExchangeAnalyzer(reporter)
     

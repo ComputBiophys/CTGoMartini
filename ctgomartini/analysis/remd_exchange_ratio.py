@@ -13,15 +13,17 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-try:
+from openmm import unit
+
+kB = (unit.MOLAR_GAS_CONSTANT_R).in_units_of(
+    unit.kilojoule / (unit.kelvin * unit.mole)
+)
+
+
+def _import_openmmtools_reporter():
+    """Lazy import openmmtools to avoid import-time warnings."""
     from openmmtools.multistate import MultiStateReporter
-    from openmm import unit
-    _HAS_OPENMMTOOLS = True
-    kB = (unit.MOLAR_GAS_CONSTANT_R).in_units_of(
-        unit.kilojoule / (unit.kelvin * unit.mole)
-    )
-except ImportError:
-    _HAS_OPENMMTOOLS = False
+    return MultiStateReporter
 
 
 def ReportExchangeRatio(output_file: str | Path = 'output.nc') -> dict:
@@ -33,11 +35,7 @@ def ReportExchangeRatio(output_file: str | Path = 'output.nc') -> dict:
     Returns:
         Dictionary with exchange ratios for each replica pair.
     """
-    if not _HAS_OPENMMTOOLS:
-        raise ImportError(
-            "openmmtools is required for exchange ratio analysis. "
-            "Install with: pip install openmmtools"
-        )
+    MultiStateReporter = _import_openmmtools_reporter()
     
     reporter = MultiStateReporter(str(output_file), open_mode="r")
     n_accepted_matrix, n_proposed_matrix = reporter.read_mixing_statistics()

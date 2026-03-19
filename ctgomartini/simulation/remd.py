@@ -17,19 +17,6 @@ import openmm as mm
 import openmm.unit as u
 from openmm.app import GromacsGroFile, PDBFile
 
-try:
-    from openmmtools.cache import global_context_cache
-    from openmmtools.multistate import (
-        MultiStateReporter,
-        ReplicaExchangeSampler,
-    )
-    HAS_OPENMMTOOLS = True
-except ImportError:
-    HAS_OPENMMTOOLS = False
-    global_context_cache = None
-    MultiStateReporter = None
-    ReplicaExchangeSampler = None
-
 from ctgomartini.simulation.base import (
     SimulationRunner,
     report_time,
@@ -40,6 +27,32 @@ from ctgomartini.simulation.base import (
 
 # Import MartiniTopFile here to avoid circular imports
 from ctgomartini.topology import MartiniTopFile
+
+# Lazy imports for openmmtools to avoid warnings on module load
+_global_context_cache = None
+_MultiStateReporter = None
+_ReplicaExchangeSampler = None
+
+
+def _import_openmmtools():
+    """Lazy import openmmtools to avoid import-time warnings."""
+    global _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler
+    if _MultiStateReporter is None:
+        try:
+            from openmmtools.cache import global_context_cache
+            from openmmtools.multistate import (
+                MultiStateReporter,
+                ReplicaExchangeSampler,
+            )
+            _global_context_cache = global_context_cache
+            _MultiStateReporter = MultiStateReporter
+            _ReplicaExchangeSampler = ReplicaExchangeSampler
+        except ImportError as e:
+            raise ImportError(
+                "openmmtools is required for REMD simulations. "
+                "Install it with: conda install openmmtools"
+            ) from e
+    return _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler
 
 
 class REMDRunner(SimulationRunner):
@@ -76,17 +89,14 @@ class REMDRunner(SimulationRunner):
         Raises:
             ImportError: If openmmtools is not installed.
         """
-        if not HAS_OPENMMTOOLS:
-            raise ImportError(
-                "openmmtools is required for REMD simulations. "
-                "Install it with: pip install openmmtools"
-            )
+        # Lazy import openmmtools to avoid import-time warnings
+        global_context_cache, MultiStateReporter, ReplicaExchangeSampler = _import_openmmtools()
 
         super().__init__(inpfile)
         self.output_data = output_data
         self.unsampled_topfiles = self.config.remd_unsampled_topfiles
         self.replica_params = replica_params
-        self.sampler: ReplicaExchangeSampler | None = None
+        self.sampler: Any | None = None
 
         # Set global context cache
         global_context_cache.platform = self.platform
@@ -132,7 +142,7 @@ class REMDRunner(SimulationRunner):
         velocities = None
 
         if self.config.ichk:
-            print(f"\nLoad checkpoint file: {self.config.ichk}")
+            print(f"\n[Checkpoint] {self.config.ichk}")
             with open(self.config.ichk, "r") as f:
                 states = mm.XmlSerializer.deserialize(f.read())
             positions = states.getPositions()
@@ -143,11 +153,12 @@ class REMDRunner(SimulationRunner):
         system_list: list[mm.System] = []
         target_mol: str = self.replica_params["molname"]
 
-        for beta, C1, C2 in zip(
+        for i, (beta, C1, C2) in enumerate(zip(
             self.replica_params["beta"],
             self.replica_params["C1"],
             self.replica_params["C2"],
-        ):
+        )):
+            print(f"\n  [Replica {i}] beta={beta}, C1={C1}, C2={C2}")
             # Load topology
             top = MartiniTopFile(
                 self.config.topol,
@@ -168,9 +179,7 @@ class REMDRunner(SimulationRunner):
 
             # Check system charges
             if top.charges != 0:
-                print(
-                    f"Warning: The charges of the system are {top.charges} instead of 0."
-                )
+                print(f"[Warning] System charge: {top.charges} (expected 0)")
 
             # Check number of atoms
             assert len(positions) == top.topology.getNumAtoms(), (
@@ -289,6 +298,8 @@ class REMDRunner(SimulationRunner):
         This method sets up the replica exchange simulation from scratch
         and runs for the specified number of iterations.
         """
+        # Lazy import openmmtools to avoid import-time warnings
+        global_context_cache, MultiStateReporter, ReplicaExchangeSampler = _import_openmmtools()
         import openmmtools.states
         import openmmtools.mcmc
 
@@ -300,9 +311,7 @@ class REMDRunner(SimulationRunner):
         # Build systems
         system_list, unsampled_system_list = self._build_systems()
 
-        # System Loading Finishes!
-        print("\nLoading system finishes!")
-        report_time(start_time)
+        report_time("REMD Setup", start_time)
 
         # Production MD
         if self.config.nstep > 0:
@@ -328,10 +337,10 @@ class REMDRunner(SimulationRunner):
                 velocities = states.getVelocities()
                 box_vectors = states.getPeriodicBoxVectors()
 
-            # Define thermodynamic states
-            for system in system_list:
+            # Define thermodynamic states with replica-specific temperatures
+            for i, system in enumerate(system_list):
                 thermodynamic_state = openmmtools.states.ThermodynamicState(
-                    system=system, temperature=self.config.temp * u.kelvin
+                    system=system, temperature=self.config.replica_temp[i] * u.kelvin
                 )
                 thermodynamic_states.append(thermodynamic_state)
                 sampler_states.append(
@@ -347,7 +356,7 @@ class REMDRunner(SimulationRunner):
                 unsampled_thermodynamic_states = []
                 for system in unsampled_system_list:
                     thermodynamic_state = openmmtools.states.ThermodynamicState(
-                        system=system, temperature=self.config.temp * u.kelvin
+                        system=system, temperature=self.config.replica_temp[0] * u.kelvin
                     )
                     unsampled_thermodynamic_states.append(thermodynamic_state)
 
@@ -389,9 +398,9 @@ class REMDRunner(SimulationRunner):
                     thermodynamic_states, sampler_states, reporter
                 )
 
-            print("Running OpenMM replica exchange simulation...")
-            print(f"Time step: {simulation_time_step}")
-            print(f"Iterations: {exchange_attempts}", flush=True)
+            print(f"\n[Production REMD]")
+            print(f"  Time step: {simulation_time_step}")
+            print(f"  Iterations: {exchange_attempts}", flush=True)
 
             self.sampler.run()
 
@@ -405,7 +414,8 @@ class REMDRunner(SimulationRunner):
             n_iterations: Number of additional iterations to run. If None,
                 runs until the original target is reached or indefinitely.
         """
-        from openmmtools.multistate import ReplicaExchangeSampler
+        # Lazy import openmmtools to avoid import-time warnings
+        _, _, ReplicaExchangeSampler = _import_openmmtools()
 
         if not os.path.exists(self.output_data):
             raise FileNotFoundError(
@@ -413,7 +423,7 @@ class REMDRunner(SimulationRunner):
                 f"Use run() to start a new simulation."
             )
 
-        print(f"Extending REMD simulation from {self.output_data}")
+        print(f"\n[Extend REMD] {self.output_data}")
 
         # Create a new sampler and resume from storage
         self.sampler = ReplicaExchangeSampler.from_storage(self.output_data)
@@ -422,11 +432,9 @@ class REMDRunner(SimulationRunner):
         if n_iterations is not None:
             current_iteration = self.sampler.iteration
             target_iteration = current_iteration + n_iterations
-            print(
-                f"Current iteration: {current_iteration}, target: {target_iteration}"
-            )
+            print(f"  Progress: {current_iteration} → {target_iteration}")
             self.sampler.run(n_iterations=n_iterations)
         else:
             # Run until completion (original target)
-            print("Continuing REMD simulation...")
+            print("  Continuing to completion...")
             self.sampler.run()

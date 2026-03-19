@@ -261,10 +261,10 @@ class MartiniTopFile(TopologyParser):
                         assert len(basin_energy_list) == n_states, (
                             "The number of energy basins should equal the number of states"
                         )
-                        print(
-                            f'{molecule_name} uses the multiple basin potential.\n'
-                            f'{molecule_type.multiple_basin[0]}'
-                        )
+                        print(f"\n[Multi-Basin] {method} ({n_states} states)")
+                        print(f"  Coupling: β = {coupling_constant}")
+                        c_str = ", ".join([f"C{i+1}={basin_energy_list[i]:.1f}" for i in range(n_states)])
+                        print(f"  Offset: {c_str} kJ/mol")
 
                         # Select mixing method
                         if method == "EXP":

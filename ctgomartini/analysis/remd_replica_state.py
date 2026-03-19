@@ -16,14 +16,18 @@ from pathlib import Path
 
 import numpy as np
 import matplotlib.pyplot as plt
-from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
 from openmm import unit
-from pymbar import timeseries
 
 
 kB = (unit.MOLAR_GAS_CONSTANT_R).in_units_of(
     unit.kilojoule / (unit.kelvin * unit.mole)
 ).value_in_unit(unit.kilojoule / (unit.kelvin * unit.mole))
+
+
+def _import_openmmtools_state():
+    """Lazy import openmmtools to avoid import-time warnings."""
+    from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
+    return MultiStateReporter, ReplicaExchangeAnalyzer
 
 
 def load_replica_states(output_file: str | Path) -> np.ndarray:
@@ -35,6 +39,7 @@ def load_replica_states(output_file: str | Path) -> np.ndarray:
     Returns:
         Array of replica state indices with shape (n_replicas, n_timesteps).
     """
+    MultiStateReporter, ReplicaExchangeAnalyzer = _import_openmmtools_state()
     reporter = MultiStateReporter(str(output_file), open_mode="r")
     analyzer = ReplicaExchangeAnalyzer(reporter)
     

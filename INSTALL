@@ -2,10 +2,15 @@ conda create -n ctgomartini_test python=3.12 -y
 conda activate ctgomartini_test
 
 conda install -c conda-forge openmm cuda-version=12 -y
-pip install MDAnalysis numpy pandas matplotlib vermouth==0.9.6
+pip install MDAnalysis numpy pandas matplotlib vermouth==0.14.0
 
 pip install -e .
 pip install pytest
 
-conda install salilab::dssp -y
-conda install libboost=1.73.0 -y
+conda config --add channels omnia --add channels conda-forge
+conda install openmmtools -y
+
+conda install -c conda-forge pymbar
+# pip install -U "jax"
+
+conda install -c conda-forge mpi4py mpich=3 -y

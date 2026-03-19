@@ -84,8 +84,16 @@ class EXPInteraction:
         part1 = ' + '.join(part1_list)
         part2 = '\n'.join(part2_list)
         c_assignments_str = '\n'.join(c_assignments)
-        energy = f"""-1/beta * log({part1});\n{part2}\nbeta={beta};\n{c_assignments_str}"""
-        print(energy)
+        
+        # Print formula in compact format (A2 style)
+        terms = '+'.join([f"exp(-β(E{i}+C{i}))" for i in range(1, len(mbp_force_dict) + 1)])
+        print(f"  Formula: E = -1/β·ln[{terms}]")
+        
+        # Build OpenMM expression (must use triple quotes for proper formatting)
+        energy = f"""-1/beta * log({part1});
+{part2}
+beta={beta};
+{c_assignments_str}"""
 
         self.mm_force = mm.CustomCVForce(energy)
         for state, force_set in mbp_force_dict.items():
