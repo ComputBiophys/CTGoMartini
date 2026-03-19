@@ -97,7 +97,7 @@ def extract_state_topology(
         state_letter = chr(ord('A') + state_id - 1)  # 1->A, 2->B, etc.
         original_name = mol_top['moleculetype'][0][0]
         mol_top['moleculetype'][0][0] = f"{original_name}_state{state_letter}"
-        mol.molname = mol_top['moleculetype'][0][0]
+        mol.name = mol_top['moleculetype'][0][0]
     
     return mol
 
