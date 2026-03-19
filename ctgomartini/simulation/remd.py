@@ -63,7 +63,6 @@ class REMDRunner(SimulationRunner):
         inpfile: str,
         replica_params: dict[str, Any] | None = None,
         output_data: str = "output.nc",
-        unsampled_topfiles: list[str] | None = None,
     ) -> None:
         """Initialize the REMD runner with input file and parameters.
 
@@ -73,8 +72,6 @@ class REMDRunner(SimulationRunner):
                 with keys 'molname', 'beta', 'C1', and 'C2'. If None, must be
                 set before running.
             output_data: Path to output NetCDF file for simulation data.
-            unsampled_topfiles: Optional list of topology file paths for
-                unsampled thermodynamic states.
 
         Raises:
             ImportError: If openmmtools is not installed.
@@ -87,7 +84,7 @@ class REMDRunner(SimulationRunner):
 
         super().__init__(inpfile)
         self.output_data = output_data
-        self.unsampled_topfiles = unsampled_topfiles
+        self.unsampled_topfiles = self.config.remd_unsampled_topfiles
         self.replica_params = replica_params
         self.sampler: ReplicaExchangeSampler | None = None
 
@@ -361,22 +358,25 @@ class REMDRunner(SimulationRunner):
                 timestep=simulation_time_step,
                 collision_rate=self.config.fric_coeff / u.picosecond,
                 n_steps=exchange_frequency,
-                reassign_velocities=False,
+                reassign_velocities=self.config.remd_reassign_velocities,
                 constraint_tolerance=self.config.const_tol,
             )
 
             self.sampler = ReplicaExchangeSampler(
                 mcmc_moves=move,
                 number_of_iterations=exchange_attempts,
-                replica_mixing_scheme="swap-neighbors",
-                online_analysis_interval=2000,
+                replica_mixing_scheme=self.config.remd_mixing_scheme,
+                online_analysis_interval=self.config.remd_online_analysis_interval,
             )
 
             # Remove existing output file if present
             if os.path.exists(self.output_data):
                 os.remove(self.output_data)
 
-            reporter = MultiStateReporter(self.output_data, checkpoint_interval=5)
+            reporter = MultiStateReporter(
+                self.output_data, 
+                checkpoint_interval=self.config.remd_checkpoint_interval
+            )
             if unsampled_thermodynamic_states is not None:
                 self.sampler.create(
                     thermodynamic_states,

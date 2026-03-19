@@ -99,6 +99,23 @@ class SimulationConfig:
         # REMD parameters
         self.remd: str = 'no'           # REMD mode (yes/no)
         self.exc_freq: int | None = None  # Exchange frequency for REMD
+        
+        # Replica definitions
+        self.replica_count: int = 1     # Number of replicas
+        self.replica_molname: str = 'MOL'  # Target molecule name
+        self.replica_method: str = 'exp'   # Mixing method: exp or ham
+        self.replica_temp: list[float] = []  # Temperature(s) in K
+        self.replica_coupling: list[float] = []  # Coupling constant (beta for exp, delta for ham)
+        self.replica_c1: list[float] = []  # C1 parameters
+        self.replica_c2: list[float] = []  # C2 parameters
+        
+        # REMD output and advanced settings
+        self.remd_output: str = 'output.nc'  # Main NetCDF output file
+        self.remd_checkpoint_interval: int = 5  # Checkpoint interval (iterations)
+        self.remd_online_analysis_interval: int = 2000  # Online analysis interval (iterations)
+        self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
+        self.remd_reassign_velocities: bool = False  # Reassign velocities at each move
+        self.remd_unsampled_topfiles: list[str] = []  # Unsampled state topology files
 
     def read(self, input_file: str) -> SimulationConfig:
         """
@@ -283,6 +300,32 @@ class SimulationConfig:
             self.remd = 'yes' if value.upper() == 'YES' else 'no'
         elif param == 'EXC_FREQ':
             self.exc_freq = int(value)
+        elif param == 'REPLICA_COUNT':
+            self.replica_count = int(value)
+        elif param == 'REPLICA_MOLNAME':
+            self.replica_molname = str(value)
+        elif param == 'REPLICA_METHOD':
+            self.replica_method = str(value).lower()
+        elif param == 'REPLICA_TEMP':
+            self.replica_temp = [float(x) for x in value.split()]
+        elif param == 'REPLICA_COUPLING':
+            self.replica_coupling = [float(x) for x in value.split()]
+        elif param == 'REPLICA_C1':
+            self.replica_c1 = [float(x) for x in value.split()]
+        elif param == 'REPLICA_C2':
+            self.replica_c2 = [float(x) for x in value.split()]
+        elif param == 'REMD_OUTPUT':
+            self.remd_output = str(value)
+        elif param == 'REMD_CHECKPOINT_INTERVAL':
+            self.remd_checkpoint_interval = int(value)
+        elif param == 'REMD_ONLINE_ANALYSIS_INTERVAL':
+            self.remd_online_analysis_interval = int(value)
+        elif param == 'REMD_MIXING_SCHEME':
+            self.remd_mixing_scheme = str(value)
+        elif param == 'REMD_REASSIGN_VELOCITIES':
+            self.remd_reassign_velocities = value.upper() == 'YES'
+        elif param == 'REMD_UNSAMPLED_TOPFILES':
+            self.remd_unsampled_topfiles = [x.strip() for x in value.split() if x.strip()]
 
 
 def load_config(input_file: str) -> SimulationConfig:
@@ -301,10 +344,41 @@ def load_config(input_file: str) -> SimulationConfig:
     config = SimulationConfig().read(input_file)
     
     # Validate REMD configuration
-    if config.remd == 'yes' and config.exc_freq is None:
-        raise ValueError(
-            "REMD is enabled (REMD = yes) but exc_freq is not specified. "
-            "Please add 'exc_freq = <number>' to your input file."
-        )
+    if config.remd == 'yes':
+        if config.exc_freq is None:
+            raise ValueError(
+                "REMD is enabled (REMD = yes) but exc_freq is not specified. "
+                "Please add 'exc_freq = <number>' to your input file."
+            )
+        # Set default replica parameters from temp if not specified
+        if len(config.replica_temp) == 0:
+            config.replica_temp = [config.temp] * config.replica_count
+        if len(config.replica_coupling) == 0:
+            config.replica_coupling = [1.0] * config.replica_count
+        if len(config.replica_c1) == 0:
+            config.replica_c1 = [0.0] * config.replica_count
+        if len(config.replica_c2) == 0:
+            config.replica_c2 = [0.0] * config.replica_count
+        # Auto-expand single-value replica parameters
+        if len(config.replica_temp) == 1:
+            config.replica_temp = config.replica_temp * config.replica_count
+        if len(config.replica_coupling) == 1:
+            config.replica_coupling = config.replica_coupling * config.replica_count
+        if len(config.replica_c1) == 1:
+            config.replica_c1 = config.replica_c1 * config.replica_count
+        if len(config.replica_c2) == 1:
+            config.replica_c2 = config.replica_c2 * config.replica_count
+        # Validate replica parameter lengths
+        for name, values in [
+            ('replica_temp', config.replica_temp),
+            ('replica_coupling', config.replica_coupling),
+            ('replica_c1', config.replica_c1),
+            ('replica_c2', config.replica_c2),
+        ]:
+            if len(values) != config.replica_count:
+                raise ValueError(
+                    f"{name} has {len(values)} values but replica_count = {config.replica_count}. "
+                    f"Expected {config.replica_count} values (or 1 for auto-expand)."
+                )
     
     return config

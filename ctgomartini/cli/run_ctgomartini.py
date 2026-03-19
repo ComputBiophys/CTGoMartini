@@ -54,19 +54,7 @@ Examples:
     parser.add_argument(
         "--append",
         action="store_true",
-        help="Append to existing simulation (auto-detected if not specified)",
-    )
-    parser.add_argument(
-        "--replica-params",
-        type=str,
-        default=None,
-        help="JSON file with replica exchange parameters (REMD only)",
-    )
-    parser.add_argument(
-        "--output-data",
-        type=str,
-        default="output.nc",
-        help="Output NetCDF file for REMD data (default: output.nc)",
+        help="Append to existing simulation",
     )
 
     args = parser.parse_args()
@@ -110,11 +98,8 @@ def _run_md(args: argparse.Namespace, config: Any) -> int:
         runner = MDRunner(args.inpfile)
 
         # Determine whether to append or start fresh
-        if args.append or runner.detect_existing_output():
-            if args.append:
-                print("\nAppend mode: Continuing existing simulation")
-            else:
-                print("\nAuto-detected existing output, continuing simulation")
+        if args.append:
+            print("\nAppend mode: Continuing existing simulation")
             runner.extend()
         else:
             print("\nStarting new simulation")
@@ -144,43 +129,28 @@ def _run_remd(args: argparse.Namespace, config: Any) -> int:
     print("CTGoMartini Replica Exchange MD Simulation")
     print("=" * 60)
 
-    # Load replica parameters if provided
-    replica_params: dict[str, Any] | None = None
-    if args.replica_params:
-        import json
-
-        try:
-            with open(args.replica_params, "r") as f:
-                replica_params = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(f"Error loading replica parameters: {e}", file=sys.stderr)
-            return 1
-    else:
-        # Use default replica parameters for testing
-        # In production, these should come from the input file or external config
-        print("\nWarning: No replica parameters provided, using defaults")
-        import numpy as np
-
-        replica_params = {
-            "molname": "MOL",
-            "beta": [1 / 500] * 21,
-            "C1": np.linspace(-2000, 2000, 21).tolist(),
-            "C2": [0] * 21,
-        }
+    # Build replica parameters from config
+    # Calculate beta from temperature (beta = 1 / (kB * T)), kB = 0.008314 kJ/(mol*K)
+    kB = 0.008314  # Boltzmann constant in kJ/(mol*K)
+    beta = [1.0 / (kB * T) for T in config.replica_temp]
+    
+    replica_params: dict[str, Any] = {
+        "molname": config.replica_molname,
+        "beta": beta,
+        "C1": config.replica_c1,
+        "C2": config.replica_c2,
+    }
 
     try:
         runner = REMDRunner(
             args.inpfile,
             replica_params=replica_params,
-            output_data=args.output_data,
+            output_data=config.remd_output,
         )
 
         # Determine whether to append or start fresh
-        if args.append or runner.detect_existing_output():
-            if args.append:
-                print("\nAppend mode: Continuing existing REMD simulation")
-            else:
-                print("\nAuto-detected existing output, continuing REMD simulation")
+        if args.append:
+            print("\nAppend mode: Continuing existing REMD simulation")
             runner.extend()
         else:
             print("\nStarting new REMD simulation")
