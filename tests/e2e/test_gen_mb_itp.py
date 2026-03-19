@@ -175,17 +175,9 @@ class TestGenMBItp:
                 # Fetch ctgomarinize
                 os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/ctgomartinize.py')} .")
                 
-                # Check which DSSP command is available (prefer mkdssp for compatibility)
-                dssp_cmd = None
-                if subprocess.run("which mkdssp", shell=True, capture_output=True).returncode == 0:
-                    dssp_cmd = "mkdssp"
-                elif subprocess.run("which dssp", shell=True, capture_output=True).returncode == 0:
-                    dssp_cmd = "dssp"
-                else:
-                    raise RuntimeError("Neither 'dssp' nor 'mkdssp' command found in the system")
-                
                 # Generate Itp
-                subprocess.run(f"python ctgomartinize.py -s 1GGG_1_clean.pdb 1WDN_1_clean.pdb -m 1GGG_1_clean.map 1WDN_1_clean.map -mol gbp_open gbp_closed -mbmol gbp -dssp {dssp_cmd} -ff martini3001 -method exp",
+                # Note: vermouth >= 0.15.0 uses MDTraj for DSSP, -dssp flag without argument
+                subprocess.run(f"python ctgomartinize.py -s 1GGG_1_clean.pdb 1WDN_1_clean.pdb -m 1GGG_1_clean.map 1WDN_1_clean.map -mol gbp_open gbp_closed -mbmol gbp -dssp -ff martini3001 -method exp",
                                shell=True)
         
         # Check Comparison
@@ -201,17 +193,9 @@ class TestGenMBItp:
                 # Fetch ctgomarinize
                 os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/ctgomartinize.py')} .")
                 
-                # Check which DSSP command is available (prefer mkdssp for compatibility)
-                dssp_cmd = None
-                if subprocess.run("which mkdssp", shell=True, capture_output=True).returncode == 0:
-                    dssp_cmd = "mkdssp"
-                elif subprocess.run("which dssp", shell=True, capture_output=True).returncode == 0:
-                    dssp_cmd = "dssp"
-                else:
-                    raise RuntimeError("Neither 'dssp' nor 'mkdssp' command found in the system")
-                
                 # Generate Itp
-                subprocess.run(f"python ctgomartinize.py -s 1GGG_1_clean.pdb 1WDN_1_clean.pdb -m 1GGG_1_clean.map 1WDN_1_clean.map -mol gbp_open gbp_closed -mbmol gbp -dssp {dssp_cmd} -ff martini3001 -method ham",
+                # Note: vermouth >= 0.15.0 uses MDTraj for DSSP, -dssp flag without argument
+                subprocess.run(f"python ctgomartinize.py -s 1GGG_1_clean.pdb 1WDN_1_clean.pdb -m 1GGG_1_clean.map 1WDN_1_clean.map -mol gbp_open gbp_closed -mbmol gbp -dssp -ff martini3001 -method ham",
                                shell=True)
         
         # Check Comparison
