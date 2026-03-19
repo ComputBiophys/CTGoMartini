@@ -1,12 +1,15 @@
+; NPT equilibration for GlnBP REMD
+
 mini_nstep  = 10000                             ; Number of steps for minimization
 mini_Tol    = 1000.0                            ; Minimization energy tolerance
 
 gen_vel     = yes                               ; Generate initial velocities
 gen_temp    = 310                               ; Temperature for generating initial velocities (K)
 
-nstep       = 100000                            ; number of steps to run
-dt          = 0.010                             ; time-step (ps)
-b_step      = 0                                 ; set begininng step count
+nstep       = 100000                            ; 100000 * 0.02 ps = 2 ns equilibration
+dt          = 0.020                             ; Time step (ps)
+b_step      = 0                                 ; Beginning step count
+append      = no                                ; Append new dcd to the old one
 
 input       = ions.gro
 topol       = system.top
@@ -21,24 +24,27 @@ ochk        = npt.chk
 
 defines     = 
 
+; Restraints - auto-generate
 rest        = yes                               ; Turn on/off restraints
 rest_ref    = ions.gro                          ; Reference structure file
 rest_file   = restraints.txt
 gen_rest    = yes                               ; Generate restraint file
 atomname    = BB                                ; Select atom name
-fc          = 1000.0                            ; Positional restraint force constant for restraint generation (kJ/mol/nm^2)
+fc          = 1000.0                            ; Positional restraint force constant
 gen_rest_file = restraints.txt                  ; Generated restraint file name
 
+plumed      = no                                ; Turn on/off plumed
+plumed_file =                                   ; Default: plumed.dat
+
 platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
-precision   = single                            ; single, mixed, double for CUDA and OpenCL. For CPU and Reference platforms, default precision is used.
-GPU_id      = 
+precision   = single                            ; single, mixed, double for CUDA and OpenCL
 temp        = 310                               ; Temperature (K)
 fric_coeff  = 0.1                               ; Friction coefficient for Langevin dynamics
-nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions. Unit: nm
+nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions (nm)
 epsilon_r   = 15.0                              ; epsilon_r
-const_tol   =                                   ; Set the distance tolerance within which constraints are maintained. default is 1e-5
+const_tol   =                                   ; Set the distance tolerance for constraints
 
 pcouple     = yes                               ; Turn on/off pressure coupling
-p_ref       = 1.0                               ; Pressure (Pref or Pxx, Pyy, Pzz; bar)
+p_ref       = 1.0                               ; Pressure (bar)
 p_type      = isotropic                         ; MonteCarloBarostat type: isotropic, membrane
 p_freq      = 100                               ; Pressure coupling frequency (steps)
