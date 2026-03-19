@@ -186,10 +186,10 @@ def convert_to_output_format(contacts: list[dict[str, Any]]) -> list[str]:
         # Format output line
         line = (
             f"R {contact['id']:>6}  "
-            f"{contact['i1']:>3}  {contact['aa1']:>3}  {contact['chain1']:>1} {contact['ipdb1']:>4}   "
-            f"{contact['i2']:>4}  {contact['aa2']:>3}  {contact['chain2']:>1} {contact['ipdb2']:>4}   "
-            f"{contact['distance']:>10.4f}   "
-            f"{contact['cm_ov']:>1} {contact['cm_csu']:>1} {contact['cm_ocsu']:>1} {contact['cm_rcsu']:>1}  "
+            f"{contact['i1']:>4}  {contact['aa1']:>3} {contact['chain1']:>1} {contact['ipdb1']:>4}     "
+            f"{contact['i2']:>4}  {contact['aa2']:>3} {contact['chain2']:>1} {contact['ipdb2']:>4}   "
+            f"{contact['distance']:>10.4f}     "
+            f"{contact['cm_ov']:>1} {contact['cm_csu']:>1} {contact['cm_ocsu']:>1} {contact['cm_rcsu']:>1} "
             f"{contact['rcsu_net']:>5}   "
             f"{count:>5}    {model:>1}"
         )
