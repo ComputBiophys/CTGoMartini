@@ -99,92 +99,6 @@ For REMD, you need three system topology files:
 
 **A. Main system.top (multiple-basin)** - Edit to add includes:
 
-```
-#include "FF/martini_v3.0.0.itp"
-#include "GlnBP_params.itp"
-#include "GlnBP.itp"
-#include "FF/martini_v3.0.0_solvents_v1.itp"
-#include "FF/martini_v3.0.0_ions_v1.itp"
-
-[ system ]
-GlnBP in solvent
-
-[ molecules ]
-GlnBP     1
-W      6109
-NA        67
-CL        64
-```
-
-**B. system_stateA.top (State A - Open) and system_stateB.top (State B - Closed)**
-
-```bash
-cp system.top system_stateA.top
-sed -i 's/GlnBP.itp/GlnBP_stateA.itp/g' system_stateA.top
-
-cp system.top system_stateB.top
-sed -i 's/GlnBP.itp/GlnBP_stateB.itp/g' system_stateB.top
-```
-
----
-
-### (5) Prepare Input Files
-
-**A. NPT equilibration (npt.inp)**
-
-```ini
-; NPT equilibration for GlnBP REMD
-
-mini_nstep  = 10000                             ; Number of steps for minimization
-mini_Tol    = 1000.0                            ; Minimization energy tolerance
-
-gen_vel     = yes                               ; Generate initial velocities
-gen_temp    = 310                               ; Temperature for generating initial velocities (K)
-
-nstep       = 100000                            ; 100000 * 0.02 ps = 2 ns equilibration
-dt          = 0.020                             ; Time step (ps)
-b_step      = 0                                 ; Beginning step count
-append      = no                                ; Append new dcd to the old one
-
-input       = ions.gro
-topol       = system.top
-ichk        =                                   ; Load check file
-nstout      = 1000                              ; Writing output frequency (steps)
-nstdcd      = 1000                              ; Writing coordinates trajectory frequency (steps)
-output      = npt.gro
-output_pdb  = npt.pdb
-odcd        = 
-oxtc        = npt.xtc
-ochk        = npt.chk
-
-defines     = 
-
-; Restraints - auto-generate
-rest        = yes                               ; Turn on/off restraints
-rest_ref    = ions.gro                          ; Reference structure file
-rest_file   = restraints.txt
-gen_rest    = yes                               ; Generate restraint file
-atomname    = BB                                ; Select atom name
-fc          = 1000.0                            ; Positional restraint force constant
-gen_rest_file = restraints.txt                  ; Generated restraint file name
-
-plumed      = no                                ; Turn on/off plumed
-plumed_file =                                   ; Default: plumed.dat
-
-platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
-precision   = single                            ; single, mixed, double for CUDA and OpenCL
-temp        = 310                               ; Temperature (K)
-fric_coeff  = 0.1                               ; Friction coefficient for Langevin dynamics
-nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions (nm)
-epsilon_r   = 15.0                              ; epsilon_r
-const_tol   =                                   ; Set the distance tolerance for constraints
-
-pcouple     = yes                               ; Turn on/off pressure coupling
-p_ref       = 1.0                               ; Pressure (bar)
-p_type      = isotropic                         ; MonteCarloBarostat type: isotropic, membrane
-p_freq      = 100                               ; Pressure coupling frequency (steps)
-```
-
 Run equilibration:
 ```bash
 run_ctgomartini -i npt.inp
@@ -194,43 +108,7 @@ This generates `npt.gro` as the starting structure for REMD.
 
 **B. REMD production (remd.inp)**
 
-```ini
-; REMD production for GlnBP
 
-nstep       = 50000000      ; 50M * 0.02 ps = 1 µs
-dt          = 0.020
-temp        = 310
-platform    = CUDA
-precision   = single
-
-input       = npt.gro
-topol       = system.top
-output      = npt.gro
-output_pdb  = npt.pdb
-oxtc        = npt.xtc
-
-; REMD specific parameters
-remd        = yes
-exc_freq    = 250           ; Exchange every 250 steps (5 ps)
-
-; Replica configuration (11 replicas with C1 gradient)
-replica_count = 11
-replica_molname = GlnBP
-replica_method = exp
-replica_temp = 310.0
-replica_coupling = 1/300
-replica_c1 = -480 -440 -400 -360 -320 -280 -240 -200 -160 -120 -80
-replica_c2 = 0
-
-; Unsampled states for MBAR analysis
-remd_unsampled_topfiles = system_stateA.top system_stateB.top
-
-; Output
-remd_output = output.nc
-remd_checkpoint_interval = 5
-nstlog      = 1000
-nstdcd      = 5000
-```
 
 **Key REMD parameters explained:**
 - `replica_count`: Number of replicas (11 in this example)
@@ -296,38 +174,3 @@ python -m ctgomartini.analysis.drms_analysis \
 python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
 ```
 
----
-
-### Summary of Files
-
-| File | Purpose |
-|------|---------|
-| `1GGG_clean.pdb`, `1WDN_clean.pdb` | Input PDB structures |
-| `Open/`, `Closed/` | Martinize2 output directories |
-| `GlnBP.itp` | Multiple-basin topology (main) |
-| `GlnBP_params.itp` | Force field parameters |
-| `GlnBP_stateA.itp`, `GlnBP_stateB.itp` | Single-state topologies |
-| `ions.gro` | Solvated system structure |
-| `system.top`, `system_stateA.top`, `system_stateB.top` | System topologies |
-| `npt.inp` | NPT equilibration input |
-| `remd.inp` | REMD production input |
-| `npt.gro`, `npt.pdb` | Equilibrated structure |
-| `output.nc` | REMD trajectory output |
-
----
-
-### Tips and Troubleshooting
-
-1. **Ion count mismatch**: If you get "wrong number of positions" error, check that `ions.gro` and `system.top` have matching atom counts (6972 atoms).
-
-2. **Missing restraints.txt**: Ensure `gen_rest = yes` is set in `npt.inp` to auto-generate the restraints file.
-
-3. **CUDA out of memory**: Reduce `replica_count` or use fewer replicas per GPU.
-
-4. **Exchange ratio**: A good exchange ratio is 20-40%. If too low, reduce the C1 gradient; if too high, increase it.
-
-5. **Restarting simulations**: Use the checkpoint file to restart:
-   ```ini
-   ichk = output.chk
-   append = yes
-   ```
