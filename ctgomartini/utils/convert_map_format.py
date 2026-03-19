@@ -148,22 +148,13 @@ def enforce_symmetric_contacts(contacts: list[dict[str, Any]]) -> list[dict[str,
             pairs[key][direction] = contact
     
     # Only keep pairs where both directions exist, output both directions
+    # Use each direction's original contact data
     symmetric = []
     for key, pair in pairs.items():
         if pair['forward'] is not None and pair['reverse'] is not None:
-            forward = pair['forward']
-            
-            # Output forward (i1 < i2)
-            symmetric.append(forward)
-            
-            # Construct reverse (i1 > i2) by swapping relevant fields
-            reverse = forward.copy()
-            reverse['i1'], reverse['i2'] = forward['i2'], forward['i1']
-            reverse['aa1'], reverse['aa2'] = forward['aa2'], forward['aa1']
-            reverse['chain1'], reverse['chain2'] = forward['chain2'], forward['chain1']
-            reverse['ipdb1'], reverse['ipdb2'] = forward['ipdb2'], forward['ipdb1']
-            
-            symmetric.append(reverse)
+            # Append both directions using their respective original data
+            symmetric.append(pair['forward'])
+            symmetric.append(pair['reverse'])
     
     # Sort by (i1, i2) for consistent output order
     symmetric.sort(key=lambda x: (x['i1'], x['i2']))

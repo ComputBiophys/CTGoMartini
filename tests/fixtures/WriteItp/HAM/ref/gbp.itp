@@ -6,7 +6,7 @@ gbp 1
 
 
 [ multiple_basin ]
- True ham 2 delta mbp_energy1 mbp_energy2
+ True ham 2 delta C1 C2
 
 [ atoms ]
   1 Q5        1 LEU BB    1  1.0 72.0
