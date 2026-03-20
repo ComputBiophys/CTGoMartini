@@ -8,10 +8,15 @@ functionality with mocked NetCDF data.
 import os
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 from unittest.mock import MagicMock, patch, mock_open
 
 import numpy as np
 import pytest
+
+if TYPE_CHECKING:
+    from _pytest.fixtures import FixtureRequest
+    from _pytest.tmpdir import TempPathFactory
 
 from ctgomartini.analysis.remd_trajectory_extractor import (
     REMDTrajectoryExtractor,
@@ -291,30 +296,23 @@ class TestSingleFrameExtraction:
                     assert "ATOM" in content
 
 
-class TestIntegrationWithTutorialData:
-    """Integration tests using actual GlnBP tutorial data."""
+class TestIntegrationWithFixtures:
+    """Integration tests using REMD fixture data."""
     
-    @pytest.fixture
-    def tutorial_data_path(self):
-        """Path to GlnBP tutorial data."""
-        return Path(__file__).parent.parent.parent / "tutorials" / "GlnBP_REMD" / "worked"
-    
-    @pytest.mark.skipif(
-        not (Path(__file__).parent.parent.parent / "tutorials" / "GlnBP_REMD" / "worked" / "output.nc").exists(),
-        reason="Tutorial data not available"
-    )
-    def test_extract_replica_xtc(self, tutorial_data_path, tmp_path):
+    def test_extract_replica_xtc(
+        self,
+        remd_netcdf_file: Path,
+        remd_topology_file: Path,
+        remd_checkpoint_file: Path,
+        tmp_path: Path
+    ):
         """Test extracting replica trajectories to XTC format."""
         from ctgomartini.analysis.remd_trajectory_extractor import REMDTrajectoryExtractor
         
-        netcdf = tutorial_data_path / "output.nc"
-        topology = tutorial_data_path / "npt.pdb"
-        checkpoint = tutorial_data_path / "output_checkpoint.nc"
-        
         extractor = REMDTrajectoryExtractor(
-            str(netcdf),
-            str(topology),
-            str(checkpoint)
+            str(remd_netcdf_file),
+            str(remd_topology_file),
+            str(remd_checkpoint_file)
         )
         
         output_dir = tmp_path / "replicas"
@@ -329,22 +327,20 @@ class TestIntegrationWithTutorialData:
         assert (output_dir / "replica_0.xtc").exists()
         assert (output_dir / "replica_1.xtc").exists()
     
-    @pytest.mark.skipif(
-        not (Path(__file__).parent.parent.parent / "tutorials" / "GlnBP_REMD" / "worked" / "output.nc").exists(),
-        reason="Tutorial data not available"
-    )
-    def test_extract_state_dcd(self, tutorial_data_path, tmp_path):
+    def test_extract_state_dcd(
+        self,
+        remd_netcdf_file: Path,
+        remd_topology_file: Path,
+        remd_checkpoint_file: Path,
+        tmp_path: Path
+    ):
         """Test extracting state trajectories to DCD format."""
         from ctgomartini.analysis.remd_trajectory_extractor import REMDTrajectoryExtractor
         
-        netcdf = tutorial_data_path / "output.nc"
-        topology = tutorial_data_path / "npt.pdb"
-        checkpoint = tutorial_data_path / "output_checkpoint.nc"
-        
         extractor = REMDTrajectoryExtractor(
-            str(netcdf),
-            str(topology),
-            str(checkpoint)
+            str(remd_netcdf_file),
+            str(remd_topology_file),
+            str(remd_checkpoint_file)
         )
         
         output_dir = tmp_path / "states"

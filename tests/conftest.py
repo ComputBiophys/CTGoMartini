@@ -6,6 +6,9 @@ the test suite, including safe directory change context managers.
 """
 
 import os
+from pathlib import Path
+
+import pytest
 
 
 class WorkingDirectoryContext:
@@ -54,3 +57,53 @@ class WorkingDirectoryContext:
                 # Original directory no longer exists, fall back to home
                 os.chdir(os.path.expanduser("~"))
         return False  # Don't suppress exceptions
+
+
+# =============================================================================
+# REMD Test Data Fixtures
+# =============================================================================
+
+@pytest.fixture(scope="session")
+def remd_test_data_dir() -> Path:
+    """
+    Return the path to REMD test data directory.
+    
+    Returns:
+        Path to tests/fixtures/remd/ directory containing:
+        - output.nc: Analysis NetCDF file
+        - output_checkpoint.nc: Checkpoint NetCDF with positions
+        - npt.pdb: System topology
+        - closed_cg.pdb: Closed state reference structure
+        - open_cg.pdb: Open state reference structure
+    """
+    return Path(__file__).parent / "fixtures" / "remd"
+
+
+@pytest.fixture(scope="session")
+def remd_netcdf_file(remd_test_data_dir: Path) -> Path:
+    """Path to REMD analysis NetCDF file."""
+    return remd_test_data_dir / "output.nc"
+
+
+@pytest.fixture(scope="session")
+def remd_checkpoint_file(remd_test_data_dir: Path) -> Path:
+    """Path to REMD checkpoint NetCDF file."""
+    return remd_test_data_dir / "output_checkpoint.nc"
+
+
+@pytest.fixture(scope="session")
+def remd_topology_file(remd_test_data_dir: Path) -> Path:
+    """Path to REMD system topology (PDB)."""
+    return remd_test_data_dir / "npt.pdb"
+
+
+@pytest.fixture(scope="session")
+def remd_closed_ref(remd_test_data_dir: Path) -> Path:
+    """Path to closed state reference structure."""
+    return remd_test_data_dir / "closed_cg.pdb"
+
+
+@pytest.fixture(scope="session")
+def remd_open_ref(remd_test_data_dir: Path) -> Path:
+    """Path to open state reference structure."""
+    return remd_test_data_dir / "open_cg.pdb"
