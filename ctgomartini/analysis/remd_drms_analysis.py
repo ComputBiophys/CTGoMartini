@@ -160,11 +160,11 @@ class PositionExtractor:
                 import openmm
                 self._dt = time_interval.value_in_unit(openmm.unit.picosecond)
             except Exception:
-                self._dt = 5.0  # Default: 5 ps per frame
+                self._dt = 1.0  # Default: 1 ps per frame
         except Exception as e:
             print(f"Error initializing metadata: {e}")
             self._n_frames = self._n_replicas = self._n_atoms = 0
-            self._dt = 5.0
+            self._dt = 1.0
     
     def close(self):
         """Close the reporter."""
