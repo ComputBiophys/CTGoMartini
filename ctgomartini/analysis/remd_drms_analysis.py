@@ -157,9 +157,8 @@ class PositionExtractor:
                 mcmove = self._reporter.read_mcmc_moves()[0]
                 time_interval = mcmove.n_steps * mcmove.timestep
                 # Convert to ps
-                self._dt = time_interval.value_in_unit(
-                    __import__('openmm').unit.picosecond
-                )
+                import openmm
+                self._dt = time_interval.value_in_unit(openmm.unit.picosecond)
             except Exception:
                 self._dt = 5.0  # Default: 5 ps per frame
         except Exception as e:
