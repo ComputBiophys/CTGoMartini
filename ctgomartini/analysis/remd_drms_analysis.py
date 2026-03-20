@@ -294,54 +294,86 @@ class PositionExtractor:
 
 
 def calculate_reference_distances(
-    ref_file: str,
+    ref_files: list[str],
     selected_atom: str = "name BB",
     min_dist: float = 6.0,
     max_dist: float = 50.0,
     min_diff: float = 5.0,
     excl_res: int = 4
-) -> np.ndarray:
+) -> list[np.ndarray]:
     """
-    Calculate reference distances from a structure file.
+    Calculate reference distances from multiple structure files.
+    
+    This function mirrors the behavior of drms_analysis.DRMSAnalyzer.
+    It filters atom pairs based on distance differences across multiple reference states,
+    only keeping pairs where the minimum difference between any two states is >= min_diff.
+    Each state's distances are filtered independently for the distance range.
     
     Args:
-        ref_file: Reference structure file (pdb/gro)
+        ref_files: List of reference structure files (pdb/gro)
         selected_atom: Atom selection string
         min_dist: Minimum distance in Angstrom
         max_dist: Maximum distance in Angstrom
-        min_diff: Minimum difference between states
+        min_diff: Minimum difference between states (pairs with smaller differences are excluded)
         excl_res: Exclude residues within this separation
         
     Returns:
-        Array of reference distances (n_pairs x 3): [atom_i, atom_j, distance]
+        List of reference distance arrays, one per state (n_pairs x 3): [atom_i, atom_j, distance]
     """
     import MDAnalysis as mda
     
-    u = mda.Universe(ref_file)
-    atoms = u.select_atoms(selected_atom)
-    n_atoms = len(atoms)
+    # Load all reference structures
+    ref_universes = [mda.Universe(f) for f in ref_files]
+    ref_atoms = [u.select_atoms(selected_atom) for u in ref_universes]
     
-    positions = atoms.positions
-    resids = atoms.resids
+    # Validate that all references have the same atoms
+    base_count = len(ref_atoms[0])
+    for i, atoms in enumerate(ref_atoms[1:], 1):
+        if len(atoms) != base_count:
+            raise ValueError(f"Reference structure {i+1} has different atom count!")
+        # Check segid and resid consistency
+        for j in range(base_count):
+            if (atoms[j].segid != ref_atoms[0][j].segid or 
+                atoms[j].resid != ref_atoms[0][j].resid):
+                raise ValueError(f"Atom {j} segid/resid mismatch in references")
     
-    results = []
+    n_atoms = base_count
+    n_states = len(ref_atoms)
+    
+    # Results for each state
+    results = [[] for _ in range(n_states)]
     
     for i in range(n_atoms):
         for j in range(i + 1, n_atoms):
-            # Check residue exclusion
-            if abs(resids[j] - resids[i]) < excl_res:
+            atom_i, atom_j = ref_atoms[0][i], ref_atoms[0][j]
+            
+            # Check residue exclusion (same logic as drms_analysis)
+            if atom_i.segid == atom_j.segid and atom_i.resid + excl_res > atom_j.resid:
                 continue
             
-            # Calculate distance
-            dist = np.linalg.norm(positions[i] - positions[j])
+            # Calculate distances for all states
+            dists = []
+            for atoms in ref_atoms:
+                pos_i = atoms[i].position
+                pos_j = atoms[j].position
+                dist = np.linalg.norm(pos_i - pos_j)
+                dists.append(dist)
             
-            # Check distance range
-            if dist < min_dist or dist > max_dist:
-                continue
+            # Calculate minimum difference between any two states
+            min_difference = min(abs(dists[k] - dists[l]) 
+                                for k in range(n_states) 
+                                for l in range(k + 1, n_states))
             
-            results.append([atoms[i].ix, atoms[j].ix, dist])
+            # Only process pairs with sufficient difference between states
+            if min_difference >= min_diff:
+                # For each state, independently check distance range
+                for state_idx in range(n_states):
+                    dist = dists[state_idx]
+                    if min_dist <= dist <= max_dist:
+                        results[state_idx].append([atoms[i].ix, atoms[j].ix, dist])
     
-    return np.array(results)
+    # Convert to numpy arrays
+    return [np.array(state_data) if state_data else np.array([]) for state_data in results]
 
 
 def _worker_process_chunk(
@@ -588,19 +620,19 @@ def main():
     
     # Calculate reference distances for each state
     print("\nCalculating reference distances...")
-    all_ref_distances = []
     states_str = 'ABCDEFGHIJKLMN'
     
-    for i, ref_file in enumerate(args.ref_files):
-        ref_dist = calculate_reference_distances(
-            ref_file,
-            selected_atom=args.sel,
-            min_dist=args.min_dist,
-            max_dist=args.max_dist,
-            min_diff=args.min_diff,
-            excl_res=args.excl_res
-        )
-        all_ref_distances.append(ref_dist)
+    # Calculate all reference distances with multi-state filtering
+    all_ref_distances = calculate_reference_distances(
+        args.ref_files,
+        selected_atom=args.sel,
+        min_dist=args.min_dist,
+        max_dist=args.max_dist,
+        min_diff=args.min_diff,
+        excl_res=args.excl_res
+    )
+    
+    for i, ref_dist in enumerate(all_ref_distances):
         print(f"  State {states_str[i]}: {len(ref_dist)} distance pairs")
     
     # Parse replica indices
