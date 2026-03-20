@@ -1,4 +1,4 @@
-# CTGoMartini: A Python Package for Protein Conformational Transitions with Go-Martini Models
+# CTGoMartini: A Python Package for Protein Conformational Transitions and Associated Protein-Lipid Interactions with Go-Martini Models
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ComputBiophys/CTGoMartini/releases)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
@@ -28,22 +28,53 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - OpenMM >= 8.1
 - vermouth >= 0.15.0
 - MDAnalysis >= 2.4
+- NumPy >= 2.0, < 2.4.0 (see [Known Issues](#known-issues))
 
-### Quick Install
+### Standard Install
+
+For most users (single-GPU or CPU simulations):
 
 ```bash
 # Create conda environment
-conda create -n ctgomartini python=3.12
+conda create -n ctgomartini python=3.12 -y
 conda activate ctgomartini
 
-# Install dependencies
-conda install -c conda-forge openmm
+# Install core dependencies
+pip install MDAnalysis numpy==2.3.4 pandas matplotlib vermouth==0.14.0
 
-# Install CTGoMartini
+# Install OpenMM with CUDA support (adjust cuda-version as needed)
+conda install -c conda-forge openmm cuda-version=12 -y
+
+# Install CTGoMartini (editable mode for development)
 pip install -e .
 
-# Optional: Install PLUMED support for enhanced sampling
+# Optional: Install Jupyter for tutorials
+conda install jupyter -y
+```
+
+### Multi-GPU REMD Installation
+
+For running replica exchange MD (REMD) across multiple GPUs:
+
+```bash
+# Install MPI support for multi-GPU REMD
+conda install -c conda-forge mpi4py mpich=3 -y
+
+# Install openmmtools with compatible dependencies
+conda config --add channels omnia --add channels conda-forge
+conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
+```
+
+> **Note**: Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
+
+### Optional Dependencies
+
+```bash
+# PLUMED support for enhanced sampling
 conda install -c conda-forge openmm-plumed
+
+# DSSP for secondary structure assignment (alternative to MDTraj)
+conda install -c conda-forge dssp
 ```
 
 ## Testing
@@ -72,6 +103,27 @@ pytest tests/ --cov=ctgomartini --cov-report=html
 | `tests/e2e/` | Full workflow tests | Tens of minutes |
 
 ### Known Issues
+
+#### NumPy Version Compatibility (< 2.4.0)
+
+**NumPy 2.4.0+ causes REMD simulations to fail** with:
+```
+TypeError: only 0-dimensional arrays can be converted to Python scalars
+```
+
+This is due to changes in NumPy's array scalar handling that affect `openmmtools` replica exchange. **Use NumPy < 2.4.0**:
+
+```bash
+pip install "numpy>=2.0,<2.4.0"
+# or specifically
+pip install numpy==2.3.4
+```
+
+Affected functionality:
+- REMD simulations using `run_ctgomartini -i remd.inp`
+- Replica exchange with `openmmtools.multistate`
+
+Standard MD simulations are not affected.
 
 #### Vermouth Version Compatibility (0.13.0 vs 0.14.0+)
 
@@ -162,19 +214,19 @@ CTGoMartini/
 
 ```bash
 # Single-basin (SBP) - single structure
-ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -method sbp
+ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp
 
 # Multiple-basin with exponential mixing (EXP) - 2+ structures
 ctgomartinize -s stateA.pdb stateB.pdb -m auto -mol stateA stateB -mbmol protein \
-    -ff martini3001 -method exp
+    -ff martini3001 -dssp -method exp
 
 # Hamiltonian mixing (HAM) - exactly 2 structures
 ctgomartinize -s stateA.pdb stateB.pdb -m auto -mol stateA stateB -mbmol protein \
-    -ff martini3001 -method ham
+    -ff martini3001 -dssp -method ham
 
 # Switching - separate topologies for each structure
 ctgomartinize -s stateA.pdb stateB.pdb -m auto -mol stateA stateB \
-    -ff martini3001 -method switching
+    -ff martini3001 -dssp -method switching
 ```
 
 ### 2. Run Simulation
@@ -185,6 +237,12 @@ run_ctgomartini -i npt.inp
 
 # Production run
 run_ctgomartini -i md.inp
+
+# REMD run
+run_ctgomartini -i remd.inp
+
+# Append run
+run_ctgomartini -i md.inp --append
 ```
 
 ### Input File Format (.inp)
