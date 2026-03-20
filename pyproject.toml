@@ -25,10 +25,10 @@ classifiers = [
 requires-python = ">=3.12"
 dependencies = [
     "MDAnalysis>=2.4",
-    "numpy",
+    "numpy>=2.0,<2.4.0",
     "pandas",
     "matplotlib>=3.3.3",
-    "vermouth>=0.14.0",
+    "vermouth==0.14.0",
     "openmm>=8.1",
 ]
 
