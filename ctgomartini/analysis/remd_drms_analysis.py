@@ -43,6 +43,84 @@ def _import_openmmtools():
     return _MultiStateReporter
 
 
+def _estimate_chunk_size(
+    n_process_frames: int,
+    n_replicas: int,
+    n_pairs: int,
+    num_workers: int,
+    target_chunk_time: float = 0.1,
+    min_chunks_per_worker: int = 2,
+) -> int:
+    """
+    Automatically estimate optimal chunk_size based on workload characteristics.
+    
+    The optimization considers:
+    1. Load balancing: Ensure enough chunks for all workers
+    2. Task overhead: Each chunk should take ~target_chunk_time seconds
+    3. Memory efficiency: Avoid excessive memory usage
+    
+    Args:
+        n_process_frames: Number of frames to process
+        n_replicas: Number of replicas
+        n_pairs: Number of atom pairs (for dRMS calculation)
+        num_workers: Number of worker processes
+        target_chunk_time: Target computation time per chunk (seconds)
+        min_chunks_per_worker: Minimum chunks per worker for load balancing
+        
+    Returns:
+        Optimal chunk_size
+    """
+    if n_process_frames <= 0:
+        return 1
+    
+    # Constraint 1: Minimum chunks for load balancing
+    # Each worker should get at least min_chunks_per_worker chunks
+    min_chunks = num_workers * min_chunks_per_worker
+    max_chunk_size_load = max(1, n_process_frames // min_chunks)
+    
+    # Constraint 2: Target computation time per chunk
+    # Empirical estimate: ~1e-6 seconds per (frame * replica * pair) operation
+    # This is a rough estimate based on typical dRMS calculation performance
+    operations_per_frame = n_replicas * n_pairs
+    if operations_per_frame > 0:
+        # Estimate: 1e-7 seconds per operation (empirical)
+        time_per_frame = operations_per_frame * 1e-7
+        target_frames = max(1, int(target_chunk_time / time_per_frame))
+    else:
+        target_frames = 100
+    
+    # Constraint 3: Memory efficiency
+    # Each frame reads: n_replicas * n_pairs * 3 coords * 4 bytes
+    # Target: < 100MB per chunk
+    bytes_per_frame = n_replicas * n_pairs * 3 * 4  # float32
+    target_memory = 100 * 1024 * 1024  # 100MB
+    max_chunk_size_memory = max(1, int(target_memory / max(bytes_per_frame, 1)))
+    
+    # Constraint 4: Absolute bounds
+    # Minimum: 10 frames (avoid too many small tasks)
+    # Maximum: 1000 frames or 10% of total (avoid huge chunks)
+    min_chunk_size = 10
+    max_chunk_size_absolute = min(1000, max(1, n_process_frames // 10))
+    
+    # Combine constraints: take the most restrictive
+    chunk_size = min(target_frames, max_chunk_size_load, max_chunk_size_memory)
+    chunk_size = max(min_chunk_size, min(chunk_size, max_chunk_size_absolute))
+    
+    # Final adjustment: ensure we don't exceed total frames
+    chunk_size = min(chunk_size, n_process_frames)
+    
+    return chunk_size
+
+
+def _format_bytes(size_bytes: int) -> str:
+    """Format bytes to human readable string."""
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if size_bytes < 1024.0:
+            return f"{size_bytes:.1f} {unit}"
+        size_bytes /= 1024.0
+    return f"{size_bytes:.1f} TB"
+
+
 class PositionExtractor:
     """Extract positions from NetCDF trajectory files."""
     
@@ -345,7 +423,8 @@ def calculate_trajectory_drms(
     replica_indices: Optional[np.ndarray] = None,
     skip: int = 1,
     num_workers: Optional[int] = None,
-    chunk_size: int = 100
+    chunk_size: Optional[int] = None,
+    auto_chunk: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Calculate dRMS for entire trajectory using parallel processing.
@@ -357,7 +436,8 @@ def calculate_trajectory_drms(
         replica_indices: Replica indices to analyze (None for all)
         skip: Process every N-th frame
         num_workers: Number of parallel workers (default: CPU count)
-        chunk_size: Number of frames per worker task
+        chunk_size: Number of frames per worker task (auto-optimized if None)
+        auto_chunk: Whether to automatically optimize chunk_size
         
     Returns:
         Tuple of (times, drms_array)
@@ -387,6 +467,26 @@ def calculate_trajectory_drms(
         num_workers = multiprocessing.cpu_count()
     num_workers = min(num_workers, n_process_frames)
     
+    # Determine chunk_size
+    n_pairs = len(ref_distances)
+    if chunk_size is None and auto_chunk:
+        chunk_size = _estimate_chunk_size(
+            n_process_frames=n_process_frames,
+            n_replicas=len(replica_indices),
+            n_pairs=n_pairs,
+            num_workers=num_workers,
+        )
+        mem_per_chunk = len(replica_indices) * n_pairs * 3 * 4 * chunk_size
+        print(f"Auto-optimized chunk_size={chunk_size} "
+              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+    elif chunk_size is None:
+        chunk_size = 100  # Default
+        print(f"Using default chunk_size={chunk_size}")
+    else:
+        mem_per_chunk = len(replica_indices) * n_pairs * 3 * 4 * chunk_size
+        print(f"Using specified chunk_size={chunk_size} "
+              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+    
     # Prepare tasks (chunk frames for parallel processing)
     tasks = []
     for i in range(0, n_process_frames, chunk_size):
@@ -401,7 +501,7 @@ def calculate_trajectory_drms(
             dt
         ))
     
-    print(f"Using {num_workers} workers for {len(tasks)} chunks (chunk_size={chunk_size})")
+    print(f"Using {num_workers} workers for {len(tasks)} chunks")
     
     start_time = time.time()
     
@@ -549,8 +649,12 @@ def main():
                         help="Process every N-th frame")
     parser.add_argument("--num-workers", type=int, default=None,
                         help="Number of parallel workers (default: CPU count)")
-    parser.add_argument("--chunk-size", type=int, default=100,
-                        help="Frames per chunk for parallel processing")
+    parser.add_argument("--chunk-size", type=int, default=None,
+                        help="Frames per chunk (auto-optimized if not specified)")
+    parser.add_argument("--auto-chunk", action="store_true", default=True,
+                        help="Automatically optimize chunk size (default: enabled)")
+    parser.add_argument("--no-auto-chunk", action="store_false", dest="auto_chunk",
+                        help="Disable automatic chunk size optimization")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
     
@@ -608,7 +712,31 @@ def main():
         chunk_size = args.chunk_size
         
         print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
-        print(f"Using {num_workers} workers, chunk_size={chunk_size}")
+        
+        # Determine chunk_size
+        if args.chunk_size is None and args.auto_chunk:
+            # Use the maximum pairs across all states for estimation
+            max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
+            chunk_size = _estimate_chunk_size(
+                n_process_frames=n_process_frames,
+                n_replicas=len(replica_indices),
+                n_pairs=max_pairs,
+                num_workers=num_workers,
+            )
+            mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
+            print(f"Auto-optimized chunk_size={chunk_size} "
+                  f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+        elif args.chunk_size is not None:
+            chunk_size = args.chunk_size
+            max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
+            mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
+            print(f"Using specified chunk_size={chunk_size} "
+                  f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+        else:
+            chunk_size = 100  # Default fallback
+            print(f"Using default chunk_size={chunk_size}")
+        
+        print(f"Using {num_workers} workers")
         
         # Prepare tasks for all states
         tasks = []
