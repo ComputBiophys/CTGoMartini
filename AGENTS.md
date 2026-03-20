@@ -121,14 +121,22 @@ CTGoMartini/
 
 ```bash
 # Create conda environment
-conda create -n ctgomartini python=3.12
+conda create -n ctgomartini python=3.12 -y
 conda activate ctgomartini
 
-# Install core dependencies
-conda install -c conda-forge openmm
+# Install core dependencies (note: NumPy < 2.4.0 required for REMD)
+pip install MDAnalysis "numpy>=2.0,<2.4.0" pandas matplotlib vermouth>=0.14.0
+
+# Install OpenMM with CUDA support (adjust cuda-version as needed)
+conda install -c conda-forge openmm cuda-version=12 -y
 
 # Install CTGoMartini (editable mode for development)
 pip install -e .
+
+# For multi-GPU REMD, also install:
+# conda install -c conda-forge mpi4py mpich=3 -y
+# conda config --add channels omnia --add channels conda-forge
+# conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
 
 # Install with optional dependencies
 pip install -e ".[plumed,dssp]"
@@ -171,6 +179,16 @@ pytest --cov=ctgomartini
 | `tests/unit/` | Unit tests for individual functions |
 | `tests/integration/` | Integration tests |
 | `tests/e2e/` | End-to-end workflow tests |
+
+### NumPy Version Compatibility
+
+**Required**: `numpy>=2.0, <2.4.0`
+
+**Note**: NumPy 2.4.0+ causes REMD simulations to fail with:
+```
+TypeError: only 0-dimensional arrays can be converted to Python scalars
+```
+This is due to changes in NumPy's array scalar handling that affect `openmmtools`.
 
 ### Vermouth Version Compatibility
 
