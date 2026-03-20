@@ -26,7 +26,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Python >= 3.12
 - OpenMM >= 8.1
-- vermouth >= 0.15.0
+- vermouth == 0.14.0
 - MDAnalysis >= 2.4
 - NumPy >= 2.0, < 2.4.0 (see [Known Issues](#known-issues))
 
@@ -40,7 +40,7 @@ conda create -n ctgomartini python=3.12 -y
 conda activate ctgomartini
 
 # Install core dependencies
-pip install MDAnalysis numpy==2.3.4 pandas matplotlib vermouth==0.14.0
+pip install MDAnalysis numpy==2.3.4 pandas matplotlib "vermouth==0.14.0"
 
 # Install OpenMM with CUDA support (adjust cuda-version as needed)
 conda install -c conda-forge openmm cuda-version=12 -y
@@ -48,17 +48,9 @@ conda install -c conda-forge openmm cuda-version=12 -y
 # Install CTGoMartini (editable mode for development)
 pip install -e .
 
-# Optional: Install Jupyter for tutorials
-conda install jupyter -y
-```
-
-### Multi-GPU REMD Installation
-
-For running replica exchange MD (REMD) across multiple GPUs:
-
-```bash
+# For running replica exchange MD (REMD) across multiple GPUs
 # Install MPI support for multi-GPU REMD
-conda install -c conda-forge mpi4py mpich=3 -y
+# conda install -c conda-forge mpi4py mpich=3 -y
 
 # Install openmmtools with compatible dependencies
 conda config --add channels omnia --add channels conda-forge

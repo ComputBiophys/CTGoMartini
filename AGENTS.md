@@ -125,7 +125,7 @@ conda create -n ctgomartini python=3.12 -y
 conda activate ctgomartini
 
 # Install core dependencies (note: NumPy < 2.4.0 required for REMD)
-pip install MDAnalysis "numpy>=2.0,<2.4.0" pandas matplotlib vermouth>=0.14.0
+pip install MDAnalysis "numpy>=2.0,<2.4.0" pandas matplotlib "vermouth==0.14.0"
 
 # Install OpenMM with CUDA support (adjust cuda-version as needed)
 conda install -c conda-forge openmm cuda-version=12 -y
@@ -192,9 +192,7 @@ This is due to changes in NumPy's array scalar handling that affect `openmmtools
 
 ### Vermouth Version Compatibility
 
-**Required**: `vermouth>=0.14.0`
-
-**Recommended**: `vermouth>=0.15.0`
+**Required**: `vermouth==0.14.0`
 
 **Note**: vermouth 0.15.0+ uses MDTraj by default for secondary structure assignment.
 
