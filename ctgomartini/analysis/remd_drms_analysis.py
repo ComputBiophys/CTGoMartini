@@ -23,9 +23,6 @@ from pathlib import Path
 from typing import List, Tuple, Optional
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend
-import matplotlib.pyplot as plt
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
@@ -544,91 +541,20 @@ def save_drms_results(
     print(f"Saved dRMS results to: {output_file}")
 
 
-def plot_drms_trajectory(
-    data_file: str | Path,
-    output_file: str | Path = "drms_trajectory.pdf",
-    dt: float = 0.005,
-    skip: int = 10,
-    colormap: list | None = None,
-    figsize: tuple | None = None,
-) -> None:
-    """
-    Plot dRMS trajectory for all replicas.
-    
-    Args:
-        data_file: Path to dRMS trajectory data file.
-        output_file: Path for output plot file.
-        dt: Time step in microseconds.
-        skip: Frame skipping interval for plotting.
-        colormap: Custom colormap for replicas.
-        figsize: Figure size tuple (width, height).
-    """
-    data = np.loadtxt(data_file)
-    
-    # Default colormap
-    if colormap is None:
-        colormap = [
-            np.array([255, 81, 81]) / 255,
-            np.array([0, 162, 210]) / 255,
-        ]
-
-    # Get number of replicas
-    n_replica = data.shape[1] - 1
-    
-    # Calculate time in microseconds
-    time = data[::skip, 0] * dt
-
-    # Create figure
-    if figsize is None:
-        figsize = (18, 2 * n_replica)
-    
-    fig, axes = plt.subplots(n_replica, 1, figsize=figsize, sharex=True)
-    fig.subplots_adjust(hspace=0)
-
-    if n_replica == 1:
-        axes = [axes]
-
-    labels = [f"Replica {i}" for i in range(n_replica)]
-
-    for i, ax in enumerate(axes):
-        color = colormap[i % len(colormap)]
-        ax.fill_between(time, data[::skip, i + 1], color=color, alpha=0.5)
-        ax.plot(time, data[::skip, i + 1], color=color, linewidth=0.5)
-        ax.set_ylabel(labels[i], fontsize=12)
-        ax.set_ylim(0, max(data[:, i + 1]) * 1.1)
-        ax.set_xlim(0, time[-1])
-
-    axes[-1].set_xlabel("Time (μs)", fontsize=14)
-    plt.tight_layout()
-    plt.savefig(output_file, dpi=300, bbox_inches="tight")
-    print(f"Saved plot to: {output_file}")
-
-
 def main():
     """Command-line interface for REMD dRMS analysis."""
     parser = argparse.ArgumentParser(
-        description="Calculate and plot REMD dRMS trajectories",
+        description="Calculate REMD dRMS trajectories",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     
-    # Mode selection
-    parser.add_argument(
-        "--mode",
-        choices=["calculate", "plot", "both"],
-        default="both",
-        help="Analysis mode: calculate dRMS, plot only, or both"
-    )
-    
-    # Input files for calculation
-    parser.add_argument("-nc", "--netcdf", help="NetCDF trajectory file")
+    # Input files
+    parser.add_argument("-nc", "--netcdf", required=True,
+                        help="NetCDF trajectory file")
     parser.add_argument("-c", "--checkpoint", default="output_checkpoint.nc",
                         help="Checkpoint NetCDF file")
-    parser.add_argument("-ref", "--ref-files", nargs="+",
+    parser.add_argument("-ref", "--ref-files", nargs="+", required=True,
                         help="Reference structure files (pdb/gro)")
-    
-    # Input for plotting
-    parser.add_argument("-f", "--file", default="dRMStraj_nc_StateA.dat",
-                        help="Input dRMS data file (for plot mode)")
     
     # Output
     parser.add_argument("-o", "--output", default="dRMSTraj_nc",
@@ -658,156 +584,113 @@ def main():
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
     
-    # Plotting parameters
-    parser.add_argument("--dt", type=float, default=0.005,
-                        help="Time step in microseconds (for plotting)")
-    parser.add_argument("--plot-skip", type=int, default=10,
-                        help="Frame skipping for plotting")
-    
     args = parser.parse_args()
     
-    if args.mode in ["calculate", "both"]:
-        if not args.netcdf or not args.ref_files:
-            print("Error: --netcdf and --ref-files required for calculation mode")
-            sys.exit(1)
-        
-        # Calculate reference distances for each state
-        print("\nCalculating reference distances...")
-        all_ref_distances = []
-        states_str = 'ABCDEFGHIJKLMN'
-        
-        for i, ref_file in enumerate(args.ref_files):
-            ref_dist = calculate_reference_distances(
-                ref_file,
-                selected_atom=args.sel,
-                min_dist=args.min_dist,
-                max_dist=args.max_dist,
-                min_diff=args.min_diff,
-                excl_res=args.excl_res
-            )
-            all_ref_distances.append(ref_dist)
-            print(f"  State {states_str[i]}: {len(ref_dist)} distance pairs")
-        
-        # Parse replica indices
-        if args.replicas == "all":
-            replica_indices = None
-        else:
-            replica_indices = np.array([int(x) for x in args.replicas.split(",")])
-        
-        # Get metadata once
-        extractor = PositionExtractor(args.netcdf, args.checkpoint)
-        try:
-            n_frames = extractor.n_frames
-            dt = extractor.dt
-            if replica_indices is None:
-                replica_indices = np.arange(extractor.n_replicas)
-        finally:
-            extractor.close()
-        
-        frame_indices = np.arange(0, n_frames, args.skip)
-        n_process_frames = len(frame_indices)
-        
-        # Determine workers and chunk size
-        num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
-        chunk_size = args.chunk_size
-        
-        print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
-        
-        # Determine chunk_size
-        if args.chunk_size is None and args.auto_chunk:
-            # Use the maximum pairs across all states for estimation
-            max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
-            chunk_size = _estimate_chunk_size(
-                n_process_frames=n_process_frames,
-                n_replicas=len(replica_indices),
-                n_pairs=max_pairs,
-                num_workers=num_workers,
-            )
-            mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
-            print(f"Auto-optimized chunk_size={chunk_size} "
-                  f"(~{_format_bytes(mem_per_chunk)} per chunk)")
-        elif args.chunk_size is not None:
-            chunk_size = args.chunk_size
-            max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
-            mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
-            print(f"Using specified chunk_size={chunk_size} "
-                  f"(~{_format_bytes(mem_per_chunk)} per chunk)")
-        else:
-            chunk_size = 100  # Default fallback
-            print(f"Using default chunk_size={chunk_size}")
-        
-        print(f"Using {num_workers} workers")
-        
-        # Prepare tasks for all states
-        tasks = []
-        for ref_dist in all_ref_distances:
-            for i in range(0, n_process_frames, chunk_size):
-                chunk_end = min(i + chunk_size, n_process_frames)
-                chunk_frame_indices = frame_indices[i:chunk_end].tolist()
-                tasks.append((
-                    args.netcdf,
-                    args.checkpoint,
-                    [ref_dist],
-                    chunk_frame_indices,
-                    replica_indices,
-                    dt
-                ))
-        
-        # Parallel process all chunks
-        start_time = time.time()
-        with multiprocessing.Pool(num_workers) as pool:
-            all_chunk_results = pool.starmap(_worker_process_chunk, tasks)
-        
-        # Organize results by state
-        n_states = len(all_ref_distances)
-        chunks_per_state = len(tasks) // n_states
-        
-        for state_idx in range(n_states):
-            print(f"\nSaving State {states_str[state_idx]}...")
-            state_chunks = all_chunk_results[
-                state_idx * chunks_per_state : (state_idx + 1) * chunks_per_state
-            ]
-            
-            times = np.concatenate([r[0][0] for r in state_chunks])
-            drms_data = np.vstack([r[0][1] for r in state_chunks])
-            
-            output_file = f"{args.output}_State{states_str[state_idx]}.dat"
-            save_drms_results(
-                times, drms_data, output_file,
-                args.netcdf, args.checkpoint, replica_indices
-            )
+    # Calculate reference distances for each state
+    print("\nCalculating reference distances...")
+    all_ref_distances = []
+    states_str = 'ABCDEFGHIJKLMN'
     
-    if args.mode in ["plot", "both"]:
-        # Plot for each state file
-        states_str = 'ABCDEFGHIJKLMN'
-        # Determine number of states to plot
-        if args.mode == "plot" and args.ref_files is None:
-            # Try to find existing state files
-            n_states = 0
-            for i in range(len(states_str)):
-                if os.path.exists(f"{args.output}_State{states_str[i]}.dat"):
-                    n_states += 1
-                else:
-                    break
-            if n_states == 0:
-                # Try default state files
-                for i in range(len(states_str)):
-                    if os.path.exists(f"dRMSTraj_nc_State{states_str[i]}.dat"):
-                        n_states += 1
-                    else:
-                        break
-        else:
-            n_states = len(args.ref_files) if args.ref_files else 1
+    for i, ref_file in enumerate(args.ref_files):
+        ref_dist = calculate_reference_distances(
+            ref_file,
+            selected_atom=args.sel,
+            min_dist=args.min_dist,
+            max_dist=args.max_dist,
+            min_diff=args.min_diff,
+            excl_res=args.excl_res
+        )
+        all_ref_distances.append(ref_dist)
+        print(f"  State {states_str[i]}: {len(ref_dist)} distance pairs")
+    
+    # Parse replica indices
+    if args.replicas == "all":
+        replica_indices = None
+    else:
+        replica_indices = np.array([int(x) for x in args.replicas.split(",")])
+    
+    # Get metadata once
+    extractor = PositionExtractor(args.netcdf, args.checkpoint)
+    try:
+        n_frames = extractor.n_frames
+        dt = extractor.dt
+        if replica_indices is None:
+            replica_indices = np.arange(extractor.n_replicas)
+    finally:
+        extractor.close()
+    
+    frame_indices = np.arange(0, n_frames, args.skip)
+    n_process_frames = len(frame_indices)
+    
+    # Determine workers and chunk size
+    num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
+    chunk_size = args.chunk_size
+    
+    print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
+    
+    # Determine chunk_size
+    if args.chunk_size is None and args.auto_chunk:
+        # Use the maximum pairs across all states for estimation
+        max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
+        chunk_size = _estimate_chunk_size(
+            n_process_frames=n_process_frames,
+            n_replicas=len(replica_indices),
+            n_pairs=max_pairs,
+            num_workers=num_workers,
+        )
+        mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
+        print(f"Auto-optimized chunk_size={chunk_size} "
+              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+    elif args.chunk_size is not None:
+        chunk_size = args.chunk_size
+        max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
+        mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
+        print(f"Using specified chunk_size={chunk_size} "
+              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+    else:
+        chunk_size = 100  # Default fallback
+        print(f"Using default chunk_size={chunk_size}")
+    
+    print(f"Using {num_workers} workers")
+    
+    # Prepare tasks for all states
+    tasks = []
+    for ref_dist in all_ref_distances:
+        for i in range(0, n_process_frames, chunk_size):
+            chunk_end = min(i + chunk_size, n_process_frames)
+            chunk_frame_indices = frame_indices[i:chunk_end].tolist()
+            tasks.append((
+                args.netcdf,
+                args.checkpoint,
+                [ref_dist],
+                chunk_frame_indices,
+                replica_indices,
+                dt
+            ))
+    
+    # Parallel process all chunks
+    start_time = time.time()
+    with multiprocessing.Pool(num_workers) as pool:
+        all_chunk_results = pool.starmap(_worker_process_chunk, tasks)
+    
+    # Organize results by state
+    n_states = len(all_ref_distances)
+    chunks_per_state = len(tasks) // n_states
+    
+    for state_idx in range(n_states):
+        print(f"\nSaving State {states_str[state_idx]}...")
+        state_chunks = all_chunk_results[
+            state_idx * chunks_per_state : (state_idx + 1) * chunks_per_state
+        ]
         
-        for i in range(n_states):
-            data_file = f"{args.output}_State{states_str[i]}.dat"
-            if os.path.exists(data_file):
-                plot_file = f"{args.output}_State{states_str[i]}.pdf"
-                print(f"\nPlotting {data_file}...")
-                plot_drms_trajectory(
-                    data_file, plot_file,
-                    dt=args.dt, skip=args.plot_skip
-                )
+        times = np.concatenate([r[0][0] for r in state_chunks])
+        drms_data = np.vstack([r[0][1] for r in state_chunks])
+        
+        output_file = f"{args.output}_State{states_str[state_idx]}.dat"
+        save_drms_results(
+            times, drms_data, output_file,
+            args.netcdf, args.checkpoint, replica_indices
+        )
 
 
 if __name__ == "__main__":
