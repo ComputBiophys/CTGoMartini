@@ -255,6 +255,14 @@ results = analyzer.analyze_trajectory('npt.pdb', 'md.xtc')
 - [ ] **Tutorial update**: Update tutorials for new CLI
 - [ ] **Contacts Generation**: The contacts are different between different versions
 
+### Known Issues / TODO
+
+- [ ] **remd_free_energy.py**: Segmentation fault when running with JAX/PyMBAR. 
+  - Workaround: Downgrade numpy to `numpy==2.3.4`
+  - Alternative: Use `pymbar.MBAR` directly instead of `ReplicaExchangeAnalyzer`
+- [ ] **REMD simulation**: `only 0-dimensional arrays can be converted to Python scalars` error with certain numpy/openmmtools versions
+  - Workaround: Downgrade numpy to `numpy==2.3.4`
+
 ## Citation
 
 If you use CTGoMartini in your research, please cite:
