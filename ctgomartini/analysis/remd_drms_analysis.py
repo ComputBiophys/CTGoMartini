@@ -140,7 +140,10 @@ class PositionExtractor:
         atom_indices: np.ndarray
     ) -> np.ndarray:
         """
-        Get positions for multiple frames, replicas, and atoms in one read.
+        Get positions for multiple frames, replicas, and atoms.
+        
+        Uses frame-by-frame reading which is efficient for NetCDF4 and allows
+        reading arbitrary combinations of frames, replicas, and atoms.
         
         Args:
             frame_indices: Array of frame indices
@@ -153,10 +156,6 @@ class PositionExtractor:
         trajectory_storage = self._reporter._storage_checkpoint
         var = trajectory_storage.variables['positions']
         
-        # NetCDF4 has limited fancy indexing support
-        # Strategy: Read full slice for frames, then index replicas and atoms in numpy
-        # This minimizes I/O while working within netCDF4 constraints
-        
         n_frames = len(frame_indices)
         n_replicas = len(replica_indices)
         n_atoms = len(atom_indices)
@@ -164,10 +163,10 @@ class PositionExtractor:
         # Pre-allocate result array
         positions = np.empty((n_frames, n_replicas, n_atoms, 3), dtype=np.float32)
         
-        # Read frame by frame (netCDF4 can handle list indexing for one dimension)
+        # Read frame by frame (netCDF4 supports list indexing for replicas/atoms)
         for i, f_idx in enumerate(frame_indices):
-            # Read all replicas and selected atoms for this frame
-            # netCDF4 supports integer list for one dimension
+            # For each frame, read all replicas and selected atoms
+            # netCDF4 supports: scalar, list, list, slice
             frame_data = var[f_idx, replica_indices.tolist(), atom_indices.tolist(), :]
             positions[i] = frame_data
         
