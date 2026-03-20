@@ -151,13 +151,27 @@ class PositionExtractor:
             Positions array (n_frames x n_replicas x n_atoms x 3) in Angstroms
         """
         trajectory_storage = self._reporter._storage_checkpoint
-        positions = trajectory_storage.variables['positions'][
-            frame_indices[:, None, None, None],
-            replica_indices[None, :, None, None],
-            atom_indices[None, None, :, None],
-            :
-        ] * 10.0  # Convert nm to Angstrom
-        return positions
+        var = trajectory_storage.variables['positions']
+        
+        # NetCDF4 has limited fancy indexing support
+        # Strategy: Read full slice for frames, then index replicas and atoms in numpy
+        # This minimizes I/O while working within netCDF4 constraints
+        
+        n_frames = len(frame_indices)
+        n_replicas = len(replica_indices)
+        n_atoms = len(atom_indices)
+        
+        # Pre-allocate result array
+        positions = np.empty((n_frames, n_replicas, n_atoms, 3), dtype=np.float32)
+        
+        # Read frame by frame (netCDF4 can handle list indexing for one dimension)
+        for i, f_idx in enumerate(frame_indices):
+            # Read all replicas and selected atoms for this frame
+            # netCDF4 supports integer list for one dimension
+            frame_data = var[f_idx, replica_indices.tolist(), atom_indices.tolist(), :]
+            positions[i] = frame_data
+        
+        return positions * 10.0  # Convert nm to Angstrom
     
     def get_positions_for_atom_groups(
         self,
