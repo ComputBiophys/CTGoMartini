@@ -64,7 +64,7 @@ replica_c2      = 0                             ; Basin energy offset C2
 ; REMD Output and Advanced Settings
 remd_output = output.nc                         ; Main NetCDF output file
 remd_checkpoint_interval = 5                    ; Checkpoint interval (iterations)
-remd_online_analysis_interval = 20000           ; Online analysis interval (iterations)
+remd_online_analysis_interval = 50           ; Online analysis interval (iterations)
 remd_mixing_scheme = swap-neighbors             ; Replica mixing: swap-neighbors or swap-all
 remd_reassign_velocities = no                   ; Reassign velocities at each move: yes or no
 

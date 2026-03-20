@@ -115,8 +115,8 @@ This generates `npt.gro` as the starting structure for REMD.
 - `replica_c1`: C1 parameter for each replica (kJ/mol), ranging from -480 to -80
 - `replica_c2`: C2 parameter (set to 0 for all replicas)
 - `replica_temp`: Temperature (constant 310K for all replicas - Hamiltonian REMD)
-- `replica_coupling`: Beta = 1/(kB*T), calculated as 1/300
-- `remd_unsampled_topfiles`: Single-state topologies for computing state populations
+- `replica_coupling`: Beta = 1/300
+- `remd_unsampled_topfiles`: Single-state topologies for predicting free energy profiles with different mixing parameters
 
 ---
 

@@ -398,9 +398,10 @@ class REMDRunner(SimulationRunner):
                     thermodynamic_states, sampler_states, reporter
                 )
 
+            total_steps = exchange_attempts * exchange_frequency
             print(f"\n[Production REMD]")
             print(f"  Time step: {simulation_time_step}")
-            print(f"  Iterations: {exchange_attempts}", flush=True)
+            print(f"  Iterations: {exchange_attempts} ({total_steps:,} steps)", flush=True)
 
             self.sampler.run()
 
@@ -416,6 +417,7 @@ class REMDRunner(SimulationRunner):
         """
         # Lazy import openmmtools to avoid import-time warnings
         _, _, ReplicaExchangeSampler = _import_openmmtools()
+        import openmmtools.mcmc
 
         if not os.path.exists(self.output_data):
             raise FileNotFoundError(
@@ -425,16 +427,36 @@ class REMDRunner(SimulationRunner):
 
         print(f"\n[Extend REMD] {self.output_data}")
 
-        # Create a new sampler and resume from storage
+        # Load sampler from storage
         self.sampler = ReplicaExchangeSampler.from_storage(self.output_data)
+        
+        # Set online analysis interval
+        self.sampler._online_analysis_interval = self.config.remd_online_analysis_interval
+
+        # Calculate total simulation parameters
+        total_simulation_time = self.config.nstep * self.config.dt * u.picosecond
+        simulation_time_step = self.config.dt * u.picosecond
+        simulation_steps = int(np.floor(total_simulation_time / simulation_time_step))
+        exchange_frequency = self.config.exc_freq
+        exchange_attempts = int(np.floor(simulation_steps / exchange_frequency))
 
         # Determine number of iterations to run
+        current_iteration = self.sampler.iteration
+        current_steps = current_iteration * exchange_frequency
+        
         if n_iterations is not None:
-            current_iteration = self.sampler.iteration
             target_iteration = current_iteration + n_iterations
-            print(f"  Progress: {current_iteration} → {target_iteration}")
-            self.sampler.run(n_iterations=n_iterations)
+            target_steps = target_iteration * exchange_frequency
+            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)")
+            self.sampler.extend(n_iterations=n_iterations)
         else:
-            # Run until completion (original target)
-            print("  Continuing to completion...")
-            self.sampler.run()
+            # Run until original target is reached
+            n_iter_remain = exchange_attempts - current_iteration
+            if n_iter_remain <= 0:
+                total_steps = exchange_attempts * exchange_frequency
+                print(f"  Simulation already complete: {current_iteration}/{exchange_attempts} iterations ({current_steps:,}/{total_steps:,} steps)")
+                return
+            target_iteration = current_iteration + n_iter_remain
+            target_steps = target_iteration * exchange_frequency
+            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)")
+            self.sampler.extend(n_iterations=n_iter_remain)

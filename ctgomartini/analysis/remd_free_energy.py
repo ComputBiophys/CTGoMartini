@@ -47,9 +47,19 @@ def load_free_energy_data(
     reporter = MultiStateReporter(str(output_file), open_mode="r")
     analyzer = ReplicaExchangeAnalyzer(reporter)
     
-    # Get free energy differences
-    f_ij, df_ij = analyzer.get_free_energy_differences()
+    # Get free energy differences using correct API
+    # get_free_energy() returns (f_i, df_i) - free energies relative to lowest
+    f_i, df_i = analyzer.get_free_energy()
     reporter.close()
+    
+    # Convert to matrix format for compatibility
+    n_states = len(f_i)
+    f_ij = np.zeros((n_states, n_states))
+    df_ij = np.zeros((n_states, n_states))
+    for i in range(n_states):
+        for j in range(n_states):
+            f_ij[i, j] = f_i[j] - f_i[i]
+            df_ij[i, j] = np.sqrt(df_i[i]**2 + df_i[j]**2)
     
     data = {
         "f_ij": f_ij,

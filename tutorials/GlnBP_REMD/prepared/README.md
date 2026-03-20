@@ -115,8 +115,8 @@ This generates `npt.gro` as the starting structure for REMD.
 - `replica_c1`: C1 parameter for each replica (kJ/mol), ranging from -480 to -80
 - `replica_c2`: C2 parameter (set to 0 for all replicas)
 - `replica_temp`: Temperature (constant 310K for all replicas - Hamiltonian REMD)
-- `replica_coupling`: Beta = 1/(kB*T), calculated as 1/300
-- `remd_unsampled_topfiles`: Single-state topologies for computing state populations
+- `replica_coupling`: Beta = 1/300
+- `remd_unsampled_topfiles`: Single-state topologies for predicting free energy profiles with different mixing parameters
 
 ---
 
@@ -130,7 +130,7 @@ run_ctgomartini -i remd.inp
 Output files:
 - `output.nc` - NetCDF file containing all replica trajectories and exchange information
 - `remd.log` - Log file with exchange statistics
-- `output.chk` - Checkpoint file for restarting
+- `output_checkpoint.nc` - Checkpoint file for restarting
 
 **Note:** REMD simulations are computationally intensive. The example uses 11 replicas, effectively running 11 parallel simulations with exchanges. For a 1 µs simulation, this is equivalent to 11 µs of aggregate sampling.
 
