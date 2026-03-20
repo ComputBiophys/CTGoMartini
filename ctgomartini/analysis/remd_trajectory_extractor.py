@@ -332,12 +332,20 @@ class REMDTrajectoryExtractor:
         # Write based on extension
         ext = Path(output).suffix.lower()
         
+        if not ext:
+            # Default to PDB if no extension
+            output = output + '.pdb'
+            ext = '.pdb'
+        
         if ext == '.pdb':
             self._write_pdb(positions, output, time_ps)
         elif ext == '.gro':
             self._write_gro(positions, output, time_ps)
         else:
-            raise ValueError(f"Unsupported format: {ext}")
+            raise ValueError(
+                f"Unsupported format '{ext}' for single frame. "
+                f"Use .pdb or .gro for single frame extraction."
+            )
         
         print(f"Saved frame {frame_idx} to {output}")
     
@@ -764,8 +772,15 @@ def main():
         
         output = args.output
         if os.path.isdir(output):
+            # Use pattern to determine filename
             ext = Path(args.pattern).suffix
+            if not ext:
+                ext = '.xtc'  # Default
             output = os.path.join(output, f"frame_{args.frame}{ext}")
+        else:
+            # If output is a file path, ensure it has proper extension
+            # save_frame will detect format from extension
+            pass
         
         extractor.save_frame(
             frame_idx=args.frame,
