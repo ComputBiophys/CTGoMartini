@@ -132,6 +132,77 @@ class PositionExtractor:
         trajectory_storage = self._reporter._storage_checkpoint
         positions = trajectory_storage.variables['positions'][frame_idx, replica_idx, :, :]
         return positions * 10.0  # Convert nm to Angstrom
+    
+    def get_positions_batch(
+        self,
+        frame_indices: np.ndarray,
+        replica_indices: np.ndarray,
+        atom_indices: np.ndarray
+    ) -> np.ndarray:
+        """
+        Get positions for multiple frames, replicas, and atoms in one read.
+        
+        Args:
+            frame_indices: Array of frame indices
+            replica_indices: Array of replica indices  
+            atom_indices: Array of atom indices
+            
+        Returns:
+            Positions array (n_frames x n_replicas x n_atoms x 3) in Angstroms
+        """
+        trajectory_storage = self._reporter._storage_checkpoint
+        positions = trajectory_storage.variables['positions'][
+            frame_indices[:, None, None, None],
+            replica_indices[None, :, None, None],
+            atom_indices[None, None, :, None],
+            :
+        ] * 10.0  # Convert nm to Angstrom
+        return positions
+    
+    def get_positions_for_atom_groups(
+        self,
+        atom_groups: List[np.ndarray],
+        frame_indices: np.ndarray,
+        replica_indices: np.ndarray
+    ) -> List[np.ndarray]:
+        """
+        Get positions for multiple atom groups with minimal I/O.
+        
+        Args:
+            atom_groups: List of arrays containing atom indices for each group
+            frame_indices: Array of frame indices to read
+            replica_indices: Array of replica indices to read
+            
+        Returns:
+            List of position arrays for each atom group, each with shape
+            (n_frames x n_replicas x n_atoms_in_group x 3)
+        """
+        unique_atom_indices = np.unique(np.concatenate(atom_groups))
+        
+        if len(unique_atom_indices) == 0:
+            print("Error: No atoms selected.")
+            return [np.empty((0, 4)) for _ in atom_groups]
+        
+        # Create mapping from original indices to compact indices
+        map_orig_to_compact = {
+            orig_idx: compact_idx 
+            for compact_idx, orig_idx in enumerate(unique_atom_indices)
+        }
+        group_indices_list = [
+            np.array([map_orig_to_compact[idx] for idx in atom_group])
+            for atom_group in atom_groups
+        ]
+        
+        # Single read for all unique atoms
+        positions = self.get_positions_batch(
+            frame_indices, replica_indices, unique_atom_indices
+        )
+        
+        # Extract positions for each group
+        return [
+            positions[:, :, group_indices, :]
+            for group_indices in group_indices_list
+        ]
 
 
 def calculate_reference_distances(
@@ -185,41 +256,73 @@ def calculate_reference_distances(
     return np.array(results)
 
 
-def calculate_drms_for_frame(
-    frame_idx: int,
+def _worker_process_chunk(
+    netcdf_path: str,
+    checkpoint_path: str,
+    ref_distances_list: List[np.ndarray],
+    frame_chunk_indices: List[int],
     replica_indices: np.ndarray,
-    extractor: PositionExtractor,
-    ref_distances: np.ndarray
-) -> Tuple[int, np.ndarray]:
+    dt: float
+) -> List[Tuple[np.ndarray, np.ndarray]]:
     """
-    Calculate dRMS for a single frame across specified replicas.
+    Worker function to process a chunk of frames and calculate dRMS.
+    
+    Creates its own PositionExtractor instance in the worker process to avoid
+    pickling issues with file handles.
     
     Args:
-        frame_idx: Frame index
-        replica_indices: Array of replica indices
-        extractor: PositionExtractor instance
-        ref_distances: Reference distances array
+        netcdf_path: Path to the NetCDF trajectory file
+        checkpoint_path: Path to the checkpoint file
+        ref_distances_list: List of reference distance arrays
+        frame_chunk_indices: List of frame indices to process
+        replica_indices: Array of replica indices to analyze
+        dt: Time step between frames (ps)
         
     Returns:
-        Tuple of (frame_idx, drms_values)
+        List of (times, drms) tuples for each reference state
     """
-    drms_values = np.zeros(len(replica_indices))
+    chunk_start = time.time()
+    extractor = PositionExtractor(netcdf_path, checkpoint_path)
+    n_states = len(ref_distances_list)
+    results = []
     
-    atom_i = ref_distances[:, 0].astype(int)
-    atom_j = ref_distances[:, 1].astype(int)
-    ref_dist = ref_distances[:, 2]
-    
-    for r_idx, replica_idx in enumerate(replica_indices):
-        positions = extractor.get_positions(frame_idx, replica_idx)
+    try:
+        # Prepare atom groups for batch reading
+        # Each state needs two atom groups: atom_i and atom_j
+        atom_groups = []
+        for ref_distances in ref_distances_list:
+            atom_groups.append(ref_distances[:, 0].astype(int))
+            atom_groups.append(ref_distances[:, 1].astype(int))
         
-        # Calculate distances
-        distances = np.linalg.norm(positions[atom_i] - positions[atom_j], axis=1)
+        frame_indices = np.array(frame_chunk_indices)
         
-        # Calculate dRMS
-        drms = np.sqrt(np.mean((distances - ref_dist) ** 2))
-        drms_values[r_idx] = drms
+        # Batch read all positions
+        positions_groups = extractor.get_positions_for_atom_groups(
+            atom_groups, frame_indices, replica_indices
+        )
+        
+        # Process each state
+        for state_idx in range(n_states):
+            pos_i = positions_groups[2 * state_idx]      # (n_frames, n_replicas, n_pairs, 3)
+            pos_j = positions_groups[2 * state_idx + 1]
+            ref_dist = ref_distances_list[state_idx][:, 2]
+            
+            # Calculate distances: (n_frames, n_replicas, n_pairs)
+            distances = np.linalg.norm(pos_i - pos_j, axis=-1)
+            
+            # Calculate dRMS: (n_frames, n_replicas)
+            drms = np.sqrt(np.mean((distances - ref_dist) ** 2, axis=-1))
+            
+            # Convert frame indices to time
+            times = frame_indices * dt
+            
+            results.append((times, drms))
+    finally:
+        extractor.close()
     
-    return frame_idx, drms_values
+    chunk_time = time.time() - chunk_start
+    print(f"  Frames {frame_chunk_indices[0]}-{frame_chunk_indices[-1]}: {chunk_time:.2f}s")
+    return results
 
 
 def calculate_trajectory_drms(
@@ -228,10 +331,11 @@ def calculate_trajectory_drms(
     ref_distances: np.ndarray,
     replica_indices: Optional[np.ndarray] = None,
     skip: int = 1,
-    num_workers: Optional[int] = None
+    num_workers: Optional[int] = None,
+    chunk_size: int = 100
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Calculate dRMS for entire trajectory.
+    Calculate dRMS for entire trajectory using parallel processing.
     
     Args:
         netcdf_file: Path to NetCDF file
@@ -239,51 +343,67 @@ def calculate_trajectory_drms(
         ref_distances: Reference distances
         replica_indices: Replica indices to analyze (None for all)
         skip: Process every N-th frame
-        num_workers: Number of parallel workers
+        num_workers: Number of parallel workers (default: CPU count)
+        chunk_size: Number of frames per worker task
         
     Returns:
         Tuple of (times, drms_array)
     """
+    # Get metadata first (single extractor for metadata)
     extractor = PositionExtractor(netcdf_file, checkpoint_file)
-    
     try:
         n_frames = extractor.n_frames
-        
+        dt = extractor.dt
         if replica_indices is None:
             replica_indices = np.arange(extractor.n_replicas)
-        
-        # Frame indices to process
-        frame_indices = np.arange(0, n_frames, skip)
-        n_process_frames = len(frame_indices)
-        
-        print(f"Processing {n_process_frames} frames (every {skip} of {n_frames})...")
-        print(f"Analyzing {len(replica_indices)} replicas")
-        
-        # Sequential processing (parallel requires pickling)
-        drms_results = np.zeros((n_process_frames, len(replica_indices)))
-        
-        start_time = time.time()
-        
-        for i, frame_idx in enumerate(frame_indices):
-            _, drms = calculate_drms_for_frame(
-                frame_idx, replica_indices, extractor, ref_distances
-            )
-            drms_results[i] = drms
-            
-            if (i + 1) % 100 == 0 or i == n_process_frames - 1:
-                elapsed = time.time() - start_time
-                fps = (i + 1) / elapsed
-                remaining = (n_process_frames - i - 1) / fps
-                print(f"  Processed {i+1}/{n_process_frames} frames "
-                      f"({fps:.1f} fps, {remaining:.0f}s remaining)")
-        
-        # Convert frame indices to time
-        times = frame_indices * extractor.dt
-        
-        return times, drms_results
-        
     finally:
         extractor.close()
+    
+    # Frame indices to process
+    frame_indices = np.arange(0, n_frames, skip)
+    n_process_frames = len(frame_indices)
+    
+    if n_process_frames == 0:
+        return np.array([]), np.array([])
+    
+    print(f"Processing {n_process_frames} frames (every {skip} of {n_frames})...")
+    print(f"Analyzing {len(replica_indices)} replicas")
+    
+    # Determine number of workers
+    if num_workers is None:
+        num_workers = multiprocessing.cpu_count()
+    num_workers = min(num_workers, n_process_frames)
+    
+    # Prepare tasks (chunk frames for parallel processing)
+    tasks = []
+    for i in range(0, n_process_frames, chunk_size):
+        chunk_idx_end = min(i + chunk_size, n_process_frames)
+        chunk_frame_indices = frame_indices[i:chunk_idx_end].tolist()
+        tasks.append((
+            netcdf_file,
+            checkpoint_file,
+            [ref_distances],  # Wrap in list for single state
+            chunk_frame_indices,
+            replica_indices,
+            dt
+        ))
+    
+    print(f"Using {num_workers} workers for {len(tasks)} chunks (chunk_size={chunk_size})")
+    
+    start_time = time.time()
+    
+    # Parallel processing
+    with multiprocessing.Pool(num_workers) as pool:
+        chunk_results = pool.starmap(_worker_process_chunk, tasks)
+    
+    # Combine results
+    all_times = np.concatenate([r[0][0] for r in chunk_results])
+    all_drms = np.vstack([r[0][1] for r in chunk_results])
+    
+    elapsed = time.time() - start_time
+    print(f"Total time: {elapsed:.1f}s ({n_process_frames/elapsed:.1f} fps)")
+    
+    return all_times, all_drms
 
 
 def save_drms_results(
@@ -415,7 +535,9 @@ def main():
     parser.add_argument("--skip", type=int, default=1,
                         help="Process every N-th frame")
     parser.add_argument("--num-workers", type=int, default=None,
-                        help="Number of parallel workers")
+                        help="Number of parallel workers (default: CPU count)")
+    parser.add_argument("--chunk-size", type=int, default=100,
+                        help="Frames per chunk for parallel processing")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
     
@@ -455,18 +577,60 @@ def main():
         else:
             replica_indices = np.array([int(x) for x in args.replicas.split(",")])
         
-        # Calculate dRMS for each state
-        for i, ref_dist in enumerate(all_ref_distances):
-            print(f"\nCalculating dRMS for State {states_str[i]}...")
-            times, drms_data = calculate_trajectory_drms(
-                args.netcdf,
-                args.checkpoint,
-                ref_dist,
-                replica_indices=replica_indices,
-                skip=args.skip
-            )
+        # Get metadata once
+        extractor = PositionExtractor(args.netcdf, args.checkpoint)
+        try:
+            n_frames = extractor.n_frames
+            dt = extractor.dt
+            if replica_indices is None:
+                replica_indices = np.arange(extractor.n_replicas)
+        finally:
+            extractor.close()
+        
+        frame_indices = np.arange(0, n_frames, args.skip)
+        n_process_frames = len(frame_indices)
+        
+        # Determine workers and chunk size
+        num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
+        chunk_size = args.chunk_size
+        
+        print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
+        print(f"Using {num_workers} workers, chunk_size={chunk_size}")
+        
+        # Prepare tasks for all states
+        tasks = []
+        for ref_dist in all_ref_distances:
+            for i in range(0, n_process_frames, chunk_size):
+                chunk_end = min(i + chunk_size, n_process_frames)
+                chunk_frame_indices = frame_indices[i:chunk_end].tolist()
+                tasks.append((
+                    args.netcdf,
+                    args.checkpoint,
+                    [ref_dist],
+                    chunk_frame_indices,
+                    replica_indices,
+                    dt
+                ))
+        
+        # Parallel process all chunks
+        start_time = time.time()
+        with multiprocessing.Pool(num_workers) as pool:
+            all_chunk_results = pool.starmap(_worker_process_chunk, tasks)
+        
+        # Organize results by state
+        n_states = len(all_ref_distances)
+        chunks_per_state = len(tasks) // n_states
+        
+        for state_idx in range(n_states):
+            print(f"\nSaving State {states_str[state_idx]}...")
+            state_chunks = all_chunk_results[
+                state_idx * chunks_per_state : (state_idx + 1) * chunks_per_state
+            ]
             
-            output_file = f"{args.output}_State{states_str[i]}.dat"
+            times = np.concatenate([r[0][0] for r in state_chunks])
+            drms_data = np.vstack([r[0][1] for r in state_chunks])
+            
+            output_file = f"{args.output}_State{states_str[state_idx]}.dat"
             save_drms_results(
                 times, drms_data, output_file,
                 args.netcdf, args.checkpoint, replica_indices
