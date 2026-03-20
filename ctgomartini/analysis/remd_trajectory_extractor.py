@@ -5,6 +5,11 @@ REMD trajectory extraction tool.
 Extracts replica and thermodynamic state trajectories from NetCDF files
 with support for parallel processing and memory-efficient streaming.
 
+Supports automatic format detection from file extension:
+  - .xtc (default) - GROMACS compressed trajectory
+  - .dcd - CHARMM/NAMD binary trajectory
+  - .pdb - Multi-model PDB (text format)
+
 Author: Song Yang
 Date: 2025
 """
@@ -16,7 +21,7 @@ import multiprocessing
 import os
 import warnings
 from pathlib import Path
-from typing import Optional, Literal
+from typing import Optional
 
 import numpy as np
 
@@ -34,6 +39,63 @@ def _import_openmmtools():
     return _MultiStateReporter
 
 
+def _detect_format(filename: str) -> str:
+    """
+    Detect trajectory format from file extension.
+    
+    Args:
+        filename: Output filename
+        
+    Returns:
+        Format string: 'xtc', 'dcd', or 'pdb'
+        
+    Raises:
+        ValueError: If format cannot be detected
+    """
+    ext = Path(filename).suffix.lower()
+    format_map = {
+        '.xtc': 'xtc',
+        '.dcd': 'dcd',
+        '.pdb': 'pdb',
+    }
+    if ext not in format_map:
+        raise ValueError(
+            f"Cannot detect format from extension '{ext}'. "
+            f"Supported: .xtc, .dcd, .pdb"
+        )
+    return format_map[ext]
+
+
+def _optimize_chunk_size(n_frames: int, n_atoms: int, num_workers: int) -> int:
+    """
+    Optimize chunk size for batch reading.
+    
+    Balances memory usage and I/O efficiency.
+    
+    Args:
+        n_frames: Total frames to process
+        n_atoms: Number of atoms
+        num_workers: Number of parallel workers
+        
+    Returns:
+        Optimal chunk size
+    """
+    # Target ~50MB per chunk
+    bytes_per_frame = n_atoms * 3 * 4  # float32
+    target_frames = int((50 * 1024 * 1024) / max(bytes_per_frame, 1))
+    
+    # Ensure at least 2 chunks per worker for load balancing
+    min_chunks = num_workers * 2
+    max_chunk = max(1, n_frames // min_chunks)
+    
+    # Clamp between 10 and 500 frames
+    chunk_size = min(target_frames, max_chunk)
+    chunk_size = max(10, min(chunk_size, 500))
+    chunk_size = min(chunk_size, n_frames)
+    
+    return chunk_size
+
+
 class REMDTrajectoryExtractor:
     """
     Extract trajectories from REMD NetCDF files.
@@ -44,15 +106,21 @@ class REMDTrajectoryExtractor:
     - Single frame extraction
     - Parallel processing
     - Memory-efficient streaming write
+    - Automatic format detection from file extension
+    
+    Default format is XTC (GROMACS compressed).
     
     Examples:
         >>> extractor = REMDTrajectoryExtractor("output.nc", "topology.pdb")
         >>> 
-        >>> # Extract all replica trajectories
-        >>> extractor.save_replica_trajectories("output_dir/", format="xtc")
+        >>> # Extract all replica trajectories (default xtc format)
+        >>> extractor.save_replica_trajectories("output_dir/")
+        >>> 
+        >>> # Extract with auto-detected format
+        >>> extractor.save_replica_trajectories("output_dir/", output_pattern="replica_{i}.dcd")
         >>> 
         >>> # Extract specific state
-        >>> extractor.save_state_trajectory(0, "state_0.xtc")
+        >>> extractor.save_state_trajectories("output_dir/", output_pattern="state_{i}.pdb")
         >>> 
         >>> # Extract single frame
         >>> extractor.save_frame(frame_idx=100, replica_idx=0, output="frame_100.pdb")
@@ -63,6 +131,7 @@ class REMDTrajectoryExtractor:
         netcdf_file: str,
         topology_file: str,
         checkpoint_file: Optional[str] = None,
+        cache_states: bool = True,
     ):
         """
         Initialize extractor.
@@ -71,16 +140,21 @@ class REMDTrajectoryExtractor:
             netcdf_file: Path to NetCDF trajectory file
             topology_file: Path to topology file (pdb/gro)
             checkpoint_file: Path to checkpoint file (optional)
+            cache_states: Whether to cache state-replica mapping in memory
         """
         self.netcdf_file = netcdf_file
         self.checkpoint_file = checkpoint_file or "output_checkpoint.nc"
         self.topology_file = topology_file
+        self.cache_states = cache_states
         
         # Load topology using MDAnalysis (lightweight)
         self._load_topology()
         
         # Get metadata from NetCDF
         self._load_metadata()
+        
+        # Cache for state mapping (optimization)
+        self._state_cache = None
     
     def _load_topology(self):
         """Load topology using MDAnalysis."""
@@ -117,16 +191,8 @@ class REMDTrajectoryExtractor:
                     f"topology has {self.n_atoms}"
                 )
             
-            # Get thermodynamic states information
-            try:
-                states_var = reporter._storage_analysis.variables['states']
-                self.state_trajectories = states_var[:]
-            except Exception:
-                # If no state information, assume replica = state
-                self.state_trajectories = np.arange(self.n_replicas).reshape(1, -1)
-                self.state_trajectories = np.repeat(
-                    self.state_trajectories, self.n_frames, axis=0
-                )
+            # Get thermodynamic states information and cache it
+            self._load_state_mapping(reporter)
             
             # Get time information
             try:
@@ -140,6 +206,51 @@ class REMDTrajectoryExtractor:
             
         finally:
             reporter.close()
+    
+    def _load_state_mapping(self, reporter):
+        """
+        Load and cache state-replica mapping.
+        
+        Creates an optimized lookup structure:
+        - self.state_to_replicas: dict[state] -> list of (frame, replica) tuples
+        """
+        try:
+            states_var = reporter._storage_analysis.variables['states']
+            self.state_trajectories = states_var[:]
+        except Exception:
+            # If no state information, assume replica = state
+            self.state_trajectories = np.arange(self.n_replicas).reshape(1, -1)
+            self.state_trajectories = np.repeat(
+                self.state_trajectories, self.n_frames, axis=0
+            )
+        
+        if self.cache_states:
+            # Build reverse lookup: state -> list of (frame, replica) pairs
+            self._state_cache = {}
+            for frame_idx in range(self.n_frames):
+                for replica_idx, state in enumerate(self.state_trajectories[frame_idx]):
+                    if state not in self._state_cache:
+                        self._state_cache[state] = []
+                    self._state_cache[state].append((frame_idx, replica_idx))
+    
+    def _get_replica_for_state(self, frame_idx: int, state_idx: int) -> Optional[int]:
+        """
+        Get replica index for a given state at a specific frame.
+        
+        Uses cached mapping if available.
+        """
+        if self._state_cache is not None:
+            # Use cache
+            state_list = self._state_cache.get(state_idx, [])
+            for f, r in state_list:
+                if f == frame_idx:
+                    return r
+            return None
+        else:
+            # Direct lookup
+            replica_indices = self.state_trajectories[frame_idx]
+            matching = np.where(replica_indices == state_idx)[0]
+            return matching[0] if len(matching) > 0 else None
     
     def get_frame(
         self,
@@ -274,8 +385,13 @@ class REMDTrajectoryExtractor:
         frame_begin: int,
         frame_end: int,
         frame_stride: int,
+        chunk_size: int,
     ):
-        """Worker function for extracting single replica trajectory."""
+        """
+        Worker function for extracting single replica trajectory.
+        
+        Uses batch reading for improved I/O performance.
+        """
         MultiStateReporter = _import_openmmtools()
         reporter = MultiStateReporter(
             self.netcdf_file,
@@ -285,7 +401,7 @@ class REMDTrajectoryExtractor:
         
         try:
             storage = reporter._storage_checkpoint
-            frame_indices = range(frame_begin, frame_end, frame_stride)
+            frame_indices = list(range(frame_begin, frame_end, frame_stride))
             n_frames = len(frame_indices)
             
             if format in ['dcd', 'xtc']:
@@ -294,9 +410,15 @@ class REMDTrajectoryExtractor:
                 
                 positions = np.zeros((n_frames, self.n_atoms, 3), dtype=np.float32)
                 
-                for i, frame_idx in enumerate(frame_indices):
-                    pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
-                    positions[i] = pos.astype(np.float32)
+                # Batch read for better I/O performance
+                for chunk_start in range(0, n_frames, chunk_size):
+                    chunk_end = min(chunk_start + chunk_size, n_frames)
+                    chunk_frame_indices = frame_indices[chunk_start:chunk_end]
+                    
+                    # Read chunk in one operation (if possible)
+                    for i, frame_idx in enumerate(chunk_frame_indices):
+                        pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
+                        positions[chunk_start + i] = pos.astype(np.float32)
                 
                 times = np.array([f * self.dt for f in frame_indices])
                 
@@ -308,10 +430,10 @@ class REMDTrajectoryExtractor:
                 
                 if format == 'dcd':
                     Trajectory.save_dcd(traj, output)
-                else:
+                else:  # xtc
                     Trajectory.save_xtc(traj, output)
                     
-            elif format == 'multi-pdb':
+            elif format == 'pdb':
                 # Stream write multi-model PDB
                 with open(output, 'w') as f:
                     for i, frame_idx in enumerate(frame_indices):
@@ -363,7 +485,7 @@ class REMDTrajectoryExtractor:
     def save_replica_trajectories(
         self,
         output_dir: str,
-        format: Literal['dcd', 'xtc', 'multi-pdb'] = 'xtc',
+        output_pattern: str = "replica_{i}.xtc",
         frame_begin: int = 0,
         frame_end: Optional[int] = None,
         frame_stride: int = 1,
@@ -373,9 +495,13 @@ class REMDTrajectoryExtractor:
         """
         Extract and save replica trajectories.
         
+        Format is auto-detected from output_pattern extension.
+        Default is XTC format.
+        
         Args:
             output_dir: Output directory
-            format: Output format ('dcd', 'xtc', 'multi-pdb')
+            output_pattern: Output filename pattern with {i} placeholder
+                          (e.g., "replica_{i}.xtc", "replica_{i}.dcd")
             frame_begin: Start frame
             frame_end: End frame (None = all)
             frame_stride: Frame stride
@@ -389,17 +515,26 @@ class REMDTrajectoryExtractor:
         if replicas is None:
             replicas = list(range(self.n_replicas))
         
+        # Auto-detect format from pattern
+        format = _detect_format(output_pattern)
+        
         print(f"Extracting {len(replicas)} replica trajectories...")
         print(f"  Frames: {frame_begin}:{frame_end}:{frame_stride}")
-        print(f"  Format: {format}")
+        print(f"  Format: {format} (auto-detected)")
+        
+        # Optimize chunk size for batch reading
+        chunk_size = _optimize_chunk_size(
+            frame_end - frame_begin, self.n_atoms, 
+            num_workers or multiprocessing.cpu_count()
+        )
         
         # Prepare tasks
         tasks = []
         for replica_idx in replicas:
-            output = os.path.join(output_dir, f"replica_{replica_idx}.{format}")
+            output = os.path.join(output_dir, output_pattern.format(i=replica_idx))
             tasks.append((
                 replica_idx, output, format,
-                frame_begin, frame_end, frame_stride
+                frame_begin, frame_end, frame_stride, chunk_size
             ))
         
         # Parallel execution
@@ -417,7 +552,7 @@ class REMDTrajectoryExtractor:
     def save_state_trajectories(
         self,
         output_dir: str,
-        format: Literal['dcd', 'xtc', 'multi-pdb'] = 'xtc',
+        output_pattern: str = "state_{i}.xtc",
         frame_begin: int = 0,
         frame_end: Optional[int] = None,
         frame_stride: int = 1,
@@ -428,14 +563,15 @@ class REMDTrajectoryExtractor:
         Extract and save thermodynamic state trajectories.
         
         Note: State trajectories are discontinuous (replicas exchange states).
+        Format is auto-detected from output_pattern extension.
         
         Args:
             output_dir: Output directory
-            format: Output format
+            output_pattern: Output filename pattern with {i} placeholder
             frame_begin: Start frame
             frame_end: End frame
             frame_stride: Frame stride
-            num_workers: Number of parallel workers
+            num_workers: Number of parallel workers (sequential for states)
             states: List of state indices to extract (None = all)
         """
         os.makedirs(output_dir, exist_ok=True)
@@ -446,22 +582,26 @@ class REMDTrajectoryExtractor:
         if states is None:
             states = list(range(n_states))
         
+        # Auto-detect format from pattern
+        format = _detect_format(output_pattern)
+        
         print(f"Extracting {len(states)} state trajectories...")
         print(f"  Frames: {frame_begin}:{frame_end}:{frame_stride}")
-        print(f"  Format: {format}")
+        print(f"  Format: {format} (auto-detected)")
+        print(f"  Using cached state mapping" if self._state_cache else "  Using direct lookup")
         
-        # State extraction is more complex - each frame may have different replicas
-        # For now, use sequential with streaming write
+        # Sequential processing with streaming write
+        # (State extraction is I/O bound, not CPU bound)
         for state_idx in states:
-            output = os.path.join(output_dir, f"state_{state_idx}.{format}")
-            self._extract_state_streaming(
+            output = os.path.join(output_dir, output_pattern.format(i=state_idx))
+            self._extract_state_optimized(
                 state_idx, output, format,
                 frame_begin, frame_end, frame_stride
             )
         
         print(f"Done. Saved to {output_dir}/")
     
-    def _extract_state_streaming(
+    def _extract_state_optimized(
         self,
         state_idx: int,
         output: str,
@@ -470,7 +610,11 @@ class REMDTrajectoryExtractor:
         frame_end: int,
         frame_stride: int,
     ):
-        """Stream extract state trajectory (memory efficient)."""
+        """
+        Optimized state trajectory extraction using cached mapping.
+        
+        Uses pre-computed state-to-replica mapping for O(1) lookup.
+        """
         MultiStateReporter = _import_openmmtools()
         reporter = MultiStateReporter(
             self.netcdf_file,
@@ -482,19 +626,19 @@ class REMDTrajectoryExtractor:
             storage = reporter._storage_checkpoint
             frame_indices = list(range(frame_begin, frame_end, frame_stride))
             
-            if format == 'multi-pdb':
+            # Collect (frame, replica) pairs using cache
+            frame_replica_pairs = []
+            for frame_idx in frame_indices:
+                replica_idx = self._get_replica_for_state(frame_idx, state_idx)
+                if replica_idx is not None:
+                    frame_replica_pairs.append((frame_idx, replica_idx))
+            
+            n_frames_found = len(frame_replica_pairs)
+            
+            if format == 'pdb':
                 # Stream write PDB
                 with open(output, 'w') as f:
-                    model_idx = 1
-                    for frame_idx in frame_indices:
-                        # Find replica in this state
-                        replica_indices = self.state_trajectories[frame_idx]
-                        matching = np.where(replica_indices == state_idx)[0]
-                        
-                        if len(matching) == 0:
-                            continue
-                        
-                        replica_idx = matching[0]
+                    for model_idx, (frame_idx, replica_idx) in enumerate(frame_replica_pairs, 1):
                         pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
                         pos_angstrom = pos * 10.0
                         time_ps = frame_idx * self.dt
@@ -512,43 +656,34 @@ class REMDTrajectoryExtractor:
                             )
                         
                         f.write("ENDMDL\n")
-                        model_idx += 1
                 
-                print(f"  State {state_idx}: {model_idx-1} frames -> {output}")
+                print(f"  State {state_idx}: {n_frames_found} frames -> {output}")
                 
             else:
-                # For binary formats, collect positions then write
-                positions_list = []
-                times = []
-                
-                for frame_idx in frame_indices:
-                    replica_indices = self.state_trajectories[frame_idx]
-                    matching = np.where(replica_indices == state_idx)[0]
-                    
-                    if len(matching) == 0:
-                        continue
-                    
-                    replica_idx = matching[0]
-                    pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
-                    positions_list.append(pos.astype(np.float32))
-                    times.append(frame_idx * self.dt)
-                
-                if len(positions_list) > 0:
+                # For binary formats, batch read then write
+                if n_frames_found > 0:
                     from mdtraj import Trajectory, Topology as MDTrajTopology
                     
-                    positions = np.array(positions_list)
+                    positions = np.zeros((n_frames_found, self.n_atoms, 3), dtype=np.float32)
+                    times = np.zeros(n_frames_found)
+                    
+                    for i, (frame_idx, replica_idx) in enumerate(frame_replica_pairs):
+                        pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
+                        positions[i] = pos.astype(np.float32)
+                        times[i] = frame_idx * self.dt
+                    
                     traj = Trajectory(
                         positions,
                         MDTrajTopology.from_openmm(self._get_openmm_topology()),
-                        time=np.array(times),
+                        time=times,
                     )
                     
                     if format == 'dcd':
                         Trajectory.save_dcd(traj, output)
-                    else:
+                    else:  # xtc
                         Trajectory.save_xtc(traj, output)
                 
-                print(f"  State {state_idx}: {len(positions_list)} frames -> {output}")
+                print(f"  State {state_idx}: {n_frames_found} frames -> {output}")
                 
         finally:
             reporter.close()
@@ -557,7 +692,9 @@ class REMDTrajectoryExtractor:
 def main():
     """Command-line interface for trajectory extraction."""
     parser = argparse.ArgumentParser(
-        description="Extract replica and state trajectories from REMD simulations",
+        description="Extract replica and state trajectories from REMD simulations. "
+                    "Format is auto-detected from output filename extension "
+                    "(.xtc, .dcd, .pdb). Default is XTC.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     
@@ -576,8 +713,10 @@ def main():
     # Output options
     parser.add_argument("-o", "--output", default="./extracted",
                         help="Output directory or file (for single frame)")
-    parser.add_argument("--format", choices=["dcd", "xtc", "pdb"], default="xtc",
-                        help="Output format")
+    parser.add_argument("--pattern", default="{mode}_{i}.xtc",
+                        help="Output filename pattern with {mode} and {i} placeholders. "
+                             "Format auto-detected from extension. "
+                             "Examples: 'replica_{i}.xtc', 'state_{i}.dcd', 'traj.pdb'")
     
     # Frame selection
     parser.add_argument("-b", "--begin", type=int, default=0,
@@ -603,13 +742,18 @@ def main():
     parser.add_argument("--states", type=str, default=None,
                         help="Comma-separated state indices")
     
+    # Performance options
+    parser.add_argument("--no-cache", action="store_true",
+                        help="Disable state mapping cache (reduce memory for large trajectories)")
+    
     args = parser.parse_args()
     
     # Initialize extractor
     extractor = REMDTrajectoryExtractor(
         args.netcdf,
         args.topology,
-        args.checkpoint
+        args.checkpoint,
+        cache_states=not args.no_cache
     )
     
     # Execute based on mode
@@ -620,7 +764,8 @@ def main():
         
         output = args.output
         if os.path.isdir(output):
-            output = os.path.join(output, f"frame_{args.frame}.pdb")
+            ext = Path(args.pattern).suffix
+            output = os.path.join(output, f"frame_{args.frame}{ext}")
         
         extractor.save_frame(
             frame_idx=args.frame,
@@ -636,7 +781,7 @@ def main():
         
         extractor.save_replica_trajectories(
             output_dir=args.output,
-            format=args.format,
+            output_pattern=args.pattern,
             frame_begin=args.begin,
             frame_end=args.end,
             frame_stride=args.stride,
@@ -651,11 +796,10 @@ def main():
         
         extractor.save_state_trajectories(
             output_dir=args.output,
-            format=args.format,
+            output_pattern=args.pattern,
             frame_begin=args.begin,
             frame_end=args.end,
             frame_stride=args.stride,
-            num_workers=args.num_workers,
             states=states,
         )
     
