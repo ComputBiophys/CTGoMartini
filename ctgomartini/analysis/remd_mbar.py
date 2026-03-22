@@ -275,7 +275,8 @@ class FESAnalyzer:
         
         # Determine bin ranges
         if ranges is None:
-            padding = 0.05 * (cv_n.max() - cv_n.min())
+            # padding = 0.05 * (cv_n.max() - cv_n.min())  # Old padding
+            padding = 3 / n_bins * (cv_n.max() - cv_n.min())  # v2: scale with bins
             ranges = [cv_n.min() + padding, cv_n.max() - padding]
         
         # Bin the CV
