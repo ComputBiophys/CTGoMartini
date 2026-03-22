@@ -221,25 +221,168 @@ After the simulation completes, you will have:
 
 ### (8) Analysis
 
-dRMS test finished
-/home/ys/ys/CTGoMartini/TREK1/Data2/PIP2-test
-python -m ctgomartini.analysis.drms_analysis -s npt_revised.pdb -f md_rottrans_dt1ns.xtc -r Up/Up_cg.pdb Down/Down_cg.pdb -sel "name BB" -n 10 -prefix test
+REMD simulations generate rich trajectory data that requires specialized analysis tools. CTGoMartini provides several analysis modules for extracting replica trajectories, calculating observables, and computing free energy surfaces.
 
-remd_test
+#### Analysis Workflow Overview
 
-extract replica
-python -m ctgomartini.analysis.remd_trajectory_extractor --mode replica -nc output.nc -c output_checkpoint.nc -p npt.pdb 
+```
+┌─────────────────┐    ┌────────────────────┐    ┌──────────────────┐
+│  Extract        │───▶│  Calculate dRMS    │───▶│  MBAR Free Energy│
+│  Trajectories   │    │  per Replica       │    │  Analysis        │
+└─────────────────┘    └────────────────────┘    └──────────────────┘
+         │                       │                        │
+         ▼                       ▼                        ▼
+┌─────────────────┐    ┌────────────────────┐    ┌──────────────────┐
+│  Check Exchange │    │  Monitor Replica   │    │  Parameter Sweep │
+│  Efficiency     │    │  State Population  │    │  (Optional)      │
+└─────────────────┘    └────────────────────┘    └──────────────────┘
+```
 
-drms analysis
-python -m ctgomartini.analysis.remd_drms_analysis -nc output.nc -c output_checkpoint.nc --num-workers 20 -ref Open/Open_cg.pdb Closed/Closed_cg.pdb
+#### A. Extract Replica Trajectories
 
-exchange ratio 
+Extract individual replica trajectories from the NetCDF output:
+
+```bash
+python -m ctgomartini.analysis.remd_trajectory_extractor \
+    --mode replica \
+    -nc output.nc \
+    -c output_checkpoint.nc \
+    -p npt.pdb
+```
+
+**Output:** `replica_0.xtc`, `replica_1.xtc`, ... (one per replica)
+
+**Alternative - Extract by state:**
+```bash
+python -m ctgomartini.analysis.remd_trajectory_extractor \
+    --mode state \
+    -nc output.nc \
+    -c output_checkpoint.nc \
+    -p npt.pdb
+```
+
+#### B. Calculate dRMS (Distance Root Mean Square)
+
+dRMS measures the structural difference from reference states. This is essential for defining the collective variable (CV) used in free energy analysis.
+
+```bash
+python -m ctgomartini.analysis.remd_drms_analysis \
+    -nc output.nc \
+    -c output_checkpoint.nc \
+    --num-workers 20 \
+    -ref Open/Open_cg.pdb Closed/Closed_cg.pdb \
+    -prefix drms_analysis
+```
+
+**Key Parameters:**
+| Parameter | Description |
+|-----------|-------------|
+| `-nc` | NetCDF trajectory file from REMD |
+| `-c` | Checkpoint file (contains topology info) |
+| `-ref` | Reference structures for state A and B |
+| `--num-workers` | Parallel processing threads |
+| `-prefix` | Output file prefix |
+
+**Output Files:**
+- `drms_analysis_stateA.dat` - dRMS to state A (Open) for each frame
+- `drms_analysis_stateB.dat` - dRMS to state B (Closed) for each frame
+- Format: `Time | Replica_ID | dRMS_A | dRMS_B`
+
+#### C. Check Exchange Efficiency
+
+Monitor the exchange acceptance ratio between replicas:
+
+```bash
 python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
+```
 
-replica state
+**Output:**
+- Exchange matrix showing acceptance rates between all replica pairs
+- Optimal exchange ratio: 20-40% between adjacent replicas
+
+#### D. Monitor Replica State Population
+
+Track which conformational state each replica visits over time:
+
+```bash
 python -m ctgomartini.analysis.remd_replica_state -f output.nc
+```
 
-remd free analysis
+**Output:**
+- Time series of state assignments for each replica
+- Useful for checking sampling efficiency and transition events
+
+#### E. Free Energy Analysis (MBAR)
+
+The **MBAR (Multistate Bennett Acceptance Ratio)** method computes the free energy surface (FES) along the dRMS collective variable.
+
+**Using the Jupyter Notebook (Recommended):**
+
+Open `REMD_MBAR_Analysis.ipynb` for an interactive analysis workflow:
+
+```bash
+jupyter notebook REMD_MBAR_Analysis.ipynb
+```
+
+**Notebook Contents:**
+1. **Setup** - Import libraries, configure parameters
+2. **Initialize** - Load dRMS data, setup FES analyzer
+3. **Single State Analysis** - Analyze each replica independently
+4. **Parameter Sweep** - Convergence test with different parameters
+5. **Mixed State Analysis** - Combine EXP and HAM mixing methods
+6. **Results Summary** - Barrier heights, equilibrium constants, FES plots
+
+**Key Configuration in Notebook:**
+```python
+# CV range for histogram (adjust based on your system)
+FES_RANGES = [1.5, 11]  # nm
+
+# Barrier search boundaries within CV range
+LEFT_BOUND = 3    # nm (basin 1 region end)
+RIGHT_BOUND = 8   # nm (basin 2 region start)
+```
+
+**Outputs:**
+- Free Energy Surface (FES) plots
+- Energy barrier height (kJ/mol)
+- Equilibrium constant (Keq)
+- Basin free energies
+
+#### F. Additional Analysis Tools
+
+**Standard dRMS analysis (for single trajectory):**
+```bash
+python -m ctgomartini.analysis.drms_analysis \
+    -s npt.gro \
+    -f trajectory.xtc \
+    -r Open/Open_cg.pdb Closed/Closed_cg.pdb \
+    -sel "name BB" \
+    -n 10 \
+    -prefix analysis
+```
+
+**Extract specific frames:**
+```bash
+python -m ctgomartini.analysis.remd_trajectory_extractor \
+    --mode replica \
+    -nc output.nc \
+    -c output_checkpoint.nc \
+    -p npt.pdb \
+    -b 1000 -e 5000  # Extract frames 1000-5000
+```
+
+---
+
+### Summary of Analysis Files
+
+| File | Purpose | Tool |
+|------|---------|------|
+| `replica_*.xtc` | Individual replica trajectories | `remd_trajectory_extractor` |
+| `*_stateA.dat`, `*_stateB.dat` | dRMS time series | `remd_drms_analysis` |
+| `exchange_ratio.dat` | Exchange efficiency matrix | `remd_exchange_ratio` |
+| `replica_state.dat` | State population over time | `remd_replica_state` |
+| `FreeEnergy_EXP.pkl` | FES data (EXP mixing) | `REMD_MBAR_Analysis.ipynb` |
+| `FreeEnergy_HAM.pkl` | FES data (HAM mixing) | `REMD_MBAR_Analysis.ipynb` |
 
 ---
 
