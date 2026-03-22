@@ -82,7 +82,6 @@ CTGoMartini/
 │   │   └── pdb_validation.py
 │   │
 │   ├── analysis/             # Analysis tools
-│   │   ├── QValueAnalysis.py
 │   │   ├── drms_analysis.py
 │   │   ├── remd_drms_analysis.py
 │   │   ├── remd_exchange_ratio.py
@@ -112,7 +111,7 @@ CTGoMartini/
 | `simulation/` | Simulation execution | `SimulationRunner`, `MDRunner`, `REMDRunner`, `SimulationConfig`, `load_config` |
 | `cli/` | Command-line interface | `run_ctgomartini`, `ctgomartinize` |
 | `utils/` | I/O utilities and helpers | `write_itp`, `convert_map_format`, `convert_long_short_elastic_bonds` |
-| `analysis/` | Post-simulation analysis | `NativeContanceAnalysis`, `DRMSAnalyzer`, `remd_*` |
+| `analysis/` | Post-simulation analysis | `DRMSAnalyzer`, `remd_*` |
 | `data/` | Data files and templates | Force fields, membrane/soluble templates |
 
 ## Build and Installation
@@ -353,13 +352,6 @@ run_ctgomartini -i md.inp
 ### 6. Analysis
 
 ```bash
-# Native contact analysis
-python -m ctgomartini.analysis.QValueAnalysis \
-    -s npt.pdb -f md.xtc \
-    -r state1.pdb state2.pdb \
-    -sel "name BB" \
-    -prefix output_prefix
-
 # REMD analysis
 python -m ctgomartini.analysis.remd_replica_state -f output.nc
 ```

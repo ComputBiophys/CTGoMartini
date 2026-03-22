@@ -10,8 +10,6 @@ Supports automatic format detection from file extension:
   - .dcd - CHARMM/NAMD binary trajectory
   - .pdb - Multi-model PDB (text format)
 
-Author: Song Yang
-Date: 2025
 """
 
 from __future__ import annotations
@@ -539,7 +537,7 @@ class REMDTrajectoryExtractor:
         # Prepare tasks
         tasks = []
         for replica_idx in replicas:
-            output = os.path.join(output_dir, output_pattern.format(i=replica_idx))
+            output = os.path.join(output_dir, output_pattern.replace('{mode}', 'replica').format(i=replica_idx))
             tasks.append((
                 replica_idx, output, format,
                 frame_begin, frame_end, frame_stride, chunk_size
@@ -601,7 +599,7 @@ class REMDTrajectoryExtractor:
         # Sequential processing with streaming write
         # (State extraction is I/O bound, not CPU bound)
         for state_idx in states:
-            output = os.path.join(output_dir, output_pattern.format(i=state_idx))
+            output = os.path.join(output_dir, output_pattern.replace('{mode}', 'state').format(i=state_idx))
             self._extract_state_optimized(
                 state_idx, output, format,
                 frame_begin, frame_end, frame_stride

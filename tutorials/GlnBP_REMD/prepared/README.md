@@ -15,7 +15,7 @@ This tutorial uses GlnBP (Glutamine-binding protein) as an example, transitionin
 - OpenMM with CUDA support (recommended)
 - Python 2 (for `insane.py`)
 - Basic understanding of Multiple-basin Go-Martini (see GlnBP standard tutorial)
-- `openmmtools` for REMD (install with: `pip install openmmtools`)
+- `openmmtools` for REMD
 
 ---
 
@@ -46,15 +46,7 @@ ctgomartinize -s 1GGG_clean.pdb 1WDN_clean.pdb \
 
 **Key differences from standard MD:**
 - `-extract-states` flag generates single-state ITP files (`GlnBP_stateA.itp`, `GlnBP_stateB.itp`)
-- These are used as unsampled states for computing state populations
-
-**Note:** The topology files have been pre-generated with the following parameters:
-- Multiple-basin method: `exp`
-- Beta (coupling): `1/300`
-- C1: `-300`
-- C2: `0`
-
-For REMD, these parameters will be overridden by the replica configuration in `remd.inp`.
+- These are used as basic states for predicting free energies profiles at defined mixing parameters
 
 ---
 
@@ -99,48 +91,154 @@ For REMD, you need three system topology files:
 
 **A. Main system.top (multiple-basin)** - Edit to add includes:
 
+```
+#include "FF/martini_v3.0.0.itp"
+#include "GlnBP_params.itp"
+#include "GlnBP.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+GlnBP     1
+W      6109
+NA        67
+CL        64
+```
+
+**B. system_stateA.top (unsampled state A)**:
+
+```
+#include "FF/martini_v3.0.0.itp"
+#include "GlnBP_params.itp"
+#include "GlnBP_stateA.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+GlnBP     1
+W      6109
+NA        67
+CL        64
+```
+
+**C. system_stateB.top (unsampled state B)**:
+
+```
+#include "FF/martini_v3.0.0.itp"
+#include "GlnBP_params.itp"
+#include "GlnBP_stateB.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+GlnBP     1
+W      6109
+NA        67
+CL        64
+```
+
+---
+
+### (5) Equilibration
+
 Run equilibration:
 ```bash
+vi GlnBP.itp # Change beta, C1, and C2 to 1/300, -300, and 0, respectively.
 run_ctgomartini -i npt.inp
 ```
 
 This generates `npt.gro` as the starting structure for REMD.
 
-**B. REMD production (remd.inp)**
-
-
-
-**Key REMD parameters explained:**
-- `replica_count`: Number of replicas (11 in this example)
-- `replica_c1`: C1 parameter for each replica (kJ/mol), ranging from -480 to -80
-- `replica_c2`: C2 parameter (set to 0 for all replicas)
-- `replica_temp`: Temperature (constant 310K for all replicas - Hamiltonian REMD)
-- `replica_coupling`: Beta = 1/300
-- `remd_unsampled_topfiles`: Single-state topologies for predicting free energy profiles with different mixing parameters
-
 ---
 
 ### (6) Run REMD Simulation
+
+REMD simulations can be run in two modes:
+
+#### A. Single-GPU Mode (for testing or small systems)
 
 ```bash
 # Continue from equilibration
 run_ctgomartini -i remd.inp
 ```
 
-Output files:
-- `output.nc` - NetCDF file containing all replica trajectories and exchange information
-- `remd.log` - Log file with exchange statistics
-- `output_checkpoint.nc` - Checkpoint file for restarting
+#### B. Multi-GPU Mode (recommended for production)
 
-**Note:** REMD simulations are computationally intensive. The example uses 11 replicas, effectively running 11 parallel simulations with exchanges. For a 1 µs simulation, this is equivalent to 11 µs of aggregate sampling.
+For running REMD across multiple GPUs (e.g., 11 replicas on 4 GPUs):
+
+**Install MPI dependencies:**
+
+```bash
+conda install -c conda-forge mpi4py mpich=3 -y
+```
+
+**Generate MPI configuration files:**
+
+The `build_mpirun_configfile.py` script automatically detects your job scheduler (PBS, LSF, or SLURM) and generates the necessary configuration files for MPICH3:
+
+```bash
+python build_mpirun_configfile.py "run_ctgomartini -i remd.inp"
+```
+
+This creates two files:
+- `configfile`: MPI configuration with CUDA device assignments
+- `hostfile`: List of hosts for the MPI job
+
+**Run the REMD simulation:**
+
+using `mpiexec.hydra` (MPI launcher):
+```bash
+mpiexec.hydra -f hostfile -configfile configfile
+```
+
+**Note:** The script automatically handles:
+- CUDA_VISIBLE_DEVICES assignment for each replica
+- Host detection from PBS_GPUFILE, LSB_HOSTS, or SLURM_JOB_NODELIST
+- MPICH3-compatible configuration format
 
 ---
 
-### (7) Analysis
+### (7) REMD Output Files
 
-REMD analysis differs from standard MD. Key analyses include:
+After the simulation completes, you will have:
 
-**A. Extract replica trajectories:**
+- `output.nc` - NetCDF file containing all replica trajectories and exchange information
+- `output_real_time_analysis.yaml` - Real-time analysis data 
+- `output_checkpoint.nc` - Checkpoint file for restarting simulations
+
+**Note:** REMD simulations are computationally intensive. 
+
+---
+
+### (8) Analysis
+
+dRMS test finished
+/home/ys/ys/CTGoMartini/TREK1/Data2/PIP2-test
+python -m ctgomartini.analysis.drms_analysis -s npt_revised.pdb -f md_rottrans_dt1ns.xtc -r Up/Up_cg.pdb Down/Down_cg.pdb -sel "name BB" -n 10 -prefix test
+
+remd_test
+
+extract replica
+python -m ctgomartini.analysis.remd_trajectory_extractor --mode replica -nc output.nc -c output_checkpoint.nc -p npt.pdb 
+
+drms analysis
+python -m ctgomartini.analysis.remd_drms_analysis -nc output.nc -c output_checkpoint.nc --num-workers 20 -ref Open/Open_cg.pdb Closed/Closed_cg.pdb
+
+exchange ratio 
+python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
+
+
+
+#### A. Extract replica trajectories:
 
 ```bash
 python -m ctgomartini.analysis.remd_replica_state -f output.nc
@@ -148,16 +246,56 @@ python -m ctgomartini.analysis.remd_replica_state -f output.nc
 
 This generates `replica_*.xtc` files for each replica.
 
-**B. Compute state populations using unsampled states (MBAR):**
+
+#### B. Compute state populations using unsampled states (MBAR):
 
 ```bash
-python -m ctgomartini.analysis.remd_mbar_analysis \
-    -f output.nc \
-    -u system_stateA.top system_stateB.top \
-    -o populations.dat
+python -m ctgomartini.analysis.remd_free_energy -f output.nc --single -o free_energy_profile.pdf
 ```
 
-**C. dRMS analysis (similar to standard MD):**
+For comparing multiple REMD runs:
+```bash
+python -m ctgomartini.analysis.remd_free_energy \
+    -f output1.nc output2.nc output3.nc \
+    -l "Run 1" "Run 2" "Run 3" \
+    -o free_energy_comparison.pdf
+```
+
+Options:
+- `-f FILES`: One or more NetCDF files
+- `-l LABELS`: Labels for each run
+- `-o OUTPUT`: Output plot file
+- `-u FILE`: Unbiased sampling data for comparison
+- `--single`: Plot single profile instead of comparison
+
+#### C. Plot replica state trajectories:
+
+```bash
+python -m ctgomartini.analysis.remd_replica_state -f output.nc -o replica_states.pdf
+```
+
+To check state occupancies:
+```bash
+python -m ctgomartini.analysis.remd_replica_state -f output.nc --occupancies
+```
+
+Options:
+- `-f FILE`: Input NetCDF file
+- `-o OUTPUT`: Output plot file
+- `--dt DT`: Time step in microseconds (default: 0.005)
+- `--skip N`: Frame skip for plotting (default: 100)
+
+#### D. Exchange ratio analysis:
+
+```bash
+python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
+```
+
+Options:
+- `-f FILE`: Input NetCDF file
+- `-o OUTPUT`: Output file for exchange statistics
+
+#### E. dRMS analysis on replica trajectories:
 
 ```bash
 python -m ctgomartini.analysis.drms_analysis \
@@ -165,12 +303,53 @@ python -m ctgomartini.analysis.drms_analysis \
     -f replica_0.xtc \
     -r Open/Open_cg.pdb Closed/Closed_cg.pdb \
     -sel "name BB" \
-    -prefix dRMStrj
+    -prefix dRMStrj_replica0
 ```
 
-**D. Exchange ratio analysis:**
+For all replicas:
+```bash
+for i in {0..10}; do
+    python -m ctgomartini.analysis.drms_analysis \
+        -s npt.pdb \
+        -f replica_${i}.xtc \
+        -r Open/Open_cg.pdb Closed/Closed_cg.pdb \
+        -sel "name BB" \
+        -prefix dRMStrj_replica${i}
+done
+```
+
+#### F. MBAR parameter optimization analysis (if using remd_mbar_analysis):
 
 ```bash
-python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
+# Analyze selected states convergence
+python -m ctgomartini.analysis.remd_mbar_analysis \
+    -t selected_states -f selected_states_results.pkl
+
+# Analyze start ratio effects
+python -m ctgomartini.analysis.remd_mbar_analysis \
+    -t start_ratio -f start_ratio_results.pkl
+
+# Compute equilibrium constant
+python -m ctgomartini.analysis.remd_mbar_analysis \
+    -t selected_states -f results.pkl --keq --temp 310
 ```
+
+---
+
+### Key REMD Parameters in remd.inp
+
+| Parameter | Description | Example Value |
+|-----------|-------------|---------------|
+| `replica_count` | Number of replicas | 11 |
+| `replica_c1` | C1 parameter for each replica (kJ/mol) | -480 -440 ... -80 |
+| `replica_c2` | C2 parameter | 0 |
+| `replica_temp` | Temperature(s) in K | 310.0 |
+| `replica_coupling` | Beta = 1/300 | 1/300 |
+| `exc_freq` | Exchange attempt frequency (steps) | 250 |
+| `remd_unsampled_topfiles` | Single-state topologies for analysis | system_stateA.top system_stateB.top |
+
+
+
+
+
 

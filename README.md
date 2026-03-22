@@ -32,7 +32,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Standard Install
 
-For most users (single-GPU or CPU simulations):
+For most users:
 
 ```bash
 # Create conda environment
@@ -59,15 +59,6 @@ conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
 
 > **Note**: Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
 
-### Optional Dependencies
-
-```bash
-# PLUMED support for enhanced sampling
-conda install -c conda-forge openmm-plumed
-
-# DSSP for secondary structure assignment (alternative to MDTraj)
-conda install -c conda-forge dssp
-```
 
 ## Testing
 
@@ -176,7 +167,6 @@ CTGoMartini/
 │   │   └── pdb_validation.py
 │   │
 │   ├── analysis/             # Analysis tools
-│   │   ├── QValueAnalysis.py
 │   │   ├── drms_analysis.py
 │   │   └── remd_*.py         # REMD analysis scripts
 │   │
@@ -254,17 +244,6 @@ plumed      = no            ; PLUMED support
 ### 3. Analysis
 
 ```python
-# Native contact analysis
-from ctgomartini.analysis import NativeContanceAnalysis
-
-analyzer = NativeContanceAnalysis()
-analyzer.calculate_qvalues(
-    structure='npt.pdb',
-    trajectory='md.xtc',
-    references=['state1.pdb', 'state2.pdb'],
-    selection='name BB'
-)
-
 # dRMS analysis
 from ctgomartini.analysis.drms_analysis import DRMSAnalyzer
 
