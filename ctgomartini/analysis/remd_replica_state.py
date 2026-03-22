@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-REMD replica state trajectory analysis and plotting.
+REMD replica state trajectory analysis.
 
-Analyzes and visualizes replica state indices over time from replica exchange
-molecular dynamics simulations.
+Analyzes replica state indices over time from replica exchange
+molecular dynamics simulations and saves results to files.
 
 Author: Song Yang
 Date: 2025
@@ -15,7 +15,6 @@ import argparse
 from pathlib import Path
 
 import numpy as np
-import matplotlib.pyplot as plt
 from openmm import unit
 
 
@@ -28,6 +27,33 @@ def _import_openmmtools_state():
     """Lazy import openmmtools to avoid import-time warnings."""
     from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
     return MultiStateReporter, ReplicaExchangeAnalyzer
+
+
+def _get_dt_from_netcdf(output_file: str | Path) -> float | None:
+    """Try to get time step (dt) from NetCDF file.
+    
+    Args:
+        output_file: Path to REMD output NetCDF file.
+        
+    Returns:
+        Time step in ps, or None if cannot be determined.
+    """
+    try:
+        from openmmtools.multistate import MultiStateReporter
+        import openmm
+        
+        reporter = MultiStateReporter(str(output_file), open_mode="r")
+        try:
+            mcmove = reporter.read_mcmc_moves()[0]
+            time_interval = mcmove.n_steps * mcmove.timestep
+            dt = time_interval.value_in_unit(openmm.unit.picosecond)
+            reporter.close()
+            return dt
+        except Exception:
+            reporter.close()
+            return None
+    except Exception:
+        return None
 
 
 def load_replica_states(output_file: str | Path) -> np.ndarray:
@@ -50,60 +76,59 @@ def load_replica_states(output_file: str | Path) -> np.ndarray:
     return replica_state_indices
 
 
-def plot_replica_states(
+def save_replica_states(
     output_file: str | Path,
-    output_plot: str | Path = "replica_states.pdf",
-    dt: float = 0.005,
-    skip: int = 100,
-    figsize: tuple | None = None,
+    output_data: str | Path = "replica_states.dat",
+    dt: float | None = None,
 ) -> None:
-    """Plot replica state trajectories.
+    """Save replica state trajectories to file.
 
     Args:
         output_file: Path to REMD output NetCDF file.
-        output_plot: Path for output plot file.
-        dt: Time step in microseconds.
-        skip: Frame skipping interval for plotting.
-        figsize: Figure size tuple.
+        output_data: Path for output data file.
+        dt: Time step in picoseconds (ps). If None, will try to auto-detect
+            from NetCDF, otherwise defaults to 1.0 ps.
     """
+    # Try to auto-detect dt from NetCDF
+    dt_detected = _get_dt_from_netcdf(output_file)
+    
+    if dt is not None:
+        # User specified dt, use it but warn if different from detected
+        if dt_detected is not None and abs(dt - dt_detected) > 0.01:
+            print(f"Warning: Specified dt={dt} ps differs from detected dt={dt_detected:.2f} ps")
+        dt_use = dt
+    else:
+        # Use detected dt or default
+        if dt_detected is not None:
+            dt_use = dt_detected
+            print(f"Auto-detected time step: {dt_use:.2f} ps")
+        else:
+            dt_use = 1.0
+            print(f"Warning: Could not auto-detect time step from NetCDF. Using default: {dt_use:.2f} ps")
+    
     replica_state_indices = load_replica_states(output_file)
     n_replica = replica_state_indices.shape[0]
     
     # Calculate time
     n_frames = replica_state_indices.shape[1]
-    time = np.arange(0, n_frames * dt, dt * skip)[: n_frames // skip]
+    time = np.arange(0, n_frames * dt_use, dt_use)
 
-    # Create figure
-    if figsize is None:
-        figsize = (18, 1 * n_replica)
-    
-    fig, axes = plt.subplots(n_replica, 1, figsize=figsize, sharex=True)
-    fig.subplots_adjust(hspace=0)
-
-    if n_replica == 1:
-        axes = [axes]
-
-    colormap = plt.cm.viridis(np.linspace(0, 1, n_replica))
-
-    for i, ax in enumerate(axes):
-        states = replica_state_indices[i, ::skip]
-        ax.scatter(time, states, c=colormap[states.astype(int) % n_replica], 
-                   s=1, alpha=0.5)
-        ax.set_ylabel(f"R{i}", fontsize=10)
-        ax.set_ylim(-0.5, n_replica - 0.5)
-        ax.set_yticks(range(n_replica))
-
-    axes[-1].set_xlabel("Time (μs)", fontsize=14)
-    plt.tight_layout()
-    plt.savefig(output_plot, dpi=300, bbox_inches="tight")
-    print(f"Saved plot to: {output_plot}")
+    # Save to file
+    header = "Time(ps)" + "".join([f"\tReplica_{i}" for i in range(n_replica)])
+    data = np.column_stack([time, replica_state_indices.T])
+    np.savetxt(output_data, data, header=header, comments="", fmt="%.6f")
+    print(f"Saved replica state data to: {output_data}")
 
 
-def compute_state_occupancies(output_file: str | Path) -> dict:
+def compute_state_occupancies(
+    output_file: str | Path, 
+    output_file_path: str | Path | None = None
+) -> dict:
     """Compute state occupancies for each replica.
 
     Args:
         output_file: Path to REMD output NetCDF file.
+        output_file_path: Optional path to save occupancy results.
 
     Returns:
         Dictionary with occupancy statistics.
@@ -112,6 +137,10 @@ def compute_state_occupancies(output_file: str | Path) -> dict:
     n_replicas, n_frames = replica_state_indices.shape
     
     occupancies = {}
+    lines = ["# State Occupancy Statistics\n"]
+    lines.append(f"# Total frames: {n_frames}\n")
+    lines.append("#\n")
+    
     for i in range(n_replicas):
         states, counts = np.unique(replica_state_indices[i], return_counts=True)
         occupancies[f"replica_{i}"] = {
@@ -119,6 +148,15 @@ def compute_state_occupancies(output_file: str | Path) -> dict:
             "counts": counts.tolist(),
             "fractions": (counts / n_frames).tolist(),
         }
+        
+        lines.append(f"# Replica {i}:\n")
+        for state, count, frac in zip(states, counts, counts / n_frames):
+            lines.append(f"{i}\t{int(state)}\t{count}\t{frac:.6f}\n")
+    
+    if output_file_path is not None:
+        with open(output_file_path, "w") as f:
+            f.writelines(lines)
+        print(f"Saved occupancy statistics to: {output_file_path}")
     
     return occupancies
 
@@ -126,7 +164,7 @@ def compute_state_occupancies(output_file: str | Path) -> dict:
 def main():
     """Command-line interface for REMD replica state analysis."""
     parser = argparse.ArgumentParser(
-        description="Analyze and plot REMD replica state trajectories"
+        description="Analyze REMD replica state trajectories and save results"
     )
     parser.add_argument(
         "-f", "--file",
@@ -135,41 +173,35 @@ def main():
     )
     parser.add_argument(
         "-o", "--output",
-        default="replica_states.pdf",
-        help="Output plot file (default: replica_states.pdf)"
+        default="replica_states.dat",
+        help="Output data file (default: replica_states.dat)"
     )
     parser.add_argument(
         "--dt",
         type=float,
-        default=0.005,
-        help="Time step in microseconds (default: 0.005)"
-    )
-    parser.add_argument(
-        "--skip",
-        type=int,
-        default=100,
-        help="Frame skipping interval (default: 100)"
+        default=None,
+        help="Time step in picoseconds (default: auto-detect, fallback to 1.0)"
     )
     parser.add_argument(
         "--occupancies",
         action="store_true",
-        help="Print state occupancy statistics"
+        help="Compute and save state occupancy statistics"
+    )
+    parser.add_argument(
+        "--occupancy-output",
+        default="state_occupancies.dat",
+        help="Output file for occupancy statistics (default: state_occupancies.dat)"
     )
     
     args = parser.parse_args()
     
     if args.occupancies:
-        occ = compute_state_occupancies(args.file)
-        for replica, stats in occ.items():
-            print(f"\n{replica}:")
-            for state, frac in zip(stats["states"], stats["fractions"]):
-                print(f"  State {int(state)}: {frac:.3f}")
+        compute_state_occupancies(args.file, output_file_path=args.occupancy_output)
     else:
-        plot_replica_states(
+        save_replica_states(
             output_file=args.file,
-            output_plot=args.output,
+            output_data=args.output,
             dt=args.dt,
-            skip=args.skip,
         )
 
 

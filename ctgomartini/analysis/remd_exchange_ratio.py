@@ -26,11 +26,15 @@ def _import_openmmtools_reporter():
     return MultiStateReporter
 
 
-def ReportExchangeRatio(output_file: str | Path = 'output.nc') -> dict:
+def ReportExchangeRatio(
+    output_file: str | Path = 'output.nc',
+    output_txt: str | Path | None = None
+) -> dict:
     """Calculate and report replica exchange ratios.
 
     Args:
         output_file: Path to REMD output NetCDF file.
+        output_txt: Optional path to save exchange ratios to text file.
 
     Returns:
         Dictionary with exchange ratios for each replica pair.
@@ -45,12 +49,24 @@ def ReportExchangeRatio(output_file: str | Path = 'output.nc') -> dict:
     ratio = n_accepted_matrix.sum(axis=0) / (n_accepted_matrix.shape[0] / 2)
     
     results = {}
+    lines = ["# REMD Exchange Ratios\n"]
+    lines.append("# Replica Pair\tExchange Ratio\n")
+    
     for i in range(ratio.shape[0] - 1):
         j = i + 1
         results[f"{i}-{j}"] = float(ratio[i, j])
+        line = f"{i}-{j}\t{ratio[i, j]:.6f}\n"
+        lines.append(line)
         print(f'Exchange ratio between replica {i} and {j}: {ratio[i, j]:.4f}')
     
     reporter.close()
+    
+    # Save to file if output path is provided
+    if output_txt is not None:
+        with open(output_txt, "w") as f:
+            f.writelines(lines)
+        print(f"Saved exchange ratios to: {output_txt}")
+    
     return results
 
 
@@ -64,9 +80,14 @@ def main():
         default="output.nc",
         help="REMD output NetCDF file (default: output.nc)"
     )
+    parser.add_argument(
+        "-o", "--output",
+        default="exchange_ratios.dat",
+        help="Output file for exchange ratios (default: exchange_ratios.dat)"
+    )
     
     args = parser.parse_args()
-    ReportExchangeRatio(args.file)
+    ReportExchangeRatio(args.file, output_txt=args.output)
 
 
 if __name__ == "__main__":

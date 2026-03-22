@@ -200,7 +200,7 @@ class REMDTrajectoryExtractor:
                 self.n_steps_per_frame = mcmove.n_steps
                 self.dt = self.timestep * self.n_steps_per_frame
             except Exception:
-                self.dt = 5.0  # Default 5 ps
+                self.dt = 1.0  # Default 1 ps
             
         finally:
             reporter.close()
