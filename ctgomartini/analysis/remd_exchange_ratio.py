@@ -4,8 +4,6 @@ REMD exchange ratio analysis.
 
 Calculates and reports replica exchange ratios from REMD simulation output.
 
-Author: Song Yang
-Date: 2025
 """
 
 from __future__ import annotations

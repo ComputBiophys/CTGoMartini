@@ -91,7 +91,7 @@ def _run_md(args: argparse.Namespace, config: Any) -> int:
         Exit code (0 for success, non-zero for failure).
     """
     print("=" * 60)
-    print("CTGoMartini Standard MD Simulation")
+    print("CTGoMartini Standard MD")
     print("=" * 60)
 
     try:
@@ -99,10 +99,10 @@ def _run_md(args: argparse.Namespace, config: Any) -> int:
 
         # Determine whether to append or start fresh
         if args.append:
-            print("\nAppend mode: Continuing existing simulation")
+            print("\n[Mode] Continue (append)")
             runner.extend()
         else:
-            print("\nStarting new simulation")
+            print("\n[Mode] New simulation")
             runner.run()
 
         return 0
@@ -126,17 +126,15 @@ def _run_remd(args: argparse.Namespace, config: Any) -> int:
         Exit code (0 for success, non-zero for failure).
     """
     print("=" * 60)
-    print("CTGoMartini Replica Exchange MD Simulation")
+    print("CTGoMartini Replica Exchange MD")
     print("=" * 60)
 
     # Build replica parameters from config
-    # Calculate beta from temperature (beta = 1 / (kB * T)), kB = 0.008314 kJ/(mol*K)
-    kB = 0.008314  # Boltzmann constant in kJ/(mol*K)
-    beta = [1.0 / (kB * T) for T in config.replica_temp]
-    
+    # NOTE: For H-REMD, 'beta' is the coupling constant, not 1/(kB*T)
+    # Original code: beta = [1/300] * n_replicas
     replica_params: dict[str, Any] = {
         "molname": config.replica_molname,
-        "beta": beta,
+        "beta": config.replica_coupling,  # Use coupling constant from input
         "C1": config.replica_c1,
         "C2": config.replica_c2,
     }

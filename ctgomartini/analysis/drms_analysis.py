@@ -1,6 +1,4 @@
-# Update: 20250526
-# Author: Song Yang
-# Version: 4.0
+
 
 import numpy as np
 import argparse
@@ -147,7 +145,7 @@ def parse_arguments():
     """Parse and return command line arguments."""
     parser = argparse.ArgumentParser(
         description="Calculate dRMS between trajectory and references",
-        epilog='Example: python MBAnalysis_v4_argparse.py -s structure.pdb -f trajectory.xtc -r ref1.pdb ref2.pdb -sel "name BB" -n 10 -prefix dRMSTraj',
+        epilog='Example: python -m ctgomartini.analysis.drms_analysis -s structure.pdb -f trajectory.xtc -r ref1.pdb ref2.pdb -sel "name BB" -n 10 -prefix dRMSTraj',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
     

@@ -236,6 +236,12 @@ python -m ctgomartini.analysis.remd_drms_analysis -nc output.nc -c output_checkp
 exchange ratio 
 python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
 
+replica state
+python -m ctgomartini.analysis.remd_replica_state -f output.nc
+
+
+
+
 
 
 #### A. Extract replica trajectories:

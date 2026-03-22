@@ -1,0 +1,17 @@
+# # time(ps), dRMS values for each replica
+# # NetCDF: output.nc
+# # Checkpoint: output_checkpoint.nc
+# # Replicas: 0
+0.0 8.9068
+5.0 8.4966
+10.0 8.1764
+15.0 8.1677
+20.0 7.8179
+25.0 7.9311
+30.0 7.4103
+35.0 7.6317
+40.0 7.1539
+45.0 7.6520
+50.0 7.6376
+55.0 7.4619
+60.0 8.2191

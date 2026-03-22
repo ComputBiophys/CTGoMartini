@@ -7,8 +7,6 @@ molecular dynamics simulations and generates publication-quality plots.
 
 This module provides both calculation (from NetCDF) and plotting functionality.
 
-Author: Song Yang
-Date: 2025
 """
 
 from __future__ import annotations

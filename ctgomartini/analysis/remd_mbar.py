@@ -247,9 +247,9 @@ class FESAnalyzer:
                n_bins: int = 100, ranges: Optional[List[float]] = None,
                left_bound: float = 3, right_bound: float = 6) -> Dict:
         """
-        Analyze free energy surface.
+        Analyze free energy surface (FES).
         
-        Calculates the potential of mean force (PMF) as a function of CV.
+        Calculates the FES as a function of CV, normalized to basin1 = 0.
         
         Args:
             u_n: Reduced potential energy array.
@@ -263,8 +263,8 @@ class FESAnalyzer:
         Returns:
             Dictionary containing:
             - cv_values: Bin centers
-            - pmf: Potential of mean force (kJ/mol)
-            - pmf_uncertainty: PMF uncertainty
+            - fes: Free energy surface (kJ/mol), normalized to basin1 = 0
+            - fes_uncertainty: FES uncertainty
             - metrics: Dict with barrier_pos, barrier, basin positions, keq
         
         Raises:
@@ -275,9 +275,12 @@ class FESAnalyzer:
         
         # Determine bin ranges
         if ranges is None:
-            # padding = 0.05 * (cv_n.max() - cv_n.min())  # Old padding
-            padding = 3 / n_bins * (cv_n.max() - cv_n.min())  # v2: scale with bins
+            padding = 0.05 * (cv_n.max() - cv_n.min())  # 5% padding on each side
             ranges = [cv_n.min() + padding, cv_n.max() - padding]
+        
+        # Validate ranges
+        if ranges[0] >= ranges[1]:
+            raise ValueError(f"Invalid ranges: {ranges[0]} >= {ranges[1]}")
         
         # Bin the CV
         counts, bin_edges = np.histogram(cv_n, bins=n_bins, range=ranges)
@@ -288,25 +291,46 @@ class FESAnalyzer:
             u_n, cv_n, fes_type="histogram",
             histogram_parameters={"bin_edges": [bin_edges]}
         )
-        results = self.fes.get_fes(
-            bin_centers, reference_point="from-lowest",
-            uncertainty_method="analytical"
-        )
+        
+        # Get FES results with error handling for edge cases
+        try:
+            fes_results = self.fes.get_fes(
+                bin_centers, reference_point="from-lowest",
+                uncertainty_method="analytical"
+            )
+            results = fes_results
+        except KeyError as e:
+            # Handle PyMBAR KeyError when bins have no samples
+            # This can happen with certain parameter combinations
+            raise RuntimeError(
+                f"FES calculation failed: {e}. "
+                f"This often occurs when the data range is too narrow or "
+                f"some bins have no samples. Try adjusting left_bound/right_bound "
+                f"or using a different start_ratio."
+            ) from e
         
         # Convert to kJ/mol
         beta = 1 / (temperature * kB)
-        pmf = results["f_i"] / beta
-        pmf_uncertainty = results["df_i"] / beta
+        fes = results["f_i"] / beta
+        fes_uncertainty = results["df_i"] / beta
         
-        # Calculate metrics
+        # Normalize to left basin (basin1) as zero
         metrics = self.calculate_metrics(
-            bin_centers, pmf, temperature, left_bound, right_bound
+            bin_centers, fes, temperature, left_bound, right_bound
         )
+        
+        # Apply normalization: shift FES so basin1 is at 0
+        if not np.isnan(metrics["basin1_fes"]):
+            fes = fes - metrics["basin1_fes"]
+            # Update metrics after normalization
+            metrics = self.calculate_metrics(
+                bin_centers, fes, temperature, left_bound, right_bound
+            )
         
         return {
             "cv_values": bin_centers,
-            "pmf": pmf,
-            "pmf_uncertainty": pmf_uncertainty,
+            "fes": fes,
+            "fes_uncertainty": fes_uncertainty,
             "metrics": metrics
         }
     
@@ -455,19 +479,51 @@ class FESAnalyzer:
             params = full_defaults.copy()
             params[param_name] = value
             
-            self.initialize_fes(
-                g=params["g"],
-                length_ratio=params["length_ratio"],
-                start_point=params["start_point"],
-                start_ratio=params["start_ratio"]
-            )
-            
-            result = self.analyze_onestate(
-                selected_state=params["selected_state"],
-                **analyze_kwargs
-            )
-            results[value] = result
-            print(f"{param_name}={value}: {result['metrics']}")
+            try:
+                self.initialize_fes(
+                    g=params["g"],
+                    length_ratio=params["length_ratio"],
+                    start_point=params["start_point"],
+                    start_ratio=params["start_ratio"]
+                )
+                
+                result = self.analyze_onestate(
+                    selected_state=params["selected_state"],
+                    **analyze_kwargs
+                )
+                results[value] = result
+                print(f"{param_name}={value}: {result['metrics']}")
+            except Exception as e:
+                import traceback
+                print(f"\nWARNING: {param_name}={value} failed with error: {e}")
+                print(f"  Full parameters used: g={params['g']}, "
+                      f"length_ratio={params['length_ratio']}, "
+                      f"start_ratio={params['start_ratio']}, "
+                      f"selected_state={params['selected_state']}")
+                
+                # Provide suggestions for common issues
+                if "FES calculation failed" in str(e):
+                    print(f"  Suggestion: Try adjusting left_bound/right_bound in analyze_kwargs "
+                          f"(current: left_bound={analyze_kwargs.get('left_bound', 3)}, "
+                          f"right_bound={analyze_kwargs.get('right_bound', 6)})")
+                
+                # Store NaN results for failed parameters
+                results[value] = {
+                    "cv_values": np.array([]),
+                    "fes": np.array([]),
+                    "fes_uncertainty": np.array([]),
+                    "metrics": {
+                        "barrier_pos": float("nan"),
+                        "barrier": float("nan"),
+                        "basin1_pos": float("nan"),
+                        "basin2_pos": float("nan"),
+                        "basin1_fes": float("nan"),
+                        "basin2_fes": float("nan"),
+                        "keq": float("nan")
+                    },
+                    "error": str(e),
+                    "traceback": traceback.format_exc()
+                }
         
         return results
     
@@ -488,14 +544,14 @@ class FESAnalyzer:
             return pickle.load(f)
     
     @staticmethod
-    def calculate_barrier(cv_values: np.ndarray, pmf: np.ndarray,
+    def calculate_barrier(cv_values: np.ndarray, fes: np.ndarray,
                          left_bound: float = 3, right_bound: float = 6) -> Tuple[float, float]:
         """
         Calculate barrier position and height.
         
         Args:
             cv_values: Array of CV values.
-            pmf: Potential of mean force values.
+            fes: Free energy surface values.
             left_bound: Left boundary for barrier search.
             right_bound: Right boundary for barrier search.
         
@@ -506,46 +562,67 @@ class FESAnalyzer:
         if not np.any(mask):
             raise ValueError("No data points found within specified bounds")
         
-        barrier_idx = np.argmax(pmf[mask])
-        barrier_pos = cv_values[mask][barrier_idx]
-        barrier_height = pmf[mask][barrier_idx]
+        # Handle NaN values in FES
+        fes_masked = fes[mask]
+        cv_masked = cv_values[mask]
+        
+        # Filter out NaN values
+        valid_mask = ~np.isnan(fes_masked)
+        if not np.any(valid_mask):
+            raise ValueError("No valid (non-NaN) FES values within specified bounds")
+        
+        barrier_idx = np.argmax(fes_masked[valid_mask])
+        barrier_pos = cv_masked[valid_mask][barrier_idx]
+        barrier_height = fes_masked[valid_mask][barrier_idx]
         
         return float(barrier_pos), float(barrier_height)
     
     @staticmethod
-    def calculate_basins(cv_values: np.ndarray, pmf: np.ndarray,
+    def calculate_basins(cv_values: np.ndarray, fes: np.ndarray,
                         barrier_position: float) -> Tuple[float, float, float, float]:
         """
         Calculate basin positions and free energies relative to barrier.
         
         Args:
             cv_values: Array of CV values.
-            pmf: Potential of mean force values.
+            fes: Free energy surface values.
             barrier_position: Position dividing the two basins.
         
         Returns:
-            Tuple of (basin1_pos, basin2_pos, basin1_pmf, basin2_pmf).
+            Tuple of (basin1_pos, basin2_pos, basin1_fes, basin2_fes).
         """
         # Left basin (CV < barrier)
         left_basin = cv_values < barrier_position
         if not np.any(left_basin):
             raise ValueError("No data points found in left basin")
-        basin1_idx = np.argmin(pmf[left_basin])
-        basin1_pos = cv_values[left_basin][basin1_idx]
-        basin1_pmf = pmf[left_basin][basin1_idx]
+        
+        fes_left = fes[left_basin]
+        cv_left = cv_values[left_basin]
+        valid_left = ~np.isnan(fes_left)
+        if not np.any(valid_left):
+            raise ValueError("No valid FES values in left basin")
+        basin1_idx = np.argmin(fes_left[valid_left])
+        basin1_pos = cv_left[valid_left][basin1_idx]
+        basin1_fes = fes_left[valid_left][basin1_idx]
         
         # Right basin (CV > barrier)
         right_basin = cv_values > barrier_position
         if not np.any(right_basin):
             raise ValueError("No data points found in right basin")
-        basin2_idx = np.argmin(pmf[right_basin])
-        basin2_pos = cv_values[right_basin][basin2_idx]
-        basin2_pmf = pmf[right_basin][basin2_idx]
         
-        return float(basin1_pos), float(basin2_pos), float(basin1_pmf), float(basin2_pmf)
+        fes_right = fes[right_basin]
+        cv_right = cv_values[right_basin]
+        valid_right = ~np.isnan(fes_right)
+        if not np.any(valid_right):
+            raise ValueError("No valid FES values in right basin")
+        basin2_idx = np.argmin(fes_right[valid_right])
+        basin2_pos = cv_right[valid_right][basin2_idx]
+        basin2_fes = fes_right[valid_right][basin2_idx]
+        
+        return float(basin1_pos), float(basin2_pos), float(basin1_fes), float(basin2_fes)
     
     @staticmethod
-    def calculate_equilibrium_constant(cv_values: np.ndarray, pmf: np.ndarray,
+    def calculate_equilibrium_constant(cv_values: np.ndarray, fes: np.ndarray,
                                       barrier_position: float,
                                       temperature: float = 310) -> float:
         """
@@ -555,7 +632,7 @@ class FESAnalyzer:
         
         Args:
             cv_values: Array of CV values.
-            pmf: Potential of mean force values.
+            fes: Free energy surface values.
             barrier_position: Position dividing basins.
             temperature: Temperature for Boltzmann weighting (K).
         
@@ -568,22 +645,26 @@ class FESAnalyzer:
         left_basin = cv_values < barrier_position
         right_basin = cv_values > barrier_position
         
-        pop1 = np.exp(-beta * pmf[left_basin]).sum()
-        pop2 = np.exp(-beta * pmf[right_basin]).sum()
+        # Filter out NaN values
+        fes_left = fes[left_basin]
+        fes_right = fes[right_basin]
+        
+        pop1 = np.nansum(np.exp(-beta * fes_left))
+        pop2 = np.nansum(np.exp(-beta * fes_right))
         
         if pop2 == 0:
             return float("inf")
         return float(pop1 / pop2)
     
-    def calculate_metrics(self, cv_values: np.ndarray, pmf: np.ndarray,
+    def calculate_metrics(self, cv_values: np.ndarray, fes: np.ndarray,
                          temperature: float, left_bound: float = 3,
                          right_bound: float = 6) -> Dict:
         """
-        Calculate key metrics from PMF and CV values.
+        Calculate key metrics from FES and CV values.
         
         Args:
             cv_values: Array of CV values.
-            pmf: Potential of mean force values.
+            fes: Free energy surface values.
             temperature: Temperature for equilibrium constant (K).
             left_bound: Left boundary for barrier search.
             right_bound: Right boundary for barrier search.
@@ -594,13 +675,13 @@ class FESAnalyzer:
         """
         try:
             barrier_pos, barrier = self.calculate_barrier(
-                cv_values, pmf, left_bound, right_bound
+                cv_values, fes, left_bound, right_bound
             )
-            basin1_pos, basin2_pos, basin1_pmf, basin2_pmf = self.calculate_basins(
-                cv_values, pmf, barrier_pos
+            basin1_pos, basin2_pos, basin1_fes, basin2_fes = self.calculate_basins(
+                cv_values, fes, barrier_pos
             )
             keq = self.calculate_equilibrium_constant(
-                cv_values, pmf, barrier_pos, temperature
+                cv_values, fes, barrier_pos, temperature
             )
             
             return {
@@ -608,8 +689,8 @@ class FESAnalyzer:
                 "barrier": barrier,
                 "basin1_pos": basin1_pos,
                 "basin2_pos": basin2_pos,
-                "basin1_pmf": basin1_pmf,
-                "basin2_pmf": basin2_pmf,
+                "basin1_fes": basin1_fes,
+                "basin2_fes": basin2_fes,
                 "keq": keq
             }
         except Exception:
@@ -618,7 +699,7 @@ class FESAnalyzer:
                 "barrier": float("nan"),
                 "basin1_pos": float("nan"),
                 "basin2_pos": float("nan"),
-                "basin1_pmf": float("nan"),
-                "basin2_pmf": float("nan"),
+                "basin1_fes": float("nan"),
+                "basin2_fes": float("nan"),
                 "keq": float("nan")
             }
