@@ -381,14 +381,25 @@ class FESAnalyzer:
         EXP mixing method for multiple-basin potential.
         
         Energy = -(1/beta) * ln[ exp(-beta*(E1+C1)) + exp(-beta*(E2+C2)) ]
+        
+        Numerical stability is improved by subtracting the mean energy
+        to avoid large exponential values.
         """
         E1 = np.concatenate(self.subsampled_unsampled_energies[:, 0, :]) * (kB * temperature)
         E2 = np.concatenate(self.subsampled_unsampled_energies[:, 1, :]) * (kB * temperature)
         
+        # Avoid large exp values by subtracting mean energy (numerical stability)
+        E1_mean = E1.mean()
+        E1 = E1 - E1_mean
+        E2 = E2 - E1_mean
+        
         term1 = np.exp(-beta * (E1 + C1))
         term2 = np.exp(-beta * (E2 + C2))
         
-        return -(1 / beta) * np.log(term1 + term2) / (kB * temperature)
+        E = -(1 / beta) * np.log(term1 + term2)
+        E = E + E1_mean  # Add back the mean
+        
+        return E / (kB * temperature)
     
     def _ham_mixing(self, delta: float, C1: float, C2: float,
                    temperature: float) -> np.ndarray:
