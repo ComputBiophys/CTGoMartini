@@ -107,3 +107,9 @@ def remd_closed_ref(remd_test_data_dir: Path) -> Path:
 def remd_open_ref(remd_test_data_dir: Path) -> Path:
     """Path to open state reference structure."""
     return remd_test_data_dir / "open_cg.pdb"
+
+
+@pytest.fixture(scope="session")
+def remd_output_nc(remd_test_data_dir: Path) -> Path:
+    """Alias for remd_netcdf_file - Path to REMD output NetCDF file."""
+    return remd_test_data_dir / "output.nc"
