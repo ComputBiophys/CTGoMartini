@@ -56,3 +56,4 @@ Thumbs.db
 # But keep reference files in tests
 !tests/fixtures/**/*.xtc
 !tests/fixtures/**/*.trr
+tests/

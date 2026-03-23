@@ -16,10 +16,13 @@
 - [x] **Checkpoint Support**: Save/resume simulations
 - [x] **Constraint Tolerance**: Configurable in .inp files
 - [x] **Anisotropic Position Restraints**: x,y,z restraint support
-- [x] **PDB Validation**: Input file checking
+- [x] **PDB Validation**: Input structure compatibility checking with detailed error reporting
 - [x] **New Contact Types**: Contacts6_12, Contacts10_12
-- [x] **Parameter Searching**: Automated parameter optimization
+- [x] **Parameter Searching**: Automated parameter optimization via FESAnalyzer.parameter_sweep()
 - [x] **Tutorial update**: Update tutorials for new CLI
 - [x] **Contacts Generation**: The contacts are different between different versions
+- [x] **Analysis Module**: Comprehensive analysis tools including dRMS analysis, MBAR free energy calculation, REMD exchange ratio, and trajectory extraction
+- [x] **Multi-EXP System Support**: Fixed global parameters bug (beta, C1, C2) by hardcoding values into energy expressions
+- [x] **Command-line Fix**: Correct handling of dash-prefixed parameters in -other_params (e.g., "-nt")
 
 ## In Progress / Planned

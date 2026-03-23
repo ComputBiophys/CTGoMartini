@@ -26,7 +26,6 @@ CTGoMartini is a Python package for simulating protein conformational transition
 - **Matplotlib** (>=3.3.3): Plotting and visualization
 
 ### Optional Dependencies
-- **openmm-plumed** (>=2.0.0): PLUMED integration for enhanced sampling
 - **dssp** (<4.0): Optional, for secondary structure assignment. Not required if using MDTraj (default)
 
 ### Development Dependencies
@@ -343,7 +342,6 @@ platform    = CUDA          ; CPU/CUDA/OpenCL/Reference
 pcouple     = yes           ; Pressure coupling
 p_type      = isotropic     ; isotropic/membrane/anisotropic
 rest        = yes           ; Position restraints
-plumed      = no            ; PLUMED support
 ```
 
 ### 5. Run Simulation
@@ -416,7 +414,6 @@ from ctgomartini.topology.interactions import HarmonicBonds, ContactsLJ
 - Check input file syntax (semicolon comments, key=value format)
 - Verify topology file paths in system.top
 - Use `Reference` platform for debugging (slower but more precise)
-- Enable PLUMED logging for enhanced sampling diagnostics
 
 ## Migration Notes
 

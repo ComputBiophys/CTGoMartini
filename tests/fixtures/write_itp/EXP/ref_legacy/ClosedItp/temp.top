@@ -1,6 +1,0 @@
-#include "martini_v3.0.0_gbp_closed.itp"
-#include "gbp_closed.itp"
-[ system ]
-Temp
-[ molecules ]
-gbp_closed 1
