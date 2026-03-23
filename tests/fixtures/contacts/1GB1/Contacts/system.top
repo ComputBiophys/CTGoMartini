@@ -1,0 +1,15 @@
+#include "FF/martini_v3.0.0.itp"
+#include "protein_params.itp"
+#include "protein.itp"
+#include "FF/martini_v3.0.0_solvents_v1.itp"
+#include "FF/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+; name
+Insanely solvated protein.
+
+[ molecules ]
+protein        1
+W            13852
+NA             148
+CL             136

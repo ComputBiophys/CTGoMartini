@@ -1,0 +1,48 @@
+# This file was created Wed Aug 17 14:15:13 2022
+# Created by:
+#             :-) GROMACS - gmx traj, 2020.7 (double precision) (-:
+# 
+# Executable:   /usr/local/gromacs-2020.7-d/bin/gmx_d
+# Data prefix:  /usr/local/gromacs-2020.7-d
+# Working dir:  /home/ys/SongYang/test/Martini3-openmm/martini_openmm-martini3/tests/m2_chol2/gmx
+# Command line:
+#   gmx_d traj -f run -s run -of forces
+# gmx traj is part of G R O M A C S:
+#
+# Glycine aRginine prOline Methionine Alanine Cystine Serine
+#
+@    title "Force"
+@    xaxis  label "Time (ps)"
+@    yaxis  label "Force (kJ mol\S-1\N nm\S-1\N)"
+@TYPE xy
+@ view 0.15, 0.15, 0.75, 0.85
+@ legend on
+@ legend box on
+@ legend loctype view
+@ legend 0.78, 0.8
+@ legend length 2
+@ s0 legend "atom 1 X"
+@ s1 legend "atom 1 Y"
+@ s2 legend "atom 1 Z"
+@ s3 legend "atom 2 X"
+@ s4 legend "atom 2 Y"
+@ s5 legend "atom 2 Z"
+@ s6 legend "atom 3 X"
+@ s7 legend "atom 3 Y"
+@ s8 legend "atom 3 Z"
+@ s9 legend "atom 4 X"
+@ s10 legend "atom 4 Y"
+@ s11 legend "atom 4 Z"
+@ s12 legend "atom 5 X"
+@ s13 legend "atom 5 Y"
+@ s14 legend "atom 5 Z"
+@ s15 legend "atom 6 X"
+@ s16 legend "atom 6 Y"
+@ s17 legend "atom 6 Z"
+@ s18 legend "atom 7 X"
+@ s19 legend "atom 7 Y"
+@ s20 legend "atom 7 Z"
+@ s21 legend "atom 8 X"
+@ s22 legend "atom 8 Y"
+@ s23 legend "atom 8 Z"
+ 0	-59.9811	55.6368	-35.7874	0	0	0	-24.4922	-88.8176	43.6532	176.136	37.8481	14.872	0	0	0	0	0	0	-76.8402	48.6581	-66.7285	-14.8227	-53.3254	43.9906

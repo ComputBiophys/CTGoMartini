@@ -1,0 +1,53 @@
+mini_nstep  = 10000                             # Number of steps for minimization
+mini_Tol    = 1000.0                            # Minimization energy tolerance
+
+gen_vel     = yes                               # Generate initial velocities
+gen_temp    = 310                            # Temperature for generating initial velocities (K)
+
+nstep       = 200000                             # number of steps to run
+dt          = 0.010                             # time-step (ps)
+b_step      =                                  # set begininng step count
+
+input       = ions.gro
+topol       = system.top
+ichk        =                                   # Load check file
+irst        =
+nstout      = 1000                              # Writing output frequency (steps)
+nstdcd      = 1000                              # Writing coordinates trajectory frequency (steps)
+output      = npt.gro
+output_pdb  = npt.pdb
+odcd        = npt.dcd
+chk         = 
+rst         = npt.rst
+
+mbp         = yes
+beta        = 1/1000
+C1          = -50
+C2          = 0
+
+rest        = yes                               # Turn on/off restraints
+defines     = 
+fc          = 1000.0                            # Positional restraint force constant for protein backbone (kJ/mol/nm^2)
+rest_file   = restraints.txt
+gen_rest    = yes                               # Generate restraint file 
+atomname    = BB                               # Select atom name
+gen_rest_file = restraints.txt                  # Generated restraint file name
+
+platform    = CUDA
+precision   = single #mixed                             # CPU only has double precision
+temp        = 310                            # Temperature (K)
+fric_coeff  = 1                                 # Friction coefficient for Langevin dynamics
+nonbonded_cutoff = 1.1                          # nm
+epsilon_r   = 15.0                              # epsilon_r
+
+pcouple     = yes                               # Turn on/off pressure coupling
+p_ref       = 1.0                               # Pressure (Pref or Pxx, Pyy, Pzz; bar)
+p_type      = isotropic                         # MonteCarloBarostat type: isotropic, membrane
+p_XYMode    = XYIsotropic                       # For MonteCarloMembraneBarostat
+p_ZMode     = ZFree                             # For MonteCarloMembraneBarostat
+p_tens      = 0.0                               # Sulface tension for MonteCarloMembraneBarostat (dyne/cm)
+p_freq      = 100                               # Pressure coupling frequency (steps)
+
+
+
+

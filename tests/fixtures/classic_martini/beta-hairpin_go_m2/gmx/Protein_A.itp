@@ -1,0 +1,167 @@
+; MARTINI (elnedyn22) Coarse Grained topology file for "Protein_A"
+; Created by py version 2.5 
+; Using the following options:  -f beta-hairpin.pdb -o system-vaccum.top -x 1GB1-CG.pdb -dssp ./dssp -p backbone -ff elnedyn22 -go -goepsilon 9.414
+; Sequence:
+; GEWTYDDATKTFTVTE
+; Secondary Structure:
+; CEEEEETTTTEEEEEC
+
+[ moleculetype ]
+; Name         Exclusions
+Protein_A         1
+
+[ atoms ]
+    1    Qd     1   GLY    BB     1  1.0000 ; C
+    2   Nda     2   GLU    BB     2  0.0000 ; E
+    3    Qa     2   GLU   SC1     3 -1.0000 ; E
+    4   Nda     3   TRP    BB     4  0.0000 ; E
+    5   SC4     3   TRP   SC1     5  0.0000 ; E
+    6   SNd     3   TRP   SC2     6  0.0000 ; E
+    7   SC5     3   TRP   SC3     7  0.0000 ; E
+    8   SC5     3   TRP   SC4     8  0.0000 ; E
+    9   Nda     4   THR    BB     9  0.0000 ; E
+   10    P1     4   THR   SC1    10  0.0000 ; E
+   11   Nda     5   TYR    BB    11  0.0000 ; E
+   12   SC4     5   TYR   SC1    12  0.0000 ; E
+   13   SC4     5   TYR   SC2    13  0.0000 ; E
+   14   SP1     5   TYR   SC3    14  0.0000 ; E
+   15   Nda     6   ASP    BB    15  0.0000 ; E
+   16    Qa     6   ASP   SC1    16 -1.0000 ; E
+   17   Nda     7   ASP    BB    17  0.0000 ; T
+   18    Qa     7   ASP   SC1    18 -1.0000 ; T
+   19    N0     8   ALA    BB    19  0.0000 ; T
+   20   Nda     9   THR    BB    20  0.0000 ; T
+   21    P1     9   THR   SC1    21  0.0000 ; T
+   22   Nda    10   LYS    BB    22  0.0000 ; T
+   23    C3    10   LYS   SC1    23  0.0000 ; T
+   24    Qd    10   LYS   SC2    24  1.0000 ; T
+   25   Nda    11   THR    BB    25  0.0000 ; E
+   26    P1    11   THR   SC1    26  0.0000 ; E
+   27   Nda    12   PHE    BB    27  0.0000 ; E
+   28   SC5    12   PHE   SC1    28  0.0000 ; E
+   29   SC5    12   PHE   SC2    29  0.0000 ; E
+   30   SC5    12   PHE   SC3    30  0.0000 ; E
+   31   Nda    13   THR    BB    31  0.0000 ; E
+   32    P1    13   THR   SC1    32  0.0000 ; E
+   33   Nda    14   VAL    BB    33  0.0000 ; E
+   34    C2    14   VAL   SC1    34  0.0000 ; E
+   35   Nda    15   THR    BB    35  0.0000 ; E
+   36    P1    15   THR   SC1    36  0.0000 ; E
+   37    Qa    16   GLU    BB    37 -1.0000 ; C
+   38    Qa    16   GLU   SC1    38 -1.0000 ; C
+
+[ bonds ]
+; Backbone bonds
+    1     2      1   0.38062 150000 ; GLY(C)-GLU(E)
+    2     4      1   0.38114 150000 ; GLU(E)-TRP(E)
+    4     9      1   0.38112 150000 ; TRP(E)-THR(E)
+    9    11      1   0.38129 150000 ; THR(E)-TYR(E)
+   11    15      1   0.38191 150000 ; TYR(E)-ASP(E)
+   15    17      1   0.38122 150000 ; ASP(E)-ASP(T)
+   17    19      1   0.38136 150000 ; ASP(T)-ALA(T)
+   19    20      1   0.38130 150000 ; ALA(T)-THR(T)
+   20    22      1   0.38135 150000 ; THR(T)-LYS(T)
+   22    25      1   0.38097 150000 ; LYS(T)-THR(E)
+   25    27      1   0.38195 150000 ; THR(E)-PHE(E)
+   27    31      1   0.37972 150000 ; PHE(E)-THR(E)
+   31    33      1   0.38018 150000 ; THR(E)-VAL(E)
+   33    35      1   0.38074 150000 ; VAL(E)-THR(E)
+   35    37      1   0.38132 150000 ; THR(E)-GLU(C)
+; Sidechain bonds
+    2     3      1   0.31000  2500 ; GLU
+    4     5      1   0.25500 73000 ; TRP
+   11    12      1   0.33500  6000 ; TYR
+   11    13      1   0.33500  6000 ; TYR
+   22    23      1   0.25000 12500 ; LYS
+   23    24      1   0.30000  9700 ; LYS
+   27    28      1   0.34000  7500 ; PHE
+   27    29      1   0.34000  7500 ; PHE
+   37    38      1   0.31000  2500 ; GLU
+
+[ pairs ]
+    1    37      1   0.13298  0.00047
+    2    33      1   0.82688  0.01816
+    2    35      1   0.55342  0.00813
+    4    31      1   1.14994  0.03512
+    4    33      1   0.13483  0.00048
+    9    27      1   1.24430  0.04112
+    9    31      1   0.32954  0.00288
+   11    27      1   0.23890  0.00152
+   15    22      1   0.64406  0.01102
+   15    25      1   0.30690  0.00250
+
+[ constraints ]
+    5     6      1   0.22000 ; TRP
+    6     8      1   0.25000 ; TRP
+    8     7      1   0.28000 ; TRP
+    7     5      1   0.25500 ; TRP
+    5     8      1   0.35454 ; TRP
+    9    10      1   0.19500 ; THR
+   12    13      1   0.24000 ; TYR
+   12    14      1   0.31000 ; TYR
+   13    14      1   0.31000 ; TYR
+   15    16      1   0.25500 ; ASP
+   17    18      1   0.25500 ; ASP
+   20    21      1   0.19500 ; THR
+   25    26      1   0.19500 ; THR
+   28    29      1   0.24000 ; PHE
+   28    30      1   0.24000 ; PHE
+   29    30      1   0.24000 ; PHE
+   31    32      1   0.19500 ; THR
+   33    34      1   0.20000 ; VAL
+   35    36      1   0.19500 ; THR
+
+[ angles ]
+; Backbone angles
+    1     2     4      2  122.91964    40 ; GLY(C)-GLU(E)-TRP(E)
+    2     4     9      2  128.46350    40 ; GLU(E)-TRP(E)-THR(E)
+    4     9    11      2  135.21954    40 ; TRP(E)-THR(E)-TYR(E)
+    9    11    15      2  127.27096    40 ; THR(E)-TYR(E)-ASP(E)
+   11    15    17      2  102.27630    40 ; TYR(E)-ASP(E)-ASP(T)
+   15    17    19      2  84.38217    40 ; ASP(E)-ASP(T)-ALA(T)
+   17    19    20      2  93.62446    40 ; ASP(T)-ALA(T)-THR(T)
+   19    20    22      2  103.79305    40 ; ALA(T)-THR(T)-LYS(T)
+   20    22    25      2  94.42835    40 ; THR(T)-LYS(T)-THR(E)
+   22    25    27      2  122.41937    40 ; LYS(T)-THR(E)-PHE(E)
+   25    27    31      2  120.21237    40 ; THR(E)-PHE(E)-THR(E)
+   27    31    33      2  136.85175    40 ; PHE(E)-THR(E)-VAL(E)
+   31    33    35      2  131.97485    40 ; THR(E)-VAL(E)-THR(E)
+   33    35    37      2  124.88008    40 ; VAL(E)-THR(E)-GLU(C)
+; Backbone-sidechain angles
+; Sidechain angles
+    4     5     6      2    142    30 ; TRP
+    4     5     8      2    143    20 ; TRP
+    4     5     7      2    104    50 ; TRP
+   11    12    13      2     70   100 ; TYR
+   11    12    14      2    130    50 ; TYR
+   22    23    24      2    150    20 ; LYS
+   27    28    29      2     70   100 ; PHE
+   27    28    30      2    125   100 ; PHE
+
+[ dihedrals ]
+; Backbone dihedrals
+; Sidechain improper dihedrals
+    5     6     7     8      2    180   200 ; TRP
+
+#ifdef POSRES
+#ifndef POSRES_FC
+#define POSRES_FC 1000.00
+#endif
+ [ position_restraints ]
+      1    1    POSRES_FC    POSRES_FC    POSRES_FC
+      2    1    POSRES_FC    POSRES_FC    POSRES_FC
+      4    1    POSRES_FC    POSRES_FC    POSRES_FC
+      9    1    POSRES_FC    POSRES_FC    POSRES_FC
+     11    1    POSRES_FC    POSRES_FC    POSRES_FC
+     15    1    POSRES_FC    POSRES_FC    POSRES_FC
+     17    1    POSRES_FC    POSRES_FC    POSRES_FC
+     19    1    POSRES_FC    POSRES_FC    POSRES_FC
+     20    1    POSRES_FC    POSRES_FC    POSRES_FC
+     22    1    POSRES_FC    POSRES_FC    POSRES_FC
+     25    1    POSRES_FC    POSRES_FC    POSRES_FC
+     27    1    POSRES_FC    POSRES_FC    POSRES_FC
+     31    1    POSRES_FC    POSRES_FC    POSRES_FC
+     33    1    POSRES_FC    POSRES_FC    POSRES_FC
+     35    1    POSRES_FC    POSRES_FC    POSRES_FC
+     37    1    POSRES_FC    POSRES_FC    POSRES_FC
+#endif

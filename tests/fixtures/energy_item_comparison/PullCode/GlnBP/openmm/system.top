@@ -1,0 +1,24 @@
+#define GO_VIRT
+
+#include "OpenItp/martini_v3.0.0_gbp_open.itp"
+#include "OpenItp/gbp_open.itp"
+#include "OpenItp/martini_v3.0.0_phospholipids_v1.itp"
+#include "OpenItp/martini_v3.0.0_solvents_v1.itp"
+#include "OpenItp/martini_v3.0.0_ions_v1.itp"
+
+[ system ]
+Title of the system
+
+[ molecules ]
+gbp_open    1
+; NDX Solute 1 732
+; Charge of protein: -6.000000
+; NDX Membrane 733 0
+; Charge of membrane: 0.000000
+; Total charge: -6.000000
+; NDX Solvent 733 4438
+; NDX System 1 4438
+; "I mean, the good stuff is just INSANE" --Julia Ormond
+W             8465
+NA              93
+CL              90
