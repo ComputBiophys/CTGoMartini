@@ -62,3 +62,20 @@ run_ctgomartini -i md.inp
 ```bash
 python -m ctgomartini.analysis.drms_analysis -s npt.pdb -f md.xtc -r Open/Open_cg.pdb Closed/Closed_cg.pdb -sel "name BB" -prefix dRMStrj
 ```
+
+---
+
+### ⚠️ Important Note on Vermouth Version
+
+Starting from **vermouth >= 0.14.0**, the force field for proline (PRO) residues in helical conformations has been changed:
+- **Angle type**: Changed from G96 (type 2) to restricted bending (type 10)
+- **Effect**: Prevents unphysical 180° angles in prolines
+
+If you need to reproduce results **exactly as in the original publication**, you should use:
+```bash
+pip install vermouth==0.13.0
+```
+
+However, **vermouth 0.13.0 has limitations**:
+- Multi-chain protein Gō-model support is problematic
+- We recommend using vermouth >= 0.14.0 for new projects

@@ -60,7 +60,6 @@ conda install jupyter -y
 
 > **Important Notes**:
 > - `numpy<2.4.0` is **mandatory** for REMD - NumPy 2.4.0+ causes `TypeError` with `openmmtools`
-> - `vermouth==0.14.0` is pinned for force field consistency (proline fix in helices)
 > - `cuda-version=12` should match your NVIDIA driver; use `10.2`, `11`, or `12` as needed
 > - Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
 
