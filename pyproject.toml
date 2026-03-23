@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ctgomartini"
 version = "1.0.0"
-description = "CTGoMartini - A Python Library For Protein Conformational Transitions"
+description = "CTGoMartini - A Python Package for Protein Conformational Transitions and Protein-Lipid Interactions with Go-Martini models"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
-    {name = "Song Yang", email = "yangsong2015@pku.edu.cn"}
+    {name = "Song Yang", email = "songyang@fzu.edu.cn"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -22,7 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.14"
+keywords = ["molecular-dynamics", "coarse-grained", "martini", "go-model", "protein", "membrane", "openmm"]
 dependencies = [
     "MDAnalysis>=2.4",
     "numpy>=2.0,<2.4.0",
@@ -33,9 +34,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-plumed = ["openmm-plumed>=2.0.0"]
-dssp = ["dssp<4.0"]
-vermouth-warning = []  # Placeholder for vermouth compatibility notes
 dev = [
     "pytest>=7.0",
     "pytest-cov",
@@ -69,7 +67,7 @@ target-version = ['py312']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-    Tutorial
+    tutorials
 )/
 '''
 
@@ -120,5 +118,5 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 ignore_missing_imports = true
 exclude = [
-    "Tutorial/",
+    "tutorials/",
 ]

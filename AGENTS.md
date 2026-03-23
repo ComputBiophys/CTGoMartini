@@ -20,7 +20,7 @@ CTGoMartini is a Python package for simulating protein conformational transition
 ### Core Dependencies
 - **OpenMM** (>=8.1): Molecular dynamics simulation engine
 - **MDAnalysis** (>=2.4): Trajectory analysis
-- **vermouth** (>=0.15.0): Martinize2 integration for coarse-graining with native Go model support
+- **vermouth** (==0.14.0): Martinize2 integration for coarse-graining with native Go model support
 - **NumPy**: Numerical computations
 - **Pandas**: Data manipulation
 - **Matplotlib** (>=3.3.3): Plotting and visualization
@@ -119,30 +119,37 @@ CTGoMartini/
 ### Installation Commands
 
 ```bash
-# Create conda environment
+# 1. Create conda environment
 conda create -n ctgomartini python=3.12 -y
 conda activate ctgomartini
 
-# Install core dependencies (note: NumPy < 2.4.0 required for REMD)
+# 2. Install core dependencies (note: NumPy < 2.4.0 is required)
 pip install MDAnalysis "numpy>=2.0,<2.4.0" pandas matplotlib "vermouth==0.14.0"
 
-# Install OpenMM with CUDA support (adjust cuda-version as needed)
+# 3. Install OpenMM with CUDA support (adjust cuda-version as needed)
 conda install -c conda-forge openmm cuda-version=12 -y
 
-# Install CTGoMartini (editable mode for development)
+# 4. Install Jupyter for analysis notebooks
+conda install jupyter -y
+
+# 5. Install CTGoMartini
 pip install -e .
 
-# For multi-GPU REMD, also install:
+# 6. Install REMD dependencies (optional, only for replica exchange simulations)
+conda config --add channels omnia --add channels conda-forge
+conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
+
+# 7. Install testing framework
+pip install pytest pytest-cov
+
+# 8. For multi-GPU REMD, also install MPI support (optional)
 # conda install -c conda-forge mpi4py mpich=3 -y
-# conda config --add channels omnia --add channels conda-forge
-# conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
-
-# Install with optional dependencies
-pip install -e ".[plumed,dssp]"
-
-# Or install development dependencies
-pip install -e ".[dev]"
 ```
+
+**Important Version Constraints**:
+- **NumPy**: `>=2.0,<2.4.0` (REMD fails with 2.4.0+ due to openmmtools compatibility)
+- **vermouth**: `==0.14.0` (pinned for force field consistency - includes proline helix fix)
+- **CUDA**: Match your NVIDIA driver version (10.2, 11, or 12)
 
 ### Package Configuration (pyproject.toml)
 

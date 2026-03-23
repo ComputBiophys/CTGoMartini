@@ -43,7 +43,7 @@ conda install jupyter  -y
 conda config --add channels omnia --add channels conda-forge
 conda install openmmtools numpy<2.4.0 jax<=0.8.0 -y
 
-pip install test
+pip install pytest
 
 # 仅计算 dRMS
 python3 -m ctgomartini.analysis.remd_drms_analysis \
