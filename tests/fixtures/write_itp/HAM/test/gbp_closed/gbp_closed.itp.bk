@@ -1,14 +1,14 @@
 ; This file was generated using the following command:
-; /home/ys/.conda/envs/ctgomartini_test/bin/martinize2 -f /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/HAM/test/1WDN_1_clean.pdb -o system.top -x gbp_closed_cg.pdb -p backbone -ff martini3001 -cys auto -dssp -go /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/WriteItp/HAM/test/gbp_closed/contact_map_gbp_closed.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -go-res-dist 0 -name gbp_closed -noscfix
+; /home/ys/.conda/envs/ctgomartini_test/bin/martinize2 -f /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/write_itp/HAM/test/1WDN_1_clean.pdb -o system.top -x gbp_closed_cg.pdb -p backbone -ff martini3001 -cys auto -dssp -go /home/ys/CommonUse/Martini/CTGoMartini/tests/fixtures/write_itp/HAM/test/gbp_closed/contact_map_gbp_closed.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 -go-res-dist 0 -name gbp_closed -noscfix
 ; martinize with vermouth 0.14.0
 ; The following sequence of secondary structure 
 ; was used for the full system:
 ; CEEEEESSBTTTBEEETTEEESHHHHHHHHHHHHHTCCCEEEEECGGGHHHHHHTTSSSEEEEEEECCHHHHTTSEECSCCEEEEEEEEEETTCCSCSSSTTTTTCEEEEETTSHHHHHHHHHCCCSEEEEESSHHHHHHHHHTTSCSEEEEEHHHHHHHHHTTTTTTEEEEEEEEEEEEEEEEECTTCHHHHHHHHHHHHHHHHTSHHHHHHHHHHSCC
 
 ; Please cite the following papers:
-; Kroon, P C; Grunewald, F; Barnoud, J; van Tilburg, M; Souza, P C; Wassenaar, T A; Marrink, S J;  elife 2024; 10.7554/elife.90627.2
 ; McGibbon, R T; Beauchamp, K A; Harrigan, M P; Klein, C; Swails, J M; Hernández, C X; Schwantes, C R; Wang, L; Lane, T J; Pande, V S;  Biophysical Journal 2015; 10.1016/j.bpj.2015.08.015
 ; Souza, P C T; Alessandri, R; Barnoud, J; Thallmair, S; Faustino, I; Grünewald, F; Patmanidis, I; Abdizadeh, H; Bruininks, B M H; Wassenaar, T A; Kroon, P C; Melcr, J; Nieto, V; Corradi, V; Khan, H M; Domański, J; Javanainen, M; Martinez-Seara, H; Reuter, N; Best, R B; Vattulainen, I; Monticelli, L; Periole, X; Tieleman, D P; de Vries, A H; Marrink, S J;  Nature Methods 2021; 10.1038/s41592-021-01098-3
+; Kroon, P C; Grunewald, F; Barnoud, J; van Tilburg, M; Souza, P C; Wassenaar, T A; Marrink, S J;  elife 2024; 10.7554/elife.90627.2
 ; Souza, P C T; Araujo, L P B; Brasnett, C; Moreira, R A; Grunewald, F; Park, P; Wang, L; Razmazma, H; Borges-Araujo, A C; Cofas-Vargas, L F; Monticelli, L; Mera-Adasme, R; Melo, M N; Wu, S; Marrink, S J; Poma, A B; Thallmair, S;  Nature Communications 2025; 10.1038/s41467-025-58719-0
 
 #ifndef POSRES_FC
