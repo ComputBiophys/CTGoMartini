@@ -124,5 +124,6 @@ If you use CTGoMartini in your research, please cite:
 
 ```
 Yang, Song; Song, Chen*. CTGoMartini: A Python Package for Protein Conformational 
-Transitions and Protein-Lipid Interactions with Gō-Martini Models, 2026
+Transitions and Protein-Lipid Interactions with Gō-Martini Models, 2026.
+
 ```
