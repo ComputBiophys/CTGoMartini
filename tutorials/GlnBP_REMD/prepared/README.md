@@ -233,7 +233,7 @@ python -m ctgomartini.analysis.remd_drms_analysis \
     -c output_checkpoint.nc \
     --num-workers 20 \
     -ref Open/Open_cg.pdb Closed/Closed_cg.pdb \
-    -prefix dRMStraj_nc
+    -o dRMStraj_nc
 ```
 
 #### B. Check Exchange Efficiency

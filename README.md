@@ -70,14 +70,6 @@ Run the test suite to verify your installation:
 ```bash
 # Run all tests
 pytest tests/
-
-# Run specific test categories
-pytest tests/unit/        # Unit tests (fast, no external dependencies)
-pytest tests/integration/ # Integration tests (requires OpenMM)
-pytest tests/e2e/         # End-to-end tests (may take several minutes)
-
-# Run with coverage report
-pytest tests/ --cov=ctgomartini --cov-report=html
 ```
 
 ## Quick Start
