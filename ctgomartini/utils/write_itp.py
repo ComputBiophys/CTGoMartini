@@ -7,6 +7,7 @@ from molecule objects.
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Any
 
@@ -39,6 +40,11 @@ def write_itp(
         itp_file = f'{molecule_name}.itp'
     if params_file == 'default':
         params_file = f'{molecule_name}_params.itp'
+    
+    # Ensure params_file is in the same directory as itp_file if it's a relative path
+    itp_dir = os.path.dirname(itp_file)
+    if itp_dir and not os.path.isabs(params_file):
+        params_file = os.path.join(itp_dir, os.path.basename(params_file))
     
     # Generate main ITP file content
     itp_lines: list[str] = []
