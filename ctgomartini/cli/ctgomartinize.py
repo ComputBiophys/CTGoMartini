@@ -304,21 +304,6 @@ def MBGOMartinize(
     write_itp(mbmol)
     print(f"  ✓ Topology written: {mbmol_name}.itp, {mbmol_name}_params.itp")
 
-    # Extract single-state topologies if requested
-    if extract_states:
-        print(f"\n  [Extracting single-state topologies...")
-        try:
-            # Find the system.top file (should be in current directory)
-            system_top = working_path / 'system.top'
-            if system_top.exists():
-                state_files = extract_all_states(system_top, mbmol_name)
-                for state_file in state_files:
-                    print(f"    ✓ Extracted: {state_file}")
-            else:
-                print(f"    ! Warning: system.top not found, skipping state extraction")
-        except Exception as e:
-            print(f"    ! Warning: Failed to extract states: {e}")
-
     # Post-process: convert constraints to bonds in final topology
     if constraints2bonds is not None:
         print(f"\n  [Post-processing] Converting constraints to bonds (fc={constraints2bonds})...")
@@ -334,6 +319,21 @@ def MBGOMartinize(
                     print(f"    ℹ No constraints found in {mbmol_name}")
         except Exception as e:
             print(f"    ! Warning: Failed to convert constraints: {e}")
+
+    # Extract single-state topologies if requested
+    if extract_states:
+        print(f"\n  [Extracting single-state topologies...")
+        try:
+            # Find the system.top file (should be in current directory)
+            system_top = working_path / 'system.top'
+            if system_top.exists():
+                state_files = extract_all_states(system_top, mbmol_name)
+                for state_file in state_files:
+                    print(f"    ✓ Extracted: {state_file}")
+            else:
+                print(f"    ! Warning: system.top not found, skipping state extraction")
+        except Exception as e:
+            print(f"    ! Warning: Failed to extract states: {e}")
 
     print("\n" + "=" * 60)
     print("  FINISHED SUCCESSFULLY")
