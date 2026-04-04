@@ -393,7 +393,6 @@ class REMDRunner(SimulationRunner):
                 reporter = XTCMultiStateReporter(
                     self.output_data,
                     checkpoint_interval=self.config.remd_checkpoint_interval,
-                    xtc_output='yes',
                     xtc_dir=self.config.remd_xtc_dir,
                 )
             else:

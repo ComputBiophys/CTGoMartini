@@ -1,9 +1,11 @@
 """
 XTC MultiState Reporter module for CTGoMartini.
 
-Provides XTCMultiStateReporter class with two modes:
-- Standard mode: fully compatible with MultiStateReporter
-- XTC separate mode: stores trajectory to XTC files, checkpoint keeps only latest frame
+Provides XTCMultiStateReporter class for XTC separate storage:
+- XTC files: store all historical trajectories (one file per replica)
+- NetCDF checkpoint: keeps only latest frame for recovery (fixed size)
+
+This significantly reduces checkpoint file size while maintaining exact recovery.
 """
 
 from __future__ import annotations
@@ -13,38 +15,28 @@ from typing import Any
 
 try:
     from openmm import unit
-    from openmm.app import XTCFile
+    from openmm.app import XTCFile, Topology as OpenMMTopology, Element
 except ImportError:
     from simtk import unit
-    from simtk.app import XTCFile
+    from simtk.app import XTCFile, Topology as OpenMMTopology, Element
 
 import numpy as np
 
-# Import parent class from openmmtools
-try:
-    from openmmtools.multistate import MultiStateReporter
-    from openmmtools import states
-except ImportError:
-    MultiStateReporter = None  # Will be handled on delayed import
+from openmmtools.multistate import MultiStateReporter
+from openmmtools import states
 
 
 class XTCMultiStateReporter(MultiStateReporter):
     """
-    Dual-mode MultiStateReporter with XTC separate storage support.
+    MultiStateReporter with XTC separate storage.
 
-    Mode 1 (remd_xtc_output = 'no'):
-        Standard behavior, fully compatible with MultiStateReporter
-
-    Mode 2 (remd_xtc_output = 'yes'):
-        XTC separate storage + lightweight checkpoint
-        - XTC files: store all historical trajectories (one file per replica)
-        - NetCDF checkpoint: keeps only latest frame (for recovery)
+    Stores trajectory data to XTC files (one per replica) and keeps only
+    the latest frame in NetCDF checkpoint for recovery.
 
     Attributes:
-        _xtc_output: Whether to enable XTC separate storage
         _xtc_dir: Directory for XTC files
-        _xtc_handles: Cache of XTCFile handles
-        _is_lite_mode: Whether using lightweight checkpoint
+        _xtc_handles: Cache of XTCFile handles (replica_idx -> XTCFile)
+        _xtc_timestep: Timestep in ps for XTC files
     """
 
     def __init__(
@@ -56,7 +48,6 @@ class XTCMultiStateReporter(MultiStateReporter):
         analysis_particle_indices: tuple = (),
         position_interval: int = 1,
         velocity_interval: int = 1,
-        xtc_output: str = 'no',
         xtc_dir: str = 'xtc_trajs',
         **kwargs: Any,
     ) -> None:
@@ -71,7 +62,6 @@ class XTCMultiStateReporter(MultiStateReporter):
             analysis_particle_indices: Atom indices for additional analysis
             position_interval: Position write interval
             velocity_interval: Velocity write interval
-            xtc_output: 'yes' to enable XTC separate storage, 'no' for standard mode
             xtc_dir: Directory for XTC files (relative to storage directory)
             **kwargs: Additional arguments passed to parent class
         """
@@ -85,19 +75,13 @@ class XTCMultiStateReporter(MultiStateReporter):
             velocity_interval=velocity_interval,
         )
 
-        self._xtc_output = (xtc_output.lower() == 'yes')
-        self._xtc_dir = xtc_dir
-        self._xtc_handles: dict[int, XTCFile] = {}
-        self._xtc_timestep: float | None = None  # Inferred from mcmc_moves
+        # Setup XTC directory
+        storage_dir = os.path.dirname(storage) or '.'
+        self._xtc_dir = os.path.join(storage_dir, xtc_dir)
+        os.makedirs(self._xtc_dir, exist_ok=True)
 
-        if self._xtc_output:
-            # XTC mode: create directory
-            storage_dir = os.path.dirname(storage) or '.'
-            self._xtc_dir = os.path.join(storage_dir, xtc_dir)
-            os.makedirs(self._xtc_dir, exist_ok=True)
-            self._is_lite_mode = True
-        else:
-            self._is_lite_mode = False
+        self._xtc_handles: dict[int, XTCFile] = {}
+        self._xtc_timestep: float | None = None
 
     def write_sampler_states(
         self,
@@ -105,55 +89,11 @@ class XTCMultiStateReporter(MultiStateReporter):
         iteration: int,
     ) -> None:
         """
-        Write sampler states.
-
-        Behavior depends on _xtc_output mode:
-        - Standard mode: call parent class method
-        - XTC mode: separate storage to XTC and lightweight checkpoint
+        Write sampler states to XTC and lightweight checkpoint.
 
         Args:
             sampler_states: List of sampler states for all replicas
             iteration: Current iteration number
-        """
-        if self._xtc_output:
-            self._write_sampler_states_xtc_mode(sampler_states, iteration)
-        else:
-            super().write_sampler_states(sampler_states, iteration)
-
-    def read_sampler_states(
-        self,
-        iteration: int | None = None,
-        analysis_particles_only: bool = False,
-    ) -> list | None:
-        """
-        Read sampler states.
-
-        Args:
-            iteration: Iteration number (ignored in XTC mode)
-            analysis_particles_only: Whether to read only analysis particles
-
-        Returns:
-            List of sampler states, or None if not available
-        """
-        if self._xtc_output:
-            return self._read_sampler_states_xtc_mode(iteration)
-        else:
-            return super().read_sampler_states(iteration, analysis_particles_only)
-
-    # -------------------------------------------------------------------------
-    # XTC mode private methods
-    # -------------------------------------------------------------------------
-
-    def _write_sampler_states_xtc_mode(
-        self,
-        sampler_states: list,
-        iteration: int,
-    ) -> None:
-        """
-        XTC mode write.
-
-        1. Write to XTC files (all historical trajectories)
-        2. Write to lightweight NetCDF checkpoint (only latest frame + velocities)
         """
         # 1. Write to XTC (only on checkpoint interval)
         if self._on_checkpoint_interval(iteration):
@@ -164,8 +104,35 @@ class XTCMultiStateReporter(MultiStateReporter):
                     periodicBoxVectors=state.box_vectors,
                 )
 
-        # 2. Write to lightweight NetCDF checkpoint
+        # 2. Write to lightweight NetCDF checkpoint (always overwrite index 0)
         self._write_lite_checkpoint(sampler_states, iteration)
+
+    def read_sampler_states(
+        self,
+        iteration: int | None = None,
+        analysis_particles_only: bool = False,
+    ) -> list | None:
+        """
+        Read sampler states from lightweight checkpoint.
+
+        Always returns the latest saved frame (index 0), iteration is ignored.
+
+        Args:
+            iteration: Ignored in XTC mode (for API compatibility)
+            analysis_particles_only: Whether to read only analysis particles
+
+        Returns:
+            List of sampler states, or None if not available
+        """
+        if analysis_particles_only:
+            # Fall back to parent for analysis particles
+            return super().read_sampler_states(iteration, True)
+
+        return self._read_lite_checkpoint()
+
+    # -------------------------------------------------------------------------
+    # Private methods
+    # -------------------------------------------------------------------------
 
     def _write_lite_checkpoint(
         self,
@@ -173,7 +140,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         iteration: int,
     ) -> None:
         """
-        Write lightweight checkpoint (only latest frame).
+        Write lightweight checkpoint (only latest frame, fixed size).
 
         Checkpoint file has fixed dimension of 1, overwritten each time.
         """
@@ -203,7 +170,7 @@ class XTCMultiStateReporter(MultiStateReporter):
                 box = state.box_vectors.value_in_unit(unit.nanometers)
                 storage.variables['box_vectors'][0, i, :, :] = box
 
-        # Atomic marker: sync, write current_iteration, sync
+        # Atomic write: sync, write current_iteration, sync
         self.sync()
         storage.variables['current_iteration'][0] = iteration
         self.sync()
@@ -218,7 +185,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         n_replicas = len(sampler_states)
         n_atoms = sampler_states[0].n_particles
 
-        # Key: fixed size of 1 (not unlimited)
+        # Fixed size of 1 (not unlimited) - key for lightweight checkpoint
         storage.createDimension('iteration_lite', 1)
         storage.createDimension('replica', n_replicas)
         storage.createDimension('atom', n_atoms)
@@ -251,21 +218,17 @@ class XTCMultiStateReporter(MultiStateReporter):
         # Current iteration marker
         storage.createVariable('current_iteration', 'i4', ('scalar',))
 
-    def _read_sampler_states_xtc_mode(
-        self,
-        iteration: int | None = None,
-    ) -> list | None:
+    def _read_lite_checkpoint(self) -> list | None:
         """
         Read sampler states from lightweight checkpoint.
 
-        Always returns latest saved frame (index 0).
+        Always reads from index 0 (latest frame).
 
         Returns:
             List of sampler states
         """
         storage = self._storage_checkpoint
 
-        # Check if initialized
         if 'positions' not in storage.variables:
             return None
 
@@ -291,7 +254,6 @@ class XTCMultiStateReporter(MultiStateReporter):
             else:
                 box_vectors = None
 
-            # Create SamplerState
             sampler_states.append(
                 states.SamplerState(
                     positions=positions,
@@ -308,7 +270,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         state: states.SamplerState,
     ) -> XTCFile:
         """
-        Get or create XTCFile handle.
+        Get or create XTCFile handle for a replica.
 
         Args:
             replica_idx: Replica index
@@ -327,7 +289,7 @@ class XTCMultiStateReporter(MultiStateReporter):
             if self._xtc_timestep is None:
                 self._xtc_timestep = self._infer_timestep()
 
-            # Need topology - infer from state
+            # Create topology from state
             topology = self._create_topology_from_state(state)
 
             self._xtc_handles[replica_idx] = XTCFile(
@@ -352,7 +314,6 @@ class XTCMultiStateReporter(MultiStateReporter):
             Timestep in ps
         """
         try:
-            # Try to read mcmc_moves from analysis file
             moves = self.read_mcmc_moves()
             if moves and len(moves) > 0:
                 timestep = moves[0].timestep
@@ -362,31 +323,27 @@ class XTCMultiStateReporter(MultiStateReporter):
         except Exception:
             pass
 
-        # Default value
-        return 0.02  # 20 fs = 0.02 ps (Martini default)
+        # Default for Martini
+        return 0.02  # 20 fs = 0.02 ps
 
     def _create_topology_from_state(
         self,
         state: states.SamplerState,
-    ) -> Any:
+    ) -> OpenMMTopology:
         """
         Create OpenMM Topology from SamplerState.
 
-        This is a simplified version, actual use may require more complete topology.
+        Creates a minimal topology with placeholder atoms.
         """
-        from openmm.app import Topology as OpenMMTopology, Element
-
         n_atoms = state.n_particles
         top = OpenMMTopology()
         chain = top.addChain()
         residue = top.addResidue('UNK', chain)
 
         for i in range(n_atoms):
-            # Use carbon as placeholder
             element = Element.getBySymbol('C')
             top.addAtom(f'AT{i}', element, residue)
 
-        # Set periodic box
         if state.box_vectors is not None:
             top.setPeriodicBoxVectors(state.box_vectors)
 
@@ -398,15 +355,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         super().close()
 
     def read_checkpoint_iterations(self) -> np.ndarray:
-        """
-        Read all checkpoint iterations.
-
-        Lightweight mode has only one valid checkpoint.
-        """
-        if not self._xtc_output:
-            return super().read_checkpoint_iterations()
-
-        # XTC mode: return current_iteration
+        """Read checkpoint iterations (only one in lite mode)."""
         try:
             storage = self._storage_checkpoint
             current = int(storage.variables['current_iteration'][0])
@@ -415,19 +364,7 @@ class XTCMultiStateReporter(MultiStateReporter):
             return np.array([0])
 
     def read_last_iteration(self, last_checkpoint: bool = True) -> int:
-        """
-        Read last saved iteration.
-
-        Args:
-            last_checkpoint: Whether to return last checkpoint iteration
-
-        Returns:
-            Last iteration number
-        """
-        if not self._xtc_output:
-            return super().read_last_iteration(last_checkpoint)
-
-        # XTC mode: read from current_iteration
+        """Read last saved iteration from current_iteration marker."""
         try:
             storage = self._storage_checkpoint
             return int(storage.variables['current_iteration'][0])
