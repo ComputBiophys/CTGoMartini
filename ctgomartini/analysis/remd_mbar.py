@@ -19,24 +19,6 @@ import numpy as np
 from openmm import unit
 
 
-def _detect_interval_from_nc(output_file: Union[str, Path]) -> int:
-    """Auto-detect interval from NetCDF checkpoint_interval.
-    
-    Args:
-        output_file: Path to REMD output NetCDF file.
-        
-    Returns:
-        Interval value (checkpoint_interval), or 1 if cannot be detected.
-    """
-    try:
-        from openmmtools.multistate import MultiStateReporter
-        reporter = MultiStateReporter(str(output_file), open_mode="r")
-        interval = reporter.checkpoint_interval
-        reporter.close()
-        return interval
-    except Exception:
-        return 1
-
 # Constants
 kB = (unit.MOLAR_GAS_CONSTANT_R).value_in_unit(unit.kilojoule / (unit.kelvin * unit.mole))
 
@@ -97,11 +79,7 @@ class FESAnalyzer:
         """
         self.output_file = Path(output_file)
         self.cv_file = Path(cv_file)
-        
-        # Auto-detect interval if not specified
-        if interval is None:
-            interval = _detect_interval_from_nc(self.output_file)
-        self.interval = interval
+        self._user_interval = interval  # Store user-specified interval (None means auto-detect)
         self.fes = None
         
         # Analysis results storage
@@ -111,7 +89,7 @@ class FESAnalyzer:
         self.subsampled_unsampled_energies: Optional[np.ndarray] = None
         
         self._validate_files()
-        self._load_simulation_data()
+        self._load_simulation_data()  # This will also set self.interval
     
     def _validate_files(self) -> None:
         """Validate that input files exist."""
@@ -121,13 +99,25 @@ class FESAnalyzer:
             raise FileNotFoundError(f"CV file not found: {self.cv_file}")
     
     def _load_simulation_data(self) -> None:
-        """Load basic simulation data from files."""
+        """Load basic simulation data from files.
+        
+        Also auto-detects interval from checkpoint_interval if not specified by user.
+        """
         MultiStateReporter, ReplicaExchangeAnalyzer = _import_openmmtools()
         
         try:
             # Load reporter and analyzer
             reporter = MultiStateReporter(str(self.output_file), open_mode="r")
             analyzer = ReplicaExchangeAnalyzer(reporter)
+            
+            # Auto-detect interval if not specified by user
+            if self._user_interval is None:
+                try:
+                    self.interval = reporter.checkpoint_interval
+                except Exception:
+                    self.interval = 1
+            else:
+                self.interval = self._user_interval
             
             # Read simulation data
             states, _ = reporter.read_thermodynamic_states()
