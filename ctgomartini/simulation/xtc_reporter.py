@@ -97,6 +97,12 @@ class XTCMultiStateReporter(MultiStateReporter):
         """
         # 1. Write to XTC (only on checkpoint interval)
         if self._on_checkpoint_interval(iteration):
+            # Try to infer timestep/interval again if not set (mcmc_moves may now be available)
+            if self._xtc_timestep is None:
+                self._xtc_timestep = self._infer_timestep()
+            if self._xtc_interval is None:
+                self._xtc_interval = self._infer_interval()
+            
             for replica_idx, state in enumerate(sampler_states):
                 xtc = self._get_xtc_handle(replica_idx, state)
                 # Convert box_vectors to tuple of Vec3 for XTCFile
@@ -298,6 +304,10 @@ class XTCMultiStateReporter(MultiStateReporter):
             # Infer interval (MD steps between checkpoints) from mcmc_moves
             if self._xtc_interval is None:
                 self._xtc_interval = self._infer_interval()
+            
+            # If still None, use checkpoint_interval as fallback (will show iteration numbers)
+            # This happens on first write before mcmc_moves is stored in NetCDF
+            xtc_interval = self._xtc_interval if self._xtc_interval is not None else self._checkpoint_interval
 
             # Create topology from state
             topology = self._create_topology_from_state(state)
@@ -306,7 +316,7 @@ class XTCMultiStateReporter(MultiStateReporter):
                 path,
                 topology,
                 dt=self._xtc_timestep * unit.picosecond,
-                interval=self._xtc_interval,  # MD steps, not iterations
+                interval=xtc_interval,
                 append=append,
             )
 
@@ -372,14 +382,14 @@ class XTCMultiStateReporter(MultiStateReporter):
         # Default for Martini
         return 0.02  # 20 fs = 0.02 ps
 
-    def _infer_interval(self) -> int:
+    def _infer_interval(self) -> int | None:
         """
         Infer MD step interval between checkpoints from mcmc_moves.
 
         In REMD, interval = n_steps_per_iteration * checkpoint_interval
 
         Returns:
-            Number of MD steps between XTC writes
+            Number of MD steps between XTC writes, or None if cannot infer
         """
         try:
             moves = self.read_mcmc_moves()
@@ -390,8 +400,8 @@ class XTCMultiStateReporter(MultiStateReporter):
         except Exception:
             pass
 
-        # Default: assume checkpoint_interval is in steps (fallback)
-        return self._checkpoint_interval
+        # Return None to indicate failure - will retry later
+        return None
 
     def _create_topology_from_state(
         self,
