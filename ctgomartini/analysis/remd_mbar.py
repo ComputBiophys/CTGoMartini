@@ -18,6 +18,25 @@ from typing import Dict, List, Tuple, Optional, Union
 import numpy as np
 from openmm import unit
 
+
+def _detect_interval_from_nc(output_file: Union[str, Path]) -> int:
+    """Auto-detect interval from NetCDF checkpoint_interval.
+    
+    Args:
+        output_file: Path to REMD output NetCDF file.
+        
+    Returns:
+        Interval value (checkpoint_interval), or 1 if cannot be detected.
+    """
+    try:
+        from openmmtools.multistate import MultiStateReporter
+        reporter = MultiStateReporter(str(output_file), open_mode="r")
+        interval = reporter.checkpoint_interval
+        reporter.close()
+        return interval
+    except Exception:
+        return 1
+
 # Constants
 kB = (unit.MOLAR_GAS_CONSTANT_R).value_in_unit(unit.kilojoule / (unit.kelvin * unit.mole))
 
@@ -59,7 +78,7 @@ class FESAnalyzer:
     """
     
     def __init__(self, output_file: Union[str, Path], cv_file: Union[str, Path], 
-                 interval: int = 1):
+                 interval: Optional[int] = None):
         """
         Initialize the FES analyzer with simulation data files.
         
@@ -69,6 +88,8 @@ class FESAnalyzer:
             interval: Interval for getting CV data compared to energies.
                       For example, if energy is saved every frame but CV
                       is saved every 5 frames, interval=5.
+                      If None (default), will auto-detect from checkpoint_interval
+                      in the NetCDF file.
         
         Raises:
             FileNotFoundError: If input files do not exist.
@@ -76,6 +97,10 @@ class FESAnalyzer:
         """
         self.output_file = Path(output_file)
         self.cv_file = Path(cv_file)
+        
+        # Auto-detect interval if not specified
+        if interval is None:
+            interval = _detect_interval_from_nc(self.output_file)
         self.interval = interval
         self.fes = None
         
