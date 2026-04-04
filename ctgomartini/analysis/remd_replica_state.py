@@ -46,7 +46,9 @@ def _get_dt_from_netcdf(output_file: str | Path) -> float | None:
         try:
             mcmove = reporter.read_mcmc_moves()[0]
             time_interval = mcmove.n_steps * mcmove.timestep
-            dt = time_interval.value_in_unit(openmm.unit.picosecond)
+            dt_per_move = time_interval.value_in_unit(openmm.unit.picosecond)
+            # Multiply by checkpoint_interval to get actual time between frames
+            dt = dt_per_move * reporter.checkpoint_interval
             reporter.close()
             return dt
         except Exception:

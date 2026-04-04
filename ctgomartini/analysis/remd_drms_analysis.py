@@ -156,7 +156,9 @@ class PositionExtractor:
                 time_interval = mcmove.n_steps * mcmove.timestep
                 # Convert to ps
                 import openmm
-                self._dt = time_interval.value_in_unit(openmm.unit.picosecond)
+                dt_per_move = time_interval.value_in_unit(openmm.unit.picosecond)
+                # Multiply by checkpoint_interval to get actual time between frames
+                self._dt = dt_per_move * self._reporter.checkpoint_interval
             except Exception:
                 self._dt = 1.0  # Default: 1 ps per frame
         except Exception as e:
