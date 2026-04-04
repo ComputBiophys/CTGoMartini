@@ -66,6 +66,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         # because close() may be called during parent init
         self._xtc_handles: dict[int, XTCFile] = {}
         self._xtc_timestep: float | None = None
+        self._xtc_interval: int | None = None  # MD steps between checkpoints
         
         # Setup XTC directory
         storage_dir = os.path.dirname(storage) or '.'
@@ -294,6 +295,10 @@ class XTCMultiStateReporter(MultiStateReporter):
             if self._xtc_timestep is None:
                 self._xtc_timestep = self._infer_timestep()
 
+            # Infer interval (MD steps between checkpoints) from mcmc_moves
+            if self._xtc_interval is None:
+                self._xtc_interval = self._infer_interval()
+
             # Create topology from state
             topology = self._create_topology_from_state(state)
 
@@ -301,7 +306,7 @@ class XTCMultiStateReporter(MultiStateReporter):
                 path,
                 topology,
                 dt=self._xtc_timestep * unit.picosecond,
-                interval=self._checkpoint_interval,
+                interval=self._xtc_interval,  # MD steps, not iterations
                 append=append,
             )
 
@@ -366,6 +371,27 @@ class XTCMultiStateReporter(MultiStateReporter):
 
         # Default for Martini
         return 0.02  # 20 fs = 0.02 ps
+
+    def _infer_interval(self) -> int:
+        """
+        Infer MD step interval between checkpoints from mcmc_moves.
+
+        In REMD, interval = n_steps_per_iteration * checkpoint_interval
+
+        Returns:
+            Number of MD steps between XTC writes
+        """
+        try:
+            moves = self.read_mcmc_moves()
+            if moves and len(moves) > 0:
+                n_steps = moves[0].n_steps
+                # interval = steps per iteration * checkpoint interval (iterations)
+                return n_steps * self._checkpoint_interval
+        except Exception:
+            pass
+
+        # Default: assume checkpoint_interval is in steps (fallback)
+        return self._checkpoint_interval
 
     def _create_topology_from_state(
         self,
