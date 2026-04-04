@@ -49,5 +49,5 @@ run_ctgomartini -i md.inp
 (5) Finally, analyze the simulations we just obtained.
 
 ```bash
-python -m ctgomartini.analysis.drms_analysis -s npt.pdb -f md.xtc -r Up/Up_cg.pdb Down/Down_cg.pdb -sel "name BB" -prefix dRMStrj
+python -m ctgomartini.analysis.drms_analysis -s npt.pdb -f md.xtc -r Up/Up_cg.pdb Down/Down_cg.pdb -sel "name BB" -prefix dRMStraj
 ```

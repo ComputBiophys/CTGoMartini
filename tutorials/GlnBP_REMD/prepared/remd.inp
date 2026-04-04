@@ -18,7 +18,7 @@ b_step      = 0                                 ; Beginning step count (for rest
 
 input       = npt.gro                           ; Input structure file (from NPT equilibration)
 topol       = system.top                        ; Topology file (multiple-basin)
-ichk        =                                   ; Input checkpoint file (for restart)
+ichk        =                                   ; Input checkpoint file
 
 ; Platform Settings
 platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference

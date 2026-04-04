@@ -60,7 +60,7 @@ run_ctgomartini -i md.inp
 (5) Finally, analyze the simulations we just obtained.
 
 ```bash
-python -m ctgomartini.analysis.drms_analysis -s npt.pdb -f md.xtc -r Open/Open_cg.pdb Closed/Closed_cg.pdb -sel "name BB" -prefix dRMStrj
+python -m ctgomartini.analysis.drms_analysis -s npt.pdb -f md.xtc -r Open/Open_cg.pdb Closed/Closed_cg.pdb -sel "name BB" -prefix dRMStraj
 ```
 
 ---
