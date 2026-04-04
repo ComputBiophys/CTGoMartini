@@ -102,6 +102,10 @@ class XTCMultiStateReporter(MultiStateReporter):
                 self._xtc_timestep = self._infer_timestep()
             if self._xtc_interval is None:
                 self._xtc_interval = self._infer_interval()
+                # If we just got the correct interval, update existing XTCFile handles
+                if self._xtc_interval is not None:
+                    for xtc in self._xtc_handles.values():
+                        xtc._interval = self._xtc_interval
             
             for replica_idx, state in enumerate(sampler_states):
                 xtc = self._get_xtc_handle(replica_idx, state)
