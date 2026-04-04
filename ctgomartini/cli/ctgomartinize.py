@@ -324,14 +324,14 @@ def MBGOMartinize(
     if extract_states:
         print(f"\n  [Extracting single-state topologies...")
         try:
-            # Find the system.top file (should be in current directory)
-            system_top = working_path / 'system.top'
-            if system_top.exists():
-                state_files = extract_all_states(system_top, mbmol_name)
+            # Use the generated multi-basin ITP file instead of system.top
+            mb_itp_file = working_path / f'{mbmol_name}.itp'
+            if mb_itp_file.exists():
+                state_files = extract_all_states(mb_itp_file, mbmol_name)
                 for state_file in state_files:
                     print(f"    ✓ Extracted: {state_file}")
             else:
-                print(f"    ! Warning: system.top not found, skipping state extraction")
+                print(f"    ! Warning: {mbmol_name}.itp not found, skipping state extraction")
         except Exception as e:
             print(f"    ! Warning: Failed to extract states: {e}")
 
