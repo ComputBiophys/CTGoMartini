@@ -442,24 +442,17 @@ class REMDRunner(SimulationRunner):
         print(f"\n[Extend REMD] {self.output_data}")
 
         # Load sampler from storage
-        self.sampler = ReplicaExchangeSampler.from_storage(self.output_data)
-        
-        # Replace reporter with XTCMultiStateReporter if XTC mode is enabled
         if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
-            print(f"  [XTC Mode] Replacing reporter for XTC separate storage")
-            
-            # Note: Don't close old reporter here as it may share file handles with sampler
-            # Just replace the reference - old reporter will be garbage collected
-            
-            # Create new XTC reporter
+            print(f"  [XTC Mode] Resuming with XTC separate storage")
             xtc_reporter = XTCMultiStateReporter(
                 self.output_data,
                 checkpoint_interval=self.config.remd_checkpoint_interval,
                 xtc_dir=self.config.remd_xtc_dir,
             )
-            xtc_reporter.open(mode='a')
-            self.sampler._reporter = xtc_reporter
-        
+            self.sampler = ReplicaExchangeSampler.from_storage(xtc_reporter)
+        else:
+            self.sampler = ReplicaExchangeSampler.from_storage(self.output_data)
+
         # Set online analysis interval
         self.sampler._online_analysis_interval = self.config.remd_online_analysis_interval
 
