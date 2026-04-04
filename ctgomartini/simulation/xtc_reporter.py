@@ -13,12 +13,9 @@ from __future__ import annotations
 import os
 from typing import Any
 
-try:
-    from openmm import unit
-    from openmm.app import XTCFile, Topology as OpenMMTopology, Element
-except ImportError:
-    from simtk import unit
-    from simtk.app import XTCFile, Topology as OpenMMTopology, Element
+
+from openmm import unit, Vec3
+from openmm.app import XTCFile, Topology as OpenMMTopology, Element
 
 import numpy as np
 
@@ -65,6 +62,16 @@ class XTCMultiStateReporter(MultiStateReporter):
             xtc_dir: Directory for XTC files (relative to storage directory)
             **kwargs: Additional arguments passed to parent class
         """
+        # Initialize XTC handles before super().__init__() 
+        # because close() may be called during parent init
+        self._xtc_handles: dict[int, XTCFile] = {}
+        self._xtc_timestep: float | None = None
+        
+        # Setup XTC directory
+        storage_dir = os.path.dirname(storage) or '.'
+        self._xtc_dir = os.path.join(storage_dir, xtc_dir)
+        os.makedirs(self._xtc_dir, exist_ok=True)
+
         super().__init__(
             storage=storage,
             open_mode=open_mode,
@@ -74,14 +81,6 @@ class XTCMultiStateReporter(MultiStateReporter):
             position_interval=position_interval,
             velocity_interval=velocity_interval,
         )
-
-        # Setup XTC directory
-        storage_dir = os.path.dirname(storage) or '.'
-        self._xtc_dir = os.path.join(storage_dir, xtc_dir)
-        os.makedirs(self._xtc_dir, exist_ok=True)
-
-        self._xtc_handles: dict[int, XTCFile] = {}
-        self._xtc_timestep: float | None = None
 
     def write_sampler_states(
         self,
@@ -99,9 +98,11 @@ class XTCMultiStateReporter(MultiStateReporter):
         if self._on_checkpoint_interval(iteration):
             for replica_idx, state in enumerate(sampler_states):
                 xtc = self._get_xtc_handle(replica_idx, state)
+                # Convert box_vectors to tuple of Vec3 for XTCFile
+                box_vectors = self._convert_box_vectors(state.box_vectors)
                 xtc.writeModel(
                     state.positions,
-                    periodicBoxVectors=state.box_vectors,
+                    periodicBoxVectors=box_vectors,
                 )
 
         # 2. Write to lightweight NetCDF checkpoint (always overwrite index 0)
@@ -186,10 +187,14 @@ class XTCMultiStateReporter(MultiStateReporter):
         n_atoms = sampler_states[0].n_particles
 
         # Fixed size of 1 (not unlimited) - key for lightweight checkpoint
-        storage.createDimension('iteration_lite', 1)
-        storage.createDimension('replica', n_replicas)
-        storage.createDimension('atom', n_atoms)
-        storage.createDimension('spatial', 3)
+        if 'iteration_lite' not in storage.dimensions:
+            storage.createDimension('iteration_lite', 1)
+        if 'replica' not in storage.dimensions:
+            storage.createDimension('replica', n_replicas)
+        if 'atom' not in storage.dimensions:
+            storage.createDimension('atom', n_atoms)
+        if 'spatial' not in storage.dimensions:
+            storage.createDimension('spatial', 3)
 
         # Positions
         var_pos = storage.createVariable(
@@ -301,6 +306,42 @@ class XTCMultiStateReporter(MultiStateReporter):
             )
 
         return self._xtc_handles[replica_idx]
+
+    def _convert_box_vectors(self, box_vectors) -> tuple | None:
+        """
+        Convert box_vectors to tuple of Vec3 for XTCFile.
+        
+        Handles various input formats: Quantity with tuple, Quantity with ndarray,
+        or raw tuple of Vec3.
+        
+        Args:
+            box_vectors: Box vectors in various formats
+            
+        Returns:
+            Tuple of 3 Vec3, or None
+        """
+        if box_vectors is None:
+            return None
+            
+        # If it's a Quantity, extract the value
+        if hasattr(box_vectors, 'value_in_unit'):
+            box_vectors = box_vectors.value_in_unit(unit.nanometers)
+        
+        # If it's already a tuple of Vec3, return as-is
+        if isinstance(box_vectors, tuple) and len(box_vectors) == 3:
+            if hasattr(box_vectors[0], 'x'):  # Check if it's Vec3
+                return box_vectors
+        
+        # If it's a numpy array or list, convert to Vec3 tuple
+        if hasattr(box_vectors, '__len__') and len(box_vectors) == 3:
+            vec_array = np.asarray(box_vectors)
+            return (
+                Vec3(vec_array[0][0], vec_array[0][1], vec_array[0][2]),
+                Vec3(vec_array[1][0], vec_array[1][1], vec_array[1][2]),
+                Vec3(vec_array[2][0], vec_array[2][1], vec_array[2][2]),
+            )
+        
+        return None
 
     def _on_checkpoint_interval(self, iteration: int) -> bool:
         """Check if current iteration is on checkpoint interval."""
