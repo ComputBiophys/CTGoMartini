@@ -44,11 +44,12 @@ def extract_state_topology(
     # Load topology
     top = MartiniTopFile(topfile)
     
-    if molecule_name not in top.moleculeTypes:
-        available = ', '.join(top.moleculeTypes.keys())
+    # Use _moleculeTypes to support ITP files (which lack [ molecules ] section)
+    if molecule_name not in top._moleculeTypes:
+        available = ', '.join(top._moleculeTypes.keys())
         raise ValueError(f"Molecule '{molecule_name}' not found. Available: {available}")
     
-    mol = top.moleculeTypes[molecule_name]
+    mol = top._moleculeTypes[molecule_name]
     mol_top = mol._topology
     
     # Check if this is a multi-basin system
@@ -162,10 +163,12 @@ def extract_all_states(
     """
     top = MartiniTopFile(topfile)
     
-    if mbmol_name not in top.moleculeTypes:
-        raise ValueError(f"Molecule '{mbmol_name}' not found in topology")
+    # Use _moleculeTypes to support ITP files (which lack [ molecules ] section)
+    if mbmol_name not in top._moleculeTypes:
+        available = ', '.join(top._moleculeTypes.keys())
+        raise ValueError(f"Molecule '{mbmol_name}' not found in topology. Available: {available}")
     
-    mol_top = top.moleculeTypes[mbmol_name]._topology
+    mol_top = top._moleculeTypes[mbmol_name]._topology
     if 'multiple_basin' not in mol_top:
         raise ValueError(f"Molecule '{mbmol_name}' is not a multi-basin system")
     
