@@ -33,6 +33,12 @@ _global_context_cache = None
 _MultiStateReporter = None
 _ReplicaExchangeSampler = None
 
+# Import XTCMultiStateReporter
+try:
+    from ctgomartini.simulation.xtc_reporter import XTCMultiStateReporter
+except ImportError:
+    XTCMultiStateReporter = None
+
 
 def _import_openmmtools():
     """Lazy import openmmtools to avoid import-time warnings."""
@@ -382,10 +388,19 @@ class REMDRunner(SimulationRunner):
             if os.path.exists(self.output_data):
                 os.remove(self.output_data)
 
-            reporter = MultiStateReporter(
-                self.output_data, 
-                checkpoint_interval=self.config.remd_checkpoint_interval
-            )
+            # Choose reporter based on configuration
+            if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
+                reporter = XTCMultiStateReporter(
+                    self.output_data,
+                    checkpoint_interval=self.config.remd_checkpoint_interval,
+                    xtc_output='yes',
+                    xtc_dir=self.config.remd_xtc_dir,
+                )
+            else:
+                reporter = MultiStateReporter(
+                    self.output_data,
+                    checkpoint_interval=self.config.remd_checkpoint_interval
+                )
             if unsampled_thermodynamic_states is not None:
                 self.sampler.create(
                     thermodynamic_states,

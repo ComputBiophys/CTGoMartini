@@ -116,6 +116,10 @@ class SimulationConfig:
         self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
         self.remd_reassign_velocities: bool = False  # Reassign velocities at each move
         self.remd_unsampled_topfiles: list[str] = []  # Unsampled state topology files
+        
+        # REMD XTC output settings
+        self.remd_xtc_output: str = 'no'  # Enable XTC separate output ('yes'/'no')
+        self.remd_xtc_dir: str = 'xtc_trajs'  # Directory for XTC trajectory files
 
     def read(self, input_file: str) -> SimulationConfig:
         """
@@ -327,6 +331,10 @@ class SimulationConfig:
             self.remd_reassign_velocities = value.upper() == 'YES'
         elif param == 'REMD_UNSAMPLED_TOPFILES':
             self.remd_unsampled_topfiles = [x.strip() for x in value.split() if x.strip()]
+        elif param == 'REMD_XTC_OUTPUT':
+            self.remd_xtc_output = 'yes' if value.upper() == 'YES' else 'no'
+        elif param == 'REMD_XTC_DIR':
+            self.remd_xtc_dir = str(value)
 
 
 def load_config(input_file: str) -> SimulationConfig:
