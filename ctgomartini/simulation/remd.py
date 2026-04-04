@@ -447,9 +447,9 @@ class REMDRunner(SimulationRunner):
         # Replace reporter with XTCMultiStateReporter if XTC mode is enabled
         if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
             print(f"  [XTC Mode] Replacing reporter for XTC separate storage")
-            # Close old reporter
-            if hasattr(self.sampler, '_reporter') and self.sampler._reporter is not None:
-                self.sampler._reporter.close()
+            
+            # Note: Don't close old reporter here as it may share file handles with sampler
+            # Just replace the reference - old reporter will be garbage collected
             
             # Create new XTC reporter
             xtc_reporter = XTCMultiStateReporter(
