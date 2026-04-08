@@ -114,7 +114,7 @@ def _check_chain_ids(ref: PDBData, other: PDBData) -> None:
 
 
 def _check_atoms_detail(ref: PDBData, other: PDBData) -> None:
-    """Check each atom's properties match."""
+    """Check each atom's properties match (excluding atom name)."""
     for i, (a1, a2) in enumerate(zip(ref.atoms, other.atoms)):
         if a1.resname != a2.resname:
             raise ValidationError(
@@ -125,11 +125,6 @@ def _check_atoms_detail(ref: PDBData, other: PDBData) -> None:
             raise ValidationError(
                 f"Atom {i}: residue ID mismatch - "
                 f"{ref.name} has {a1.resid}, {other.name} has {a2.resid}"
-            )
-        if a1.name != a2.name:
-            raise ValidationError(
-                f"Atom {i}: atom name mismatch - "
-                f"{ref.name} has {a1.name}, {other.name} has {a2.name}"
             )
         if a1.chainid != a2.chainid:
             raise ValidationError(
@@ -149,7 +144,7 @@ def validate_pdb_compatibility(
     2. Residue count
     3. Chain count
     4. Chain ID sequence
-    5. Each atom's resname, resid, atomname, chainid
+    5. Each atom's resname, resid, chainid
     
     Args:
         pdb_files: List of PDB file paths

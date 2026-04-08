@@ -30,10 +30,7 @@ import ctgomartini
 from ctgomartini.topology import create_mb_topology, create_sb_topology
 from ctgomartini.utils import write_itp, convert_long_short_elastic_bonds, extract_all_states
 from ctgomartini.utils.contacts import gen_go_contacts
-from ctgomartini.utils.pdb_validation import (
-    validate_pdb_compatibility,
-    PDBCompatibilityValidator
-)
+from ctgomartini.utils.pdb_validation import validate_pdb_compatibility, ValidationError
 from ctgomartini.utils.constraints_to_bonds import convert_constraints_to_bonds
 
 
@@ -250,10 +247,10 @@ def MBGOMartinize(
     # Validate PDB compatibility before processing
     print("\n  [Pre-check] Validating PDB file compatibility...")
     try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
+        validate_pdb_compatibility(aa_strfile_list, state_name_list)
         print("    ✓ All PDB files are compatible")
-    except ValueError as e:
-        print(e)
+    except ValidationError as e:
+        print(f"\n  ERROR: {e}")
         sys.exit(1)
     except FileNotFoundError as e:
         print(f"\n  ERROR: {e}")
@@ -481,10 +478,10 @@ def SwitchingGOMartinize(
     # Validate PDB compatibility before processing
     print("\n  [Pre-check] Validating PDB file compatibility...")
     try:
-        validate_pdb_compatibility(aa_strfile_list, state_name_list, verbose=False)
+        validate_pdb_compatibility(aa_strfile_list, state_name_list)
         print("    ✓ All PDB files are compatible")
-    except ValueError as e:
-        print(e)
+    except ValidationError as e:
+        print(f"\n  ERROR: {e}")
         sys.exit(1)
     except FileNotFoundError as e:
         print(f"\n  ERROR: {e}")

@@ -329,8 +329,8 @@ END
             os.unlink(path1)
             os.unlink(path2)
 
-    def test_atom_name_mismatch(self):
-        """Test detection of atom name mismatch."""
+    def test_atom_name_difference_allowed(self):
+        """Test that atom name differences are allowed."""
         pdb1 = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
 ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
 END
@@ -348,11 +348,8 @@ END
             path2 = f2.name
 
         try:
-            with pytest.raises(ValidationError) as exc_info:
-                validate_pdb_compatibility([path1, path2])
-            assert "atom name mismatch" in str(exc_info.value)
-            assert "CA" in str(exc_info.value)
-            assert "CB" in str(exc_info.value)
+            # Should pass - atom name differences are allowed
+            validate_pdb_compatibility([path1, path2])
         finally:
             os.unlink(path1)
             os.unlink(path2)
