@@ -60,6 +60,40 @@ class StructureSummary:
         for res in self.residues:
             counts[res.chain_id] = counts.get(res.chain_id, 0) + 1
         return counts
+    
+    def check_chain_order(self) -> list[str]:
+        """Check if chain order follows alphabetical sequence (A-Z).
+        
+        Returns:
+            List of warning messages if chain order is invalid or non-standard.
+            Empty list if order is valid (A -> B -> C -> ...).
+        """
+        warnings_list: list[str] = []
+        if not self.chains:
+            return warnings_list
+        
+        # Filter out empty or whitespace-only chain IDs
+        valid_chains = [c for c in self.chains if c and c.strip()]
+        if not valid_chains:
+            return warnings_list
+        
+        # Check if chains follow alphabetical order
+        expected_order = sorted(valid_chains)
+        if valid_chains != expected_order:
+            # Find where the order differs
+            issues = []
+            for i, (actual, expected) in enumerate(zip(valid_chains, expected_order)):
+                if actual != expected:
+                    issues.append(f"position {i+1}: '{actual}' (expected '{expected}')")
+            
+            if issues:
+                warnings_list.append(
+                    f"Chain order in '{self.name}' is not alphabetical: "
+                    f"{' -> '.join(valid_chains)}. "
+                    f"Issues: {'; '.join(issues[:3])}"
+                )
+        
+        return warnings_list
 
 
 @dataclass
@@ -294,6 +328,9 @@ class PDBCompatibilityValidator:
             if not report.is_valid:
                 raise ValueError(report.format_error())
         
+        # Check chain order consistency across all structures
+        self._check_chain_order_consistency(summaries, reports)
+        
         return reports
     
     def _parse_structure(self, filepath: Path, name: str) -> StructureSummary:
@@ -494,6 +531,48 @@ class PDBCompatibilityValidator:
                 f"Detected {len(protonation_diffs)} protonation state differences. "
                 f"First few: {', '.join(protonation_diffs[:3])}"
             )
+    
+    def _check_chain_order_consistency(
+        self,
+        summaries: list[StructureSummary],
+        reports: list[ValidationReport]
+    ) -> None:
+        """Check chain order consistency across multiple structures.
+        
+        Adds warnings to reports if:
+        1. Individual structures have non-alphabetical chain order
+        2. Different structures have different chain orders
+        """
+        if len(summaries) < 1:
+            return
+        
+        # Check each structure's internal chain order
+        # For the reference structure (first one), add to all reports
+        ref_summary = summaries[0]
+        ref_order_warnings = ref_summary.check_chain_order()
+        for report in reports:
+            report.warnings.extend(ref_order_warnings)
+        
+        # For other structures, add warnings to their corresponding reports
+        if len(summaries) >= 2:
+            ref_chains = ref_summary.chains
+            
+            for i, other_summary in enumerate(summaries[1:], start=1):
+                other_chains = other_summary.chains
+                report_idx = i - 1
+                
+                if report_idx < len(reports):
+                    # Check internal chain order for this structure
+                    other_order_warnings = other_summary.check_chain_order()
+                    reports[report_idx].warnings.extend(other_order_warnings)
+                    
+                    # Check chain order consistency with reference
+                    if ref_chains != other_chains:
+                        reports[report_idx].warnings.append(
+                            f"Chain order mismatch between '{ref_summary.name}' "
+                            f"({' -> '.join(ref_chains)}) and '{other_summary.name}' "
+                            f"({' -> '.join(other_chains)})"
+                        )
 
 
 def validate_pdb_compatibility(

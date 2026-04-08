@@ -490,3 +490,180 @@ END
             validate_pdb_compatibility([path], verbose=False)
         finally:
             os.unlink(path)
+
+
+class TestChainOrderValidation:
+    """Tests for chain order validation."""
+
+    def test_correct_chain_order_no_warning(self):
+        """Test that correct alphabetical chain order produces no warnings."""
+        pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+END
+"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
+            f1.write(pdb_content)
+            path1 = f1.name
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
+            f2.write(pdb_content)
+            path2 = f2.name
+
+        try:
+            validator = PDBCompatibilityValidator(verbose=False)
+            reports = validator.validate([path1, path2], ['StateA', 'StateB'])
+            
+            # Check no chain order warnings
+            for report in reports:
+                chain_warnings = [w for w in report.warnings if 'Chain order' in w]
+                assert len(chain_warnings) == 0, f"Unexpected chain order warning: {chain_warnings}"
+        finally:
+            os.unlink(path1)
+            os.unlink(path2)
+
+    def test_non_alphabetical_chain_order_warning(self):
+        """Test that non-alphabetical chain order produces warning."""
+        pdb_correct = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+END
+"""
+        # B chain before A chain - incorrect order
+        pdb_incorrect = """ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+END
+"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
+            f1.write(pdb_correct)
+            path1 = f1.name
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
+            f2.write(pdb_incorrect)
+            path2 = f2.name
+
+        try:
+            validator = PDBCompatibilityValidator(verbose=False)
+            reports = validator.validate([path1, path2], ['StateA', 'StateB'])
+            
+            # The second structure should have chain order warning
+            state_b_warnings = [w for w in reports[0].warnings if 'not alphabetical' in w]
+            assert len(state_b_warnings) > 0, "Expected chain order warning for StateB"
+            assert 'B -> A' in state_b_warnings[0], f"Warning should mention B -> A order: {state_b_warnings[0]}"
+        finally:
+            os.unlink(path1)
+            os.unlink(path2)
+
+    def test_chain_order_mismatch_between_structures(self):
+        """Test that different chain orders between structures produce warning."""
+        pdb_ab = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+END
+"""
+        # Same chains but different order
+        pdb_ba = """ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+END
+"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
+            f1.write(pdb_ab)
+            path1 = f1.name
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
+            f2.write(pdb_ba)
+            path2 = f2.name
+
+        try:
+            validator = PDBCompatibilityValidator(verbose=False)
+            reports = validator.validate([path1, path2], ['StateAB', 'StateBA'])
+            
+            # Should have chain order mismatch warning
+            mismatch_warnings = [w for w in reports[0].warnings if 'Chain order mismatch' in w]
+            assert len(mismatch_warnings) > 0, "Expected chain order mismatch warning"
+            assert 'A -> B' in mismatch_warnings[0], f"Warning should mention chain order: {mismatch_warnings[0]}"
+            assert 'B -> A' in mismatch_warnings[0], f"Warning should mention both orders: {mismatch_warnings[0]}"
+        finally:
+            os.unlink(path1)
+            os.unlink(path2)
+
+    def test_three_chains_correct_order(self):
+        """Test correct order with three chains A -> B -> C."""
+        pdb_content = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    102  CA  MET A   1      10.500  10.500  10.500  1.00  0.00           C
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    202  CA  MET B   1      20.500  20.500  20.500  1.00  0.00           C
+ATOM    301  N   MET C   1      30.000  30.000  30.000  1.00  0.00           N
+ATOM    302  CA  MET C   1      30.500  30.500  30.500  1.00  0.00           C
+END
+"""
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f1:
+            f1.write(pdb_content)
+            path1 = f1.name
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f2:
+            f2.write(pdb_content)
+            path2 = f2.name
+
+        try:
+            validator = PDBCompatibilityValidator(verbose=False)
+            reports = validator.validate([path1, path2], ['State1', 'State2'])
+            
+            for report in reports:
+                chain_warnings = [w for w in report.warnings if 'Chain order' in w]
+                assert len(chain_warnings) == 0, f"Unexpected chain order warning: {chain_warnings}"
+        finally:
+            os.unlink(path1)
+            os.unlink(path2)
+
+    def test_multiple_files_chain_order_consistency(self):
+        """Test chain order consistency across three files."""
+        pdb_abc = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    301  N   MET C   1      30.000  30.000  30.000  1.00  0.00           N
+END
+"""
+        pdb_acb = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    301  N   MET C   1      30.000  30.000  30.000  1.00  0.00           N
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+END
+"""
+        pdb_abc2 = """ATOM    101  N   MET A   1      10.000  10.000  10.000  1.00  0.00           N
+ATOM    201  N   MET B   1      20.000  20.000  20.000  1.00  0.00           N
+ATOM    301  N   MET C   1      30.000  30.000  30.000  1.00  0.00           N
+END
+"""
+        paths = []
+        try:
+            for content in [pdb_abc, pdb_acb, pdb_abc2]:
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.pdb', delete=False) as f:
+                    f.write(content)
+                    paths.append(f.name)
+
+            validator = PDBCompatibilityValidator(verbose=False)
+            reports = validator.validate(paths, ['Ref', 'ACB', 'ABC2'])
+            
+            # Second file (ACB) should have:
+            # 1. Internal chain order warning (not alphabetical)
+            # 2. Chain order mismatch with reference
+            acb_warnings = reports[0].warnings
+            internal_warnings = [w for w in acb_warnings if 'not alphabetical' in w]
+            mismatch_warnings = [w for w in acb_warnings if 'Chain order mismatch' in w]
+            
+            assert len(internal_warnings) > 0, "Expected internal chain order warning for ACB"
+            assert len(mismatch_warnings) > 0, "Expected chain order mismatch warning"
+            
+            # Third file (ABC2) should have no warnings (same order as reference)
+            abc2_warnings = reports[1].warnings
+            abc2_chain_warnings = [w for w in abc2_warnings if 'Chain order' in w]
+            assert len(abc2_chain_warnings) == 0, f"ABC2 should have no chain warnings: {abc2_chain_warnings}"
+        finally:
+            for p in paths:
+                os.unlink(p)
