@@ -33,9 +33,8 @@ conda env create -f environment.yml
 # Activate and install CTGoMartini
 conda activate ctgomartini
 pip install -e .
-```
 
-That's it! All dependencies (OpenMM, REMD tools, Jupyter, testing framework) are included.
+```
 
 ### CUDA Version
 
@@ -48,6 +47,7 @@ cuda-version=11  # or 10.2
 > **Important Notes**:
 > - `numpy<2.4.0` is required for REMD compatibility
 > - `cuda-version` should match your NVIDIA driver
+> - Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
 
 ## Testing
 

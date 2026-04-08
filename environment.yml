@@ -14,6 +14,10 @@ dependencies:
   - jax<=0.8.0
   - numpy>=2.0,<2.4.0
   
+  # Multi-GPU REMD (MPI)
+  - mpi4py
+  - mpich=3
+  
   # Jupyter for analysis
   - jupyter
   

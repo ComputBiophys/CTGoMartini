@@ -57,3 +57,4 @@ Thumbs.db
 !tests/fixtures/**/*.xtc
 !tests/fixtures/**/*.trr
 AGENTS.md
+OLD_README.md
