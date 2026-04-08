@@ -32,17 +32,22 @@ from ctgomartini.topology import MartiniTopFile
 _global_context_cache = None
 _MultiStateReporter = None
 _ReplicaExchangeSampler = None
-
-# Import XTCMultiStateReporter
-try:
-    from ctgomartini.simulation.xtc_reporter import XTCMultiStateReporter
-except ImportError:
-    XTCMultiStateReporter = None
+_XTCMultiStateReporter = None
 
 
-def _import_openmmtools():
-    """Lazy import openmmtools to avoid import-time warnings."""
-    global _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler
+def _import_remd_dependencies():
+    """
+    Lazy import all REMD dependencies to avoid import-time warnings.
+    
+    Imports openmmtools (which triggers pymbar/jax warnings) and 
+    XTCMultiStateReporter only when actually needed.
+    
+    Returns:
+        Tuple of (global_context_cache, MultiStateReporter, 
+                  ReplicaExchangeSampler, XTCMultiStateReporter)
+    """
+    global _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler, _XTCMultiStateReporter
+    
     if _MultiStateReporter is None:
         try:
             from openmmtools.cache import global_context_cache
@@ -58,7 +63,15 @@ def _import_openmmtools():
                 "openmmtools is required for REMD simulations. "
                 "Install it with: conda install openmmtools"
             ) from e
-    return _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler
+    
+    if _XTCMultiStateReporter is None:
+        try:
+            from ctgomartini.simulation.xtc_reporter import XTCMultiStateReporter
+            _XTCMultiStateReporter = XTCMultiStateReporter
+        except ImportError:
+            _XTCMultiStateReporter = None
+    
+    return _global_context_cache, _MultiStateReporter, _ReplicaExchangeSampler, _XTCMultiStateReporter
 
 
 class REMDRunner(SimulationRunner):
@@ -96,7 +109,7 @@ class REMDRunner(SimulationRunner):
             ImportError: If openmmtools is not installed.
         """
         # Lazy import openmmtools to avoid import-time warnings
-        global_context_cache, MultiStateReporter, ReplicaExchangeSampler = _import_openmmtools()
+        global_context_cache, MultiStateReporter, ReplicaExchangeSampler, _ = _import_remd_dependencies()
 
         super().__init__(inpfile)
         self.output_data = output_data
@@ -305,7 +318,7 @@ class REMDRunner(SimulationRunner):
         and runs for the specified number of iterations.
         """
         # Lazy import openmmtools to avoid import-time warnings
-        global_context_cache, MultiStateReporter, ReplicaExchangeSampler = _import_openmmtools()
+        global_context_cache, MultiStateReporter, ReplicaExchangeSampler, _ = _import_remd_dependencies()
         import openmmtools.states
         import openmmtools.mcmc
 
@@ -389,6 +402,7 @@ class REMDRunner(SimulationRunner):
                 os.remove(self.output_data)
 
             # Choose reporter based on configuration
+            _, _, _, XTCMultiStateReporter = _import_remd_dependencies()
             if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
                 reporter = XTCMultiStateReporter(
                     self.output_data,
@@ -430,8 +444,7 @@ class REMDRunner(SimulationRunner):
                 runs until the original target is reached or indefinitely.
         """
         # Lazy import openmmtools to avoid import-time warnings
-        _, _, ReplicaExchangeSampler = _import_openmmtools()
-        import openmmtools.mcmc
+        _, _, ReplicaExchangeSampler, XTCMultiStateReporter = _import_remd_dependencies()
 
         if not os.path.exists(self.output_data):
             raise FileNotFoundError(

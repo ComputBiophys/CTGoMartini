@@ -93,17 +93,19 @@ remd_xtc_dir = xtc_trajs
         mock_sampler.iteration = 0
         mock_sampler.number_of_iterations = 100
         mock_sampler_cls.from_storage.return_value = mock_sampler
-        return mock_cache, mock_reporter, mock_sampler_cls
+        # XTCMultiStateReporter mock (None for no-XTC tests)
+        mock_xtc_reporter = None
+        return mock_cache, mock_reporter, mock_sampler_cls, mock_xtc_reporter
 
     def test_extend_without_xtc_passes_string_to_from_storage(
         self, mock_inp_file_no_xtc, mock_openmmtools
     ):
         """When XTC is disabled, from_storage should receive the path string."""
-        mock_cache, mock_reporter, mock_sampler_cls = mock_openmmtools
+        mock_cache, mock_reporter, mock_sampler_cls, _ = mock_openmmtools
 
         with patch(
-            "ctgomartini.simulation.remd._import_openmmtools",
-            return_value=(mock_cache, mock_reporter, mock_sampler_cls),
+            "ctgomartini.simulation.remd._import_remd_dependencies",
+            return_value=(mock_cache, mock_reporter, mock_sampler_cls, None),
         ), patch("ctgomartini.simulation.remd.os.path.exists", return_value=True):
             runner = REMDRunner(mock_inp_file_no_xtc)
             runner.extend()
@@ -117,11 +119,11 @@ remd_xtc_dir = xtc_trajs
         self, mock_inp_file_xtc, mock_openmmtools
     ):
         """When XTC is enabled, from_storage should receive an XTCMultiStateReporter instance."""
-        mock_cache, mock_reporter, mock_sampler_cls = mock_openmmtools
+        mock_cache, mock_reporter, mock_sampler_cls, _ = mock_openmmtools
 
         with patch(
-            "ctgomartini.simulation.remd._import_openmmtools",
-            return_value=(mock_cache, mock_reporter, mock_sampler_cls),
+            "ctgomartini.simulation.remd._import_remd_dependencies",
+            return_value=(mock_cache, mock_reporter, mock_sampler_cls, XTCMultiStateReporter),
         ), patch("ctgomartini.simulation.remd.os.path.exists", return_value=True):
             runner = REMDRunner(mock_inp_file_xtc)
             runner.extend()
@@ -137,8 +139,8 @@ remd_xtc_dir = xtc_trajs
         mock_sampler_cls = MagicMock()
 
         with patch(
-            "ctgomartini.simulation.remd._import_openmmtools",
-            return_value=(mock_cache, mock_reporter, mock_sampler_cls),
+            "ctgomartini.simulation.remd._import_remd_dependencies",
+            return_value=(mock_cache, mock_reporter, mock_sampler_cls, None),
         ):
             runner = REMDRunner(mock_inp_file_no_xtc)
             with pytest.raises(FileNotFoundError, match="output file"):

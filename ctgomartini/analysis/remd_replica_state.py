@@ -4,9 +4,6 @@ REMD replica state trajectory analysis.
 
 Analyzes replica state indices over time from replica exchange
 molecular dynamics simulations and saves results to files.
-
-Author: Song Yang
-Date: 2025
 """
 
 from __future__ import annotations
