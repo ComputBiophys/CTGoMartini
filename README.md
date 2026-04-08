@@ -20,48 +20,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Installation
 
-### Prerequisites
-
-- Python >= 3.12
-- OpenMM >= 8.1
-- vermouth == 0.14.0
-- MDAnalysis >= 2.4
-- NumPy >= 2.0, < 2.4.0
-
-### Install
+### Quick Install (One Command)
 
 ```bash
-# 1. Create conda environment
-conda create -n ctgomartini python=3.12 -y
+# Clone the repository
+git clone https://github.com/ComputBiophys/CTGoMartini.git
+cd CTGoMartini
+
+# Create environment with all dependencies
+conda env create -f environment.yml
+
+# Activate and install CTGoMartini
 conda activate ctgomartini
-
-# 2. Install core dependencies (note: NumPy < 2.4.0 is required)
-pip install MDAnalysis "numpy>=2.0,<2.4.0" pandas matplotlib "vermouth==0.14.0"
-
-# 3. Install OpenMM with CUDA support (adjust cuda-version as needed)
-conda install -c conda-forge openmm cuda-version=12 -y
-
-# 4. Install CTGoMartini
 pip install -e .
+```
 
-# 5. Install testing framework
-pip install pytest pytest-cov
+That's it! All dependencies (OpenMM, REMD tools, Jupyter, testing framework) are included.
 
-# 6. Install REMD dependencies (optional, only for replica exchange simulations)
-conda config --add channels omnia --add channels conda-forge
-conda install openmmtools "numpy<2.4.0" "jax<=0.8.0" -y
+### CUDA Version
 
-# 7. Install Jupyter for analysis notebooks (optional)
-conda install jupyter -y
+The default `environment.yml` uses CUDA 12. If you need a different version, edit the file:
 
-# 8. For multi-GPU REMD, also install MPI support (optional)
-# conda install -c conda-forge mpi4py mpich=3 -y
+```yaml
+cuda-version=11  # or 10.2
 ```
 
 > **Important Notes**:
-> - `numpy<2.4.0` is **mandatory** for REMD - NumPy 2.4.0+ causes `TypeError` with `openmmtools`
-> - `cuda-version=12` should match your NVIDIA driver; use `10.2`, `11`, or `12` as needed
-> - Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
+> - `numpy<2.4.0` is required for REMD compatibility
+> - `cuda-version` should match your NVIDIA driver
 
 ## Testing
 

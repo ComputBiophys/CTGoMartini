@@ -1,0 +1,31 @@
+name: ctgomartini
+channels:
+  - conda-forge
+  - omnia
+dependencies:
+  - python>=3.12,<3.14
+  
+  # OpenMM and CUDA
+  - openmm>=8.1
+  - cuda-version=12
+  
+  # REMD dependencies
+  - openmmtools
+  - jax<=0.8.0
+  - numpy>=2.0,<2.4.0
+  
+  # Jupyter for analysis
+  - jupyter
+  
+  # Pip for remaining packages
+  - pip
+  - pip:
+    - MDAnalysis>=2.4
+    - pandas
+    - matplotlib>=3.3.3
+    - vermouth==0.14.0
+    - pytest>=7.0
+    - pytest-cov
+    - black
+    - ruff
+    - mypy
