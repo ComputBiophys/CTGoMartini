@@ -50,6 +50,9 @@ class XTCMultiStateReporter(MultiStateReporter):
         xtc_dir: str = 'xtc_trajs',
         total_iterations: int | None = None,
         progress_interval: int | None = None,
+        n_replicas: int = 1,
+        exc_freq: int | None = None,
+        dt: float | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -66,6 +69,9 @@ class XTCMultiStateReporter(MultiStateReporter):
             xtc_dir: Directory for XTC files (relative to storage directory)
             total_iterations: Total number of iterations for progress display
             progress_interval: Progress output interval (iterations, defaults to checkpoint_interval)
+            n_replicas: Number of replicas for ns/day calculation
+            exc_freq: Exchange frequency (MD steps per iteration) for ns/day calculation
+            dt: Time step in ps for ns/day calculation
             **kwargs: Additional arguments passed to parent class
         """
         # Initialize XTC handles before super().__init__() 
@@ -77,9 +83,14 @@ class XTCMultiStateReporter(MultiStateReporter):
         # Progress tracking
         self._total_iterations: int | None = total_iterations
         self._progress_interval: int = progress_interval if progress_interval is not None else checkpoint_interval
-        self._progress_initialized: bool = False
+        self._progress_header_printed: bool = False
         self._progress_start_time: float | None = None
         self._progress_start_iter: int | None = None
+        
+        # For ns/day calculation
+        self._n_replicas: int = n_replicas
+        self._exc_freq: int | None = exc_freq
+        self._dt: float | None = dt
         
         # Setup XTC directory
         storage_dir = os.path.dirname(storage) or '.'
@@ -486,7 +497,7 @@ class XTCMultiStateReporter(MultiStateReporter):
             self._print_progress(iteration)
     
     def _print_progress(self, iteration: int) -> None:
-        """Print progress information.
+        """Print progress information in StateDataReporter format.
         
         Args:
             iteration: Current iteration number
@@ -501,22 +512,32 @@ class XTCMultiStateReporter(MultiStateReporter):
             return
         
         # Calculate speed (iterations per second)
-        speed = it_done / elapsed
+        speed_it_s = it_done / elapsed
         
-        # Build progress string
+        # Calculate progress and ETA
         if self._total_iterations is not None and self._total_iterations > 0:
             progress = 100.0 * iteration / self._total_iterations
             remaining_iters = self._total_iterations - iteration
-            eta_seconds = remaining_iters / speed if speed > 0 else float('inf')
-            
-            print(f"[REMD Progress] Iter {iteration}/{self._total_iterations} "
-                  f"({progress:.1f}%) | ETA: {self._format_time(eta_seconds)} | "
-                  f"{speed:.2f} it/s")
+            eta_seconds = remaining_iters / speed_it_s if speed_it_s > 0 else float('inf')
+            eta_str = self._format_time(eta_seconds)
         else:
-            # Without total iterations, just show current progress
-            print(f"[REMD Progress] Iter {iteration} | "
-                  f"Elapsed: {self._format_time(elapsed)} | "
-                  f"{speed:.2f} it/s")
+            progress = 0.0
+            eta_str = "--"
+        
+        # Calculate ns/day (total across all replicas)
+        # ns/day = it/s × n_replicas × exc_freq × dt(ps) × 86400 / 1000
+        if self._exc_freq is not None and self._dt is not None:
+            speed_ns_day = speed_it_s * self._n_replicas * self._exc_freq * self._dt * 86400 / 1000
+        else:
+            speed_ns_day = 0.0
+        
+        # Print header on first call
+        if not self._progress_header_printed:
+            print('#"Progress (%)"\t"Iteration"\t"Speed (it/s)"\t"Speed (ns/day)"\t"Time Remaining"')
+            self._progress_header_printed = True
+        
+        # Print data row (tab-separated)
+        print(f"{progress:.1f}%\t{iteration}\t{speed_it_s:.2f}\t{speed_ns_day:.2f}\t{eta_str}")
     
     @staticmethod
     def _format_time(seconds: float) -> str:

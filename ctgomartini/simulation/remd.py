@@ -404,11 +404,15 @@ class REMDRunner(SimulationRunner):
             # Choose reporter based on configuration
             _, _, _, XTCMultiStateReporter = _import_remd_dependencies()
             if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
+                n_replicas = len(system_list)
                 reporter = XTCMultiStateReporter(
                     self.output_data,
                     checkpoint_interval=self.config.remd_checkpoint_interval,
                     xtc_dir=self.config.remd_xtc_dir,
                     total_iterations=exchange_attempts,
+                    n_replicas=n_replicas,
+                    exc_freq=self.config.exc_freq,
+                    dt=self.config.dt,
                 )
             else:
                 reporter = MultiStateReporter(
@@ -465,11 +469,15 @@ class REMDRunner(SimulationRunner):
         # Load sampler from storage
         if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
             print(f"  [XTC Mode] Resuming with XTC separate storage")
+            n_replicas = self.config.replica_count
             xtc_reporter = XTCMultiStateReporter(
                 self.output_data,
                 checkpoint_interval=self.config.remd_checkpoint_interval,
                 xtc_dir=self.config.remd_xtc_dir,
                 total_iterations=exchange_attempts,
+                n_replicas=n_replicas,
+                exc_freq=self.config.exc_freq,
+                dt=self.config.dt,
             )
             self.sampler = ReplicaExchangeSampler.from_storage(xtc_reporter)
         else:
