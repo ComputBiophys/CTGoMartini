@@ -112,7 +112,7 @@ class SimulationConfig:
         # REMD output and advanced settings
         self.remd_output: str = 'output.nc'  # Main NetCDF output file
         self.remd_checkpoint_interval: int = 5  # Checkpoint interval (iterations)
-        self.remd_online_analysis_interval: int = 2000  # Online analysis interval (iterations)
+        self.remd_online_analysis_interval: int | None = 2000  # Online analysis interval (iterations), None to disable
         self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
         self.remd_reassign_velocities: bool = False  # Reassign velocities at each move
         self.remd_unsampled_topfiles: list[str] = []  # Unsampled state topology files
@@ -324,7 +324,11 @@ class SimulationConfig:
         elif param == 'REMD_CHECKPOINT_INTERVAL':
             self.remd_checkpoint_interval = int(value)
         elif param == 'REMD_ONLINE_ANALYSIS_INTERVAL':
-            self.remd_online_analysis_interval = int(value)
+            value_upper = value.upper()
+            if value_upper in ('0', 'NONE', 'NULL'):
+                self.remd_online_analysis_interval = None
+            else:
+                self.remd_online_analysis_interval = int(value)
         elif param == 'REMD_MIXING_SCHEME':
             self.remd_mixing_scheme = str(value)
         elif param == 'REMD_REASSIGN_VELOCITIES':
