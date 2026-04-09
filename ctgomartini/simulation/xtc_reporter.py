@@ -83,6 +83,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         # Progress tracking
         self._total_iterations: int | None = total_iterations
         self._progress_interval: int = progress_interval if progress_interval is not None else checkpoint_interval
+        self._progress_initialized: bool = False
         self._progress_header_printed: bool = False
         self._progress_start_time: float | None = None
         self._progress_start_iter: int | None = None
