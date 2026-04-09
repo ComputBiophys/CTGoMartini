@@ -11,6 +11,7 @@ This significantly reduces checkpoint file size while maintaining exact recovery
 from __future__ import annotations
 
 import os
+import time
 from typing import Any
 
 
@@ -34,6 +35,7 @@ class XTCMultiStateReporter(MultiStateReporter):
         _xtc_dir: Directory for XTC files
         _xtc_handles: Cache of XTCFile handles (replica_idx -> XTCFile)
         _xtc_timestep: Timestep in ps for XTC files
+        _total_iterations: Total number of iterations for progress display
     """
 
     def __init__(
@@ -46,6 +48,8 @@ class XTCMultiStateReporter(MultiStateReporter):
         position_interval: int = 1,
         velocity_interval: int = 1,
         xtc_dir: str = 'xtc_trajs',
+        total_iterations: int | None = None,
+        progress_interval: int | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -60,6 +64,8 @@ class XTCMultiStateReporter(MultiStateReporter):
             position_interval: Position write interval
             velocity_interval: Velocity write interval
             xtc_dir: Directory for XTC files (relative to storage directory)
+            total_iterations: Total number of iterations for progress display
+            progress_interval: Progress output interval (iterations, defaults to checkpoint_interval)
             **kwargs: Additional arguments passed to parent class
         """
         # Initialize XTC handles before super().__init__() 
@@ -67,6 +73,13 @@ class XTCMultiStateReporter(MultiStateReporter):
         self._xtc_handles: dict[int, XTCFile] = {}
         self._xtc_timestep: float | None = None
         self._xtc_interval: int | None = None  # MD steps between checkpoints
+        
+        # Progress tracking
+        self._total_iterations: int | None = total_iterations
+        self._progress_interval: int = progress_interval if progress_interval is not None else checkpoint_interval
+        self._progress_initialized: bool = False
+        self._progress_start_time: float | None = None
+        self._progress_start_iter: int | None = None
         
         # Setup XTC directory
         storage_dir = os.path.dirname(storage) or '.'
@@ -451,3 +464,84 @@ class XTCMultiStateReporter(MultiStateReporter):
             return int(storage.variables['current_iteration'][0])
         except (KeyError, AttributeError):
             return 0
+
+    def write_timestamp(self, iteration: int) -> None:
+        """Write timestamp and print progress.
+        
+        Overrides parent method to add progress output.
+        
+        Args:
+            iteration: Current iteration number
+        """
+        super().write_timestamp(iteration)
+        
+        # Initialize progress tracking on first call
+        if not self._progress_initialized:
+            self._progress_start_time = time.time()
+            self._progress_start_iter = iteration
+            self._progress_initialized = True
+        
+        # Print progress at specified intervals
+        if iteration % self._progress_interval == 0:
+            self._print_progress(iteration)
+    
+    def _print_progress(self, iteration: int) -> None:
+        """Print progress information.
+        
+        Args:
+            iteration: Current iteration number
+        """
+        if self._progress_start_time is None or self._progress_start_iter is None:
+            return
+            
+        elapsed = time.time() - self._progress_start_time
+        it_done = iteration - self._progress_start_iter
+        
+        if it_done <= 0:
+            return
+        
+        # Calculate speed (iterations per second)
+        speed = it_done / elapsed
+        
+        # Build progress string
+        if self._total_iterations is not None and self._total_iterations > 0:
+            progress = 100.0 * iteration / self._total_iterations
+            remaining_iters = self._total_iterations - iteration
+            eta_seconds = remaining_iters / speed if speed > 0 else float('inf')
+            
+            print(f"[REMD Progress] Iter {iteration}/{self._total_iterations} "
+                  f"({progress:.1f}%) | ETA: {self._format_time(eta_seconds)} | "
+                  f"{speed:.2f} it/s")
+        else:
+            # Without total iterations, just show current progress
+            print(f"[REMD Progress] Iter {iteration} | "
+                  f"Elapsed: {self._format_time(elapsed)} | "
+                  f"{speed:.2f} it/s")
+    
+    @staticmethod
+    def _format_time(seconds: float) -> str:
+        """Format time in human-readable format.
+        
+        Args:
+            seconds: Time in seconds
+            
+        Returns:
+            Formatted time string (e.g., "2:30:45" or "45:30")
+        """
+        if seconds == float('inf') or seconds < 0:
+            return "--"
+        
+        seconds = int(seconds)
+        days = seconds // 86400
+        seconds -= days * 86400
+        hours = seconds // 3600
+        seconds -= hours * 3600
+        minutes = seconds // 60
+        seconds -= minutes * 60
+        
+        if days > 0:
+            return f"{days}:{hours:02d}:{minutes:02d}:{seconds:02d}"
+        elif hours > 0:
+            return f"{hours}:{minutes:02d}:{seconds:02d}"
+        else:
+            return f"{minutes}:{seconds:02d}"

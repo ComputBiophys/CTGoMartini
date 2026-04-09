@@ -408,6 +408,7 @@ class REMDRunner(SimulationRunner):
                     self.output_data,
                     checkpoint_interval=self.config.remd_checkpoint_interval,
                     xtc_dir=self.config.remd_xtc_dir,
+                    total_iterations=exchange_attempts,
                 )
             else:
                 reporter = MultiStateReporter(
@@ -461,6 +462,7 @@ class REMDRunner(SimulationRunner):
                 self.output_data,
                 checkpoint_interval=self.config.remd_checkpoint_interval,
                 xtc_dir=self.config.remd_xtc_dir,
+                total_iterations=exchange_attempts,
             )
             self.sampler = ReplicaExchangeSampler.from_storage(xtc_reporter)
         else:
