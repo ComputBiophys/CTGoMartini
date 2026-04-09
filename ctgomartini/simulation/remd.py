@@ -161,7 +161,7 @@ class REMDRunner(SimulationRunner):
         velocities = None
 
         if self.config.ichk:
-            print(f"\n[Checkpoint] {self.config.ichk}")
+            print(f"\n[Checkpoint] {self.config.ichk}", flush=True)
             with open(self.config.ichk, "r") as f:
                 states = mm.XmlSerializer.deserialize(f.read())
             positions = states.getPositions()
@@ -177,7 +177,7 @@ class REMDRunner(SimulationRunner):
             self.replica_params["C1"],
             self.replica_params["C2"],
         )):
-            print(f"\n  [Replica {i}] beta={beta}, C1={C1}, C2={C2}")
+            print(f"\n  [Replica {i}] beta={beta}, C1={C1}, C2={C2}", flush=True)
             # Load topology
             top = MartiniTopFile(
                 self.config.topol,
@@ -198,7 +198,7 @@ class REMDRunner(SimulationRunner):
 
             # Check system charges
             if top.charges != 0:
-                print(f"[Warning] System charge: {top.charges} (expected 0)")
+                print(f"[Warning] System charge: {top.charges} (expected 0)", flush=True)
 
             # Check number of atoms
             assert len(positions) == top.topology.getNumAtoms(), (
@@ -264,7 +264,8 @@ class REMDRunner(SimulationRunner):
 
                 if top.charges != 0:
                     print(
-                        f"Warning: The charges of the system are {top.charges} instead of 0."
+                        f"Warning: The charges of the system are {top.charges} instead of 0.",
+                        flush=True,
                     )
 
                 assert len(positions) == top.topology.getNumAtoms(), (
@@ -325,7 +326,7 @@ class REMDRunner(SimulationRunner):
         start_time = datetime.datetime.now()
 
         # Load parameters
-        print("Loading parameters")
+        print("Loading parameters", flush=True)
 
         # Build systems
         system_list, unsampled_system_list = self._build_systems()
@@ -432,8 +433,8 @@ class REMDRunner(SimulationRunner):
                 )
 
             total_steps = exchange_attempts * exchange_frequency
-            print(f"\n[Production REMD]")
-            print(f"  Time step: {simulation_time_step}")
+            print(f"\n[Production REMD]", flush=True)
+            print(f"  Time step: {simulation_time_step}", flush=True)
             print(f"  Iterations: {exchange_attempts} ({total_steps:,} steps)", flush=True)
 
             self.sampler.run()
@@ -457,7 +458,7 @@ class REMDRunner(SimulationRunner):
                 f"Use run() to start a new simulation."
             )
 
-        print(f"\n[Extend REMD] {self.output_data}")
+        print(f"\n[Extend REMD] {self.output_data}", flush=True)
 
         # Calculate total simulation parameters first (needed for reporter)
         total_simulation_time = self.config.nstep * self.config.dt * u.picosecond
@@ -468,7 +469,7 @@ class REMDRunner(SimulationRunner):
 
         # Load sampler from storage
         if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
-            print(f"  [XTC Mode] Resuming with XTC separate storage")
+            print(f"  [XTC Mode] Resuming with XTC separate storage", flush=True)
             n_replicas = self.config.replica_count
             xtc_reporter = XTCMultiStateReporter(
                 self.output_data,
@@ -493,16 +494,16 @@ class REMDRunner(SimulationRunner):
         if n_iterations is not None:
             target_iteration = current_iteration + n_iterations
             target_steps = target_iteration * exchange_frequency
-            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)")
+            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)", flush=True)
             self.sampler.extend(n_iterations=n_iterations)
         else:
             # Run until original target is reached
             n_iter_remain = exchange_attempts - current_iteration
             if n_iter_remain <= 0:
                 total_steps = exchange_attempts * exchange_frequency
-                print(f"  Simulation already complete: {current_iteration}/{exchange_attempts} iterations ({current_steps:,}/{total_steps:,} steps)")
+                print(f"  Simulation already complete: {current_iteration}/{exchange_attempts} iterations ({current_steps:,}/{total_steps:,} steps)", flush=True)
                 return
             target_iteration = current_iteration + n_iter_remain
             target_steps = target_iteration * exchange_frequency
-            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)")
+            print(f"  Progress: iteration {current_iteration} → {target_iteration} ({current_steps:,} → {target_steps:,} steps)", flush=True)
             self.sampler.extend(n_iterations=n_iter_remain)

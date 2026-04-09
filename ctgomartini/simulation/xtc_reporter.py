@@ -534,11 +534,11 @@ class XTCMultiStateReporter(MultiStateReporter):
         
         # Print header on first call
         if not self._progress_header_printed:
-            print('#"Progress (%)"\t"Iteration"\t"Speed (it/s)"\t"Speed (ns/day)"\t"Time Remaining"')
+            print('#"Progress (%)"\t"Iteration"\t"Speed (it/s)"\t"Speed (ns/day)"\t"Time Remaining"', flush=True)
             self._progress_header_printed = True
         
         # Print data row (tab-separated)
-        print(f"{progress:.1f}%\t{iteration}\t{speed_it_s:.2f}\t{speed_ns_day:.2f}\t{eta_str}")
+        print(f"{progress:.1f}%\t{iteration}\t{speed_it_s:.2f}\t{speed_ns_day:.2f}\t{eta_str}", flush=True)
     
     @staticmethod
     def _format_time(seconds: float) -> str:
