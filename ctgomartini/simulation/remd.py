@@ -455,6 +455,13 @@ class REMDRunner(SimulationRunner):
 
         print(f"\n[Extend REMD] {self.output_data}")
 
+        # Calculate total simulation parameters first (needed for reporter)
+        total_simulation_time = self.config.nstep * self.config.dt * u.picosecond
+        simulation_time_step = self.config.dt * u.picosecond
+        simulation_steps = int(np.floor(total_simulation_time / simulation_time_step))
+        exchange_frequency = self.config.exc_freq
+        exchange_attempts = int(np.floor(simulation_steps / exchange_frequency))
+
         # Load sampler from storage
         if self.config.remd_xtc_output == 'yes' and XTCMultiStateReporter is not None:
             print(f"  [XTC Mode] Resuming with XTC separate storage")
@@ -470,13 +477,6 @@ class REMDRunner(SimulationRunner):
 
         # Set online analysis interval
         self.sampler._online_analysis_interval = self.config.remd_online_analysis_interval
-
-        # Calculate total simulation parameters
-        total_simulation_time = self.config.nstep * self.config.dt * u.picosecond
-        simulation_time_step = self.config.dt * u.picosecond
-        simulation_steps = int(np.floor(total_simulation_time / simulation_time_step))
-        exchange_frequency = self.config.exc_freq
-        exchange_attempts = int(np.floor(simulation_steps / exchange_frequency))
 
         # Determine number of iterations to run
         current_iteration = self.sampler.iteration
