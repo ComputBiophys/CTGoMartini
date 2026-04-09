@@ -188,3 +188,43 @@ class TestXTCMultiStateReporter:
 
             assert reporter_read.read_last_iteration() == 10
             reporter_read.close()
+
+    def test_progress_initialization(self):
+        """Test progress tracking attributes are initialized correctly."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            storage = os.path.join(tmpdir, "output.nc")
+            reporter = XTCMultiStateReporter(
+                storage=storage,
+                open_mode="w",
+                checkpoint_interval=5,
+                xtc_dir=os.path.join(tmpdir, "xtc"),
+                total_iterations=100,
+                n_replicas=4,
+                exc_freq=100,
+                dt=0.02,
+            )
+            
+            # Check progress attributes are initialized
+            assert reporter._total_iterations == 100
+            assert reporter._n_replicas == 4
+            assert reporter._exc_freq == 100
+            assert reporter._dt == 0.02
+            assert reporter._progress_interval == 5
+            assert reporter._progress_initialized is False
+            assert reporter._progress_header_printed is False
+            assert reporter._progress_start_time is None
+            assert reporter._progress_start_iter is None
+            reporter.close()
+
+    def test_format_time(self):
+        """Test time formatting utility."""
+        # Test various durations
+        assert XTCMultiStateReporter._format_time(45) == "0:45"
+        assert XTCMultiStateReporter._format_time(125) == "2:05"
+        assert XTCMultiStateReporter._format_time(3665) == "1:01:05"
+        assert XTCMultiStateReporter._format_time(90061) == "1:01:01:01"
+        
+        # Test edge cases
+        assert XTCMultiStateReporter._format_time(0) == "0:00"
+        assert XTCMultiStateReporter._format_time(float('inf')) == "--"
+        assert XTCMultiStateReporter._format_time(-1) == "--"
