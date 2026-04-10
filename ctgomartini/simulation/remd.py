@@ -23,6 +23,7 @@ from ctgomartini.simulation.base import (
     load_structure,
     generate_restraints,
     add_restraints,
+    add_plumed,
 )
 
 # Import MartiniTopFile here to avoid circular imports
@@ -217,9 +218,9 @@ class REMDRunner(SimulationRunner):
             if self.config.rest == "yes":
                 system = add_restraints(system, self.config)
 
-            # Add plumed (not supported)
+            # Add plumed
             if self.config.plumed == "yes":
-                raise ValueError("Error: Plumed is not supported!")
+                system = add_plumed(system, self.config.plumed_file)
 
             # Add barostat
             if self.config.pcouple == "yes":
@@ -283,8 +284,9 @@ class REMDRunner(SimulationRunner):
                 if self.config.rest == "yes":
                     system = add_restraints(system, self.config)
 
+                # Add plumed
                 if self.config.plumed == "yes":
-                    raise ValueError("Error: Plumed is not supported!")
+                    system = add_plumed(system, self.config.plumed_file)
 
                 if self.config.pcouple == "yes":
                     if self.config.p_type == "isotropic":

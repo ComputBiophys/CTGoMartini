@@ -91,6 +91,35 @@ def generate_restraints(
         g.writelines(newlines)
 
 
+def add_plumed(system: mm.System, plumed_file: str) -> mm.System:
+    """Add Plumed force to the system.
+
+    Args:
+        system: The OpenMM system to add Plumed force to.
+        plumed_file: Path to the Plumed script file.
+
+    Returns:
+        The system with Plumed force added.
+
+    Raises:
+        ImportError: If openmmplumed is not installed.
+    """
+    try:
+        from openmmplumed import PlumedForce
+    except ImportError as e:
+        raise ImportError(
+            "openmmplumed is required for Plumed support. "
+            "Install it with: conda install -c conda-forge openmmplumed"
+        ) from e
+
+    with open(plumed_file, "r") as f:
+        script = f.read()
+
+    system.addForce(PlumedForce(script))
+    print(f"  Added Plumed force from: {plumed_file}")
+    return system
+
+
 def add_restraints(system: System, inputs: SimulationConfig) -> System:
     """Add positional restraints to the system.
 
@@ -359,9 +388,9 @@ class SimulationRunner(ABC):
         if self.config.rest == "yes":
             system = add_restraints(system, self.config)
 
-        # Add plumed (not supported yet)
+        # Add plumed
         if self.config.plumed == "yes":
-            raise ValueError("Error: Plumed is not supported!")
+            system = add_plumed(system, self.config.plumed_file)
 
         # Add a barostat
         if self.config.pcouple == "yes":
