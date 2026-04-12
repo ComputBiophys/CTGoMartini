@@ -508,7 +508,7 @@ class XTCMultiStateReporter(MultiStateReporter):
             
         elapsed = time.time() - self._progress_start_time
         it_done = iteration - self._progress_start_iter
-        
+
         if it_done <= 0:
             return
         

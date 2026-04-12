@@ -77,14 +77,14 @@ def extract_state_topology(
     # Process multi_angles: extract entries for this state
     if 'multi_angles' in mol_top:
         state_angles = _extract_multi_entries(
-            mol_top['multi_angles'], state_str, state_idx=2, n_states=n_states
+            mol_top['multi_angles'], state_str, state_idx=3, n_states=n_states
         )
         mol_top['angles'] = mol_top.get('angles', []) + state_angles
     
     # Process multi_dihedrals: extract entries for this state
     if 'multi_dihedrals' in mol_top:
         state_dihedrals = _extract_multi_entries(
-            mol_top['multi_dihedrals'], state_str, state_idx=2, n_states=n_states
+            mol_top['multi_dihedrals'], state_str, state_idx=4, n_states=n_states
         )
         mol_top['dihedrals'] = mol_top.get('dihedrals', []) + state_dihedrals
     
