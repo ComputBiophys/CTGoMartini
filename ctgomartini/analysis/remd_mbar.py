@@ -515,12 +515,9 @@ class FESAnalyzer:
                       f"length_ratio={params['length_ratio']}, "
                       f"start_ratio={params['start_ratio']}, "
                       f"selected_state={params['selected_state']}")
-                
-                # Provide suggestions for common issues
-                if "FES calculation failed" in str(e):
-                    print(f"  Suggestion: Try adjusting left_bound/right_bound in analyze_kwargs "
-                          f"(current: left_bound={analyze_kwargs.get('left_bound', 3)}, "
-                          f"right_bound={analyze_kwargs.get('right_bound', 6)})")
+                print(f"  analyze_kwargs: {analyze_kwargs}")
+                print(f"  Original error: {type(e).__name__}: {e}")
+                print(f"  Traceback:\n{traceback.format_exc()}")
                 
                 # Store NaN results for failed parameters
                 results[value] = {
