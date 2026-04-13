@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import time
+from collections import deque
 from typing import Any
 
 
@@ -85,8 +86,10 @@ class XTCMultiStateReporter(MultiStateReporter):
         self._progress_interval: int = progress_interval if progress_interval is not None else checkpoint_interval
         self._progress_initialized: bool = False
         self._progress_header_printed: bool = False
-        self._progress_start_time: float | None = None
-        self._progress_start_iter: int | None = None
+        
+        # Sliding window for progress calculation (store recent iteration timestamps)
+        self._progress_window_size: int = 10  # Number of iterations to average
+        self._iteration_times: deque[tuple[int, float]] = deque(maxlen=self._progress_window_size)
         
         # For ns/day calculation
         self._n_replicas: int = n_replicas
@@ -489,8 +492,6 @@ class XTCMultiStateReporter(MultiStateReporter):
         
         # Initialize progress tracking on first call
         if not self._progress_initialized:
-            self._progress_start_time = time.time()
-            self._progress_start_iter = iteration
             self._progress_initialized = True
         
         # Print progress at specified intervals
@@ -500,20 +501,33 @@ class XTCMultiStateReporter(MultiStateReporter):
     def _print_progress(self, iteration: int) -> None:
         """Print progress information in StateDataReporter format.
         
+        Uses sliding window to calculate speed based on recent iterations,
+        providing more accurate real-time performance estimates.
+        
         Args:
             iteration: Current iteration number
         """
-        if self._progress_start_time is None or self._progress_start_iter is None:
-            return
-            
-        elapsed = time.time() - self._progress_start_time
-        it_done = iteration - self._progress_start_iter
-
-        if it_done <= 0:
+        current_time = time.time()
+        
+        # Record this iteration's timestamp
+        self._iteration_times.append((iteration, current_time))
+        
+        # Need at least 2 data points to calculate speed
+        if len(self._iteration_times) < 2:
             return
         
-        # Calculate speed (iterations per second)
-        speed_it_s = it_done / elapsed
+        # Calculate speed using sliding window (recent iterations only)
+        first_iter, first_time = self._iteration_times[0]
+        last_iter, last_time = self._iteration_times[-1]
+        
+        it_diff = last_iter - first_iter
+        time_diff = last_time - first_time
+        
+        if time_diff <= 0:
+            return
+        
+        # Speed based on sliding window (iterations per second)
+        speed_it_s = it_diff / time_diff
         
         # Calculate progress and ETA
         if self._total_iterations is not None and self._total_iterations > 0:
