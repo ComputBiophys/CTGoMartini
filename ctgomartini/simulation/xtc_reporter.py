@@ -141,8 +141,8 @@ class XTCMultiStateReporter(MultiStateReporter):
                     periodicBoxVectors=box_vectors,
                 )
 
-        # 2. Write to lightweight NetCDF checkpoint (always overwrite index 0)
-        self._write_lite_checkpoint(sampler_states, iteration)
+            # 2. Write to lightweight NetCDF checkpoint (always overwrite index 0)
+            self._write_lite_checkpoint(sampler_states, iteration)
 
     def read_sampler_states(
         self,
