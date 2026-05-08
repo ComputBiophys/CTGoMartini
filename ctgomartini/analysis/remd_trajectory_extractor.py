@@ -421,7 +421,6 @@ class REMDTrajectoryExtractor:
                     chunk_end = min(chunk_start + chunk_size, n_frames)
                     chunk_frame_indices = frame_indices[chunk_start:chunk_end]
                     
-                    # Read chunk in one operation (if possible)
                     for i, frame_idx in enumerate(chunk_frame_indices):
                         pos = storage.variables['positions'][frame_idx, replica_idx, :, :]
                         positions[chunk_start + i] = pos.astype(np.float32)
@@ -482,8 +481,11 @@ class REMDTrajectoryExtractor:
                 residue = omm_top.addResidue(atom.resname, chain)
                 current_resid = atom.resid
             
-            # Guess element from atom name
-            element = Element.getBySymbol(atom.name[0]) if atom.name[0].isalpha() else Element.getBySymbol('C')
+            # Guess element from atom name, fall back to 'C' for CG beads
+            try:
+                element = Element.getBySymbol(atom.name[0]) if atom.name[0].isalpha() else Element.getBySymbol('C')
+            except KeyError:
+                element = Element.getBySymbol('C')
             omm_top.addAtom(atom.name, element, residue)
         
         return omm_top
