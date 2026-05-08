@@ -95,11 +95,14 @@ class DRMSAnalyzer:
         return [np.array(dist) for dist in distances]
 
     def analyze_trajectory(self, structure, trajectory, atom_selection='name BB', cores=10, skip=1):
-        """Calculate dRMS for a trajectory against references."""
+        """Calculate dRMS for a trajectory against references.
+
+        Args:
+            trajectory: Single trajectory file path or list of paths.
+        """
         if not self.reference_distances:
             raise ValueError("Reference distances not calculated!")
 
-        # Load trajectory
         universe = mda.Universe(structure, trajectory)
         atoms = universe.select_atoms(atom_selection)
 
@@ -151,8 +154,8 @@ def parse_arguments():
     
     parser.add_argument('-s', '--structure', required=True,
                       help='Input structure file (gro/pdb)')
-    parser.add_argument('-f', '--trajectory', required=True,
-                      help='Input trajectory file (xtc/dcd)')
+    parser.add_argument('-f', '--trajectory', required=True, nargs='+',
+                      help='Input trajectory file(s) (xtc/dcd)')
     parser.add_argument('-r', '--references', required=True, nargs='+',
                       help='Reference structure files (gro/pdb)')
     parser.add_argument('--skip', type=int, default=1,

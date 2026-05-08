@@ -1,0 +1,48 @@
+mini_nstep  = 0                                 ; Number of steps for minimization
+mini_Tol    = 1000.0                            ; Minimization energy tolerance
+
+gen_vel     = no                                ; Do NOT regenerate velocities
+gen_temp    = 310                               ; Temperature for generating initial velocities (K)
+
+nstep       = 1000                              ; number of steps to run (relaxation)
+dt          = 0.002                             ; time-step (ps) - SMALL for relaxation
+b_step      = 0                                 ; set begininng step count
+append      = no                                ; start fresh from checkpoint
+
+input       = npt.gro                           ; not used when ichk is set
+topol       = system_Closed.top                 ; SWITCH to Closed topology
+ichk        = md_stateA.chk                     ; Load checkpoint from StateA production
+nstout      = 1000                              ; Writing output frequency (steps)
+nstdcd      = 1000                              ; Writing coordinates trajectory frequency (steps)
+output      = md_relax.gro
+output_pdb  = md_relax.pdb
+odcd        =
+oxtc        = md_relax.xtc
+ochk        = md_relax.chk
+
+defines     =
+
+rest        = no                                ; Turn on/off restraints
+rest_ref    = npt.gro                           ; Reference structure file
+rest_file   = restraints.txt
+gen_rest    = no                                ; Generate restraint file
+atomname    = BB                                ; Select atom name
+fc          = 1000.0                            ; Positional restraint force constant for restraint generation (kJ/mol/nm^2)
+gen_rest_file = restraints.txt                  ; Generated restraint file name
+
+plumed      = no                                ; Turn on/off plumed
+plumed_file =                                   ; Default: plumed.dat
+
+platform    = CUDA                              ; CPU, CUDA, OpenCL, Reference
+precision   = single                            ; single, mixed, double for CUDA and OpenCL. For CPU and Reference platforms, default precision is used.
+GPU_id      =
+temp        = 310                               ; Temperature (K)
+fric_coeff  = 0.1                               ; Friction coefficient for Langevin dynamics
+nonbonded_cutoff = 1.1                          ; Cutoff of the L-J and Coulombic interactions. Unit: nm
+epsilon_r   = 15.0                              ; epsilon_r
+const_tol   =                                   ; Set the distance tolerance within which constraints are maintained. default is 1e-5
+
+pcouple     = yes                               ; Turn on/off pressure coupling
+p_ref       = 1.0                               ; Pressure (Pref or Pxx, Pyy, Pzz; bar)
+p_type      = isotropic                         ; MonteCarloBarostat type: isotropic, membrane
+p_freq      = 100                               ; Pressure coupling frequency (steps)
