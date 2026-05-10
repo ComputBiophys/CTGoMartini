@@ -205,8 +205,6 @@ def _worker_setup(chk_file, ref_distances_list):
         ref_distances_list: List of reference distance arrays (n_pairs x 3).
     """
     import atexit
-    import numpy as np
-    import h5py
 
     global _CHK_HANDLE, _UNIQUE_ATOMS
     global _STATE_IDX_I, _STATE_IDX_J, _STATE_REF_DIST
@@ -248,8 +246,6 @@ def _worker_chunk(args):
     Returns:
         List of (times, drms) tuples, one per reference state.
     """
-    import numpy as np
-
     frame_indices, replica_indices, dt = args
 
     pos_all = _CHK_HANDLE["positions"][
@@ -334,16 +330,12 @@ def calculate_trajectory_drms(
             n_pairs=n_pairs,
             num_workers=num_workers,
         )
-        mem_per_chunk = len(replica_indices) * n_pairs * 3 * 4 * chunk_size
-        print(f"Auto-optimized chunk_size={chunk_size} "
-              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+        print(f"Auto-optimized chunk_size={chunk_size}")
     elif chunk_size is None:
         chunk_size = 100
         print(f"Using default chunk_size={chunk_size}")
     else:
-        mem_per_chunk = len(replica_indices) * n_pairs * 3 * 4 * chunk_size
-        print(f"Using specified chunk_size={chunk_size} "
-              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
+        print(f"Using specified chunk_size={chunk_size}")
 
     tasks = []
     for i in range(0, n_process_frames, chunk_size):
@@ -480,29 +472,26 @@ def main():
     frame_indices = np.arange(args.begin, frame_end, args.skip)
     n_process_frames = len(frame_indices)
 
+    if n_process_frames == 0:
+        print("Error: zero frames to process (check --begin, --end, --skip)")
+        return
+
     num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
 
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
 
     max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
-    if args.chunk_size is None:
+    if args.chunk_size is not None:
+        chunk_size = args.chunk_size
+        print(f"Using specified chunk_size={chunk_size}")
+    else:
         chunk_size = _estimate_chunk_size(
             n_process_frames=n_process_frames,
             n_replicas=len(replica_indices),
             n_pairs=max_pairs,
             num_workers=num_workers,
         )
-        mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
-        print(f"Auto-optimized chunk_size={chunk_size} "
-              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
-    elif args.chunk_size is not None:
-        chunk_size = args.chunk_size
-        mem_per_chunk = len(replica_indices) * max_pairs * 3 * 4 * chunk_size
-        print(f"Using specified chunk_size={chunk_size} "
-              f"(~{_format_bytes(mem_per_chunk)} per chunk)")
-    else:
-        chunk_size = 100
-        print(f"Using default chunk_size={chunk_size}")
+        print(f"Auto-optimized chunk_size={chunk_size}")
 
     print(f"Using {num_workers} workers")
 
