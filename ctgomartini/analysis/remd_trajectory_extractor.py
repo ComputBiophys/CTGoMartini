@@ -783,7 +783,7 @@ def main():
         help="Number of parallel XTC writer processes",
     )
     parser.add_argument(
-        "-n", "--num-workers", type=int, default=10,
+        "-n", "--num-workers", type=int, default=None,
         help="Set both --num-readers and --num-writers to this value",
     )
     parser.add_argument(
