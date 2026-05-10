@@ -424,10 +424,12 @@ def extract_states(
         n_frames_chk, n_replicas_chk, n_atoms_nc, _ = pos_var.shape
 
     if n_frames_chk != n_frames_total:
-        raise ValueError(
-            f"Frame count mismatch: output.nc has {n_frames_total}, "
-            f"checkpoint has {n_frames_chk}"
+        print(
+            f"Warning: output.nc has {n_frames_total} state records, "
+            f"checkpoint has {n_frames_chk} frames. "
+            f"Using min({n_frames_total}, {n_frames_chk})."
         )
+        n_frames_total = min(n_frames_total, n_frames_chk)
     if n_replicas_chk != n_replicas_total:
         raise ValueError(
             f"Replica count mismatch: output.nc has {n_replicas_total}, "
@@ -689,161 +691,6 @@ def _write_gro(path: str, xyz: np.ndarray):
                 f"{pos[0]:8.3f}{pos[1]:8.3f}{pos[2]:8.3f}\n"
             )
         f.write("  10.00000  10.00000  10.00000\n")
-
-
-def _detect_format(filename: str) -> str:
-    """Detect trajectory format from file extension.
-
-    Args:
-        filename: Output filename.
-
-    Returns:
-        Format string: 'xtc', 'dcd', or 'pdb'.
-    """
-    ext = os.path.splitext(filename)[1].lower()
-    formats = {".xtc": "xtc", ".dcd": "dcd", ".pdb": "pdb"}
-    if ext not in formats:
-        raise ValueError(f"Cannot detect format from extension '{ext}'")
-    return formats[ext]
-
-
-def _optimize_chunk_size(n_frames: int, n_atoms: int, num_workers: int) -> int:
-    """Optimize chunk size for batch reading.
-
-    Args:
-        n_frames: Total frames to process.
-        n_atoms: Number of atoms.
-        num_workers: Number of parallel workers.
-
-    Returns:
-        Optimal chunk size.
-    """
-    bytes_per_frame = n_atoms * 3 * 4
-    target_frames = int((50 * 1024 * 1024) / max(bytes_per_frame, 1))
-    min_chunks = num_workers * 2
-    max_chunk = max(1, n_frames // min_chunks)
-    chunk_size = min(target_frames, max_chunk)
-    chunk_size = max(10, min(chunk_size, 500))
-    return min(chunk_size, n_frames)
-
-
-class REMDTrajectoryExtractor:
-    """Backward-compatible wrapper around the new functional API.
-
-    Maintains the old OOP interface for callers that rely on it.
-    """
-
-    def __init__(self, netcdf_file, topology_file, checkpoint_file=None,
-                 cache_states=True):
-        self.netcdf_file = netcdf_file
-        self.topology_file = topology_file
-        self.checkpoint_file = checkpoint_file or "output_checkpoint.nc"
-        self.cache_states = cache_states
-
-        # Load topology metadata
-        import MDAnalysis as mda
-        u = mda.Universe(self.topology_file)
-        self.n_atoms = len(u.atoms)
-        self.atom_names = u.atoms.names
-        self.resnames = u.atoms.resnames
-        self.resids = u.atoms.resids
-
-        # Load checkpoint metadata
-        with h5py.File(self.checkpoint_file, "r") as f:
-            pos_var = f["positions"]
-            self.n_frames = pos_var.shape[0]
-            self.n_replicas = pos_var.shape[1]
-            self.n_atoms_nc = pos_var.shape[2]
-
-        if self.n_atoms_nc != self.n_atoms:
-            raise ValueError(
-                f"Atom count mismatch: topology has {self.n_atoms}, "
-                f"checkpoint has {self.n_atoms_nc}"
-            )
-
-        # Load states if available
-        try:
-            with h5py.File(self.netcdf_file, "r") as f:
-                self.state_trajectories = f["states"][:]
-        except Exception:
-            self.state_trajectories = np.tile(
-                np.arange(self.n_replicas), (self.n_frames, 1)
-            )
-
-        # Default timestep
-        self.dt = _get_timestep(self.netcdf_file, self.checkpoint_file)
-
-    def get_frame(self, frame_idx, replica_idx=None, state_idx=None):
-        if replica_idx is not None and state_idx is not None:
-            raise ValueError("Cannot specify both replica_idx and state_idx")
-        if replica_idx is not None:
-            rep = replica_idx
-        else:
-            matching = np.where(
-                self.state_trajectories[frame_idx] == state_idx
-            )[0]
-            if len(matching) == 0:
-                raise ValueError(
-                    f"No replica in state {state_idx} at frame {frame_idx}"
-                )
-            rep = matching[0]
-        with h5py.File(self.checkpoint_file, "r") as f:
-            return f["positions"][frame_idx, rep, :, :] * 10.0
-
-    def save_frame(self, frame_idx, output, replica_idx=None, state_idx=None):
-        positions = self.get_frame(frame_idx, replica_idx, state_idx)
-        positions_nm = positions / 10.0
-        n_atoms = positions.shape[0]
-
-        ext = os.path.splitext(output)[1].lower()
-        if ext == ".pdb":
-            _write_pdb(output, positions_nm)
-        elif ext == ".gro":
-            _write_gro(output, positions_nm)
-        elif ext in (".xtc", ".dcd"):
-            import mdtraj as md
-            xyz = np.ascontiguousarray(positions_nm, dtype=np.float32).reshape(1, n_atoms, 3)
-            traj = md.Trajectory(xyz, None, time=np.array([frame_idx], dtype=np.float32))
-            if ext == ".xtc":
-                traj.save_xtc(output)
-            else:
-                traj.save_dcd(output)
-        else:
-            raise ValueError(f"Unsupported format: {ext}")
-
-    def save_replica_trajectories(self, output_dir, output_pattern="replica_{i}.xtc",
-                                   frame_begin=0, frame_end=None, frame_stride=1,
-                                   num_workers=None, replicas=None):
-        extract_replicas(
-            nc_file=self.netcdf_file,
-            chk_file=self.checkpoint_file,
-            pdb_file=self.topology_file,
-            output_dir=output_dir,
-            output_pattern=output_pattern,
-            frame_begin=frame_begin,
-            frame_end=frame_end,
-            frame_stride=frame_stride,
-            replicas=replicas,
-            num_readers=num_workers or 8,
-            num_writers=num_workers or 8,
-        )
-
-    def save_state_trajectories(self, output_dir, output_pattern="state_{i}.xtc",
-                                 frame_begin=0, frame_end=None, frame_stride=1,
-                                 num_workers=None, states=None):
-        extract_states(
-            nc_file=self.netcdf_file,
-            chk_file=self.checkpoint_file,
-            pdb_file=self.topology_file,
-            output_dir=output_dir,
-            output_pattern=output_pattern,
-            frame_begin=frame_begin,
-            frame_end=frame_end,
-            frame_stride=frame_stride,
-            states=states,
-            num_readers=num_workers or 8,
-            num_writers=num_workers or 8,
-        )
 
 
 def main():
