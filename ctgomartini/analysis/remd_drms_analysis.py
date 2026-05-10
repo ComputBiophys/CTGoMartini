@@ -433,8 +433,8 @@ def main():
                         help="Process every N-th frame")
     parser.add_argument("-n", "--num-workers", type=int, default=10,
                         help="Number of parallel workers (default: CPU count)")
-    parser.add_argument("--chunk-size", type=int, default=None,
-                        help="Frames per chunk (auto-optimized if not specified)")
+    parser.add_argument("--chunk-size", type=int, default=10,
+                        help="Frames per chunk")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
 
@@ -479,11 +479,7 @@ def main():
 
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
 
-    if args.chunk_size is not None:
-        chunk_size = args.chunk_size
-        print(f"Using specified chunk_size={chunk_size}")
-    else:
-        chunk_size = _DEFAULT_CHUNK_SIZE
+    chunk_size = args.chunk_size
 
     print(f"Using {num_workers} workers")
 
