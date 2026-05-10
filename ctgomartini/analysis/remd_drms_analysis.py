@@ -12,7 +12,7 @@ import argparse
 import multiprocessing
 import time
 import warnings
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Optional, Tuple
 
 import h5py
@@ -109,6 +109,51 @@ def _estimate_chunk_size(
     chunk_size = max(10, chunk_size)
 
     return chunk_size
+
+
+def _run_with_progress(executor, tasks):
+    """Execute tasks via ProcessPoolExecutor with progress and ETA reporting.
+
+    Submits all tasks, then collects results as they complete,
+    printing progress at most once every 2 seconds.
+
+    Args:
+        executor: ProcessPoolExecutor instance.
+        tasks: List of task tuples.
+
+    Returns:
+        List of results in submission order.
+    """
+    n_total = len(tasks)
+    futures = {executor.submit(_worker_chunk, t): i for i, t in enumerate(tasks)}
+    results = [None] * n_total
+    n_done = 0
+    t_start = time.perf_counter()
+    last_print = 0.0
+    print_interval = 2.0  # seconds
+
+    for future in as_completed(futures):
+        idx = futures[future]
+        results[idx] = future.result()
+        n_done += 1
+
+        now = time.perf_counter()
+        if now - last_print >= print_interval or n_done == n_total:
+            elapsed = now - t_start
+            fps = n_done / elapsed if elapsed > 0 else 0
+            if fps > 0:
+                eta = (n_total - n_done) / fps
+            else:
+                eta = 0
+            pct = n_done * 100 / n_total
+            print(
+                f"  [{n_done}/{n_total} chunks, {pct:.0f}%] "
+                f"elapsed: {elapsed:.0f}s, ETA: {eta:.0f}s, "
+                f"speed: {fps:.1f} chunks/s"
+            )
+            last_print = now
+
+    return results
 
 
 def calculate_reference_distances(
@@ -351,7 +396,7 @@ def calculate_trajectory_drms(
         initializer=_worker_setup,
         initargs=(checkpoint_file, [ref_distances]),
     ) as executor:
-        chunk_results = list(executor.map(_worker_chunk, tasks))
+        chunk_results = _run_with_progress(executor, tasks)
     elapsed = time.time() - start_time
 
     all_times = np.concatenate([r[0][0] for r in chunk_results])
@@ -507,7 +552,7 @@ def main():
         initializer=_worker_setup,
         initargs=(args.checkpoint, all_ref_distances),
     ) as executor:
-        all_chunk_results = list(executor.map(_worker_chunk, tasks))
+        all_chunk_results = _run_with_progress(executor, tasks)
 
     elapsed = time.time() - start_time
     print(f"\nComputation time: {elapsed:.1f}s ({n_process_frames/elapsed:.1f} fps)")
