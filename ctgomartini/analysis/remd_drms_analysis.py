@@ -231,7 +231,7 @@ def calculate_reference_distances(
 
 # ---- Worker process globals (set once per process via initializer) ----
 
-_CHK_FILE = None
+_CHK_HANDLE = None
 _UNIQUE_ATOMS = None
 _STATE_IDX_I = None
 _STATE_IDX_J = None
@@ -239,20 +239,23 @@ _STATE_REF_DIST = None
 
 
 def _worker_setup(chk_file, ref_distances_list):
-    """Initialize worker process globals with pre-computed reference data.
+    """Initialize worker process globals.
 
     Called once per worker process by ProcessPoolExecutor initializer.
-    Pre-computes atom index mappings to avoid per-task pickle overhead.
-    Each _worker_chunk call opens its own h5py handle for cold-cache reads.
+    Opens an h5py handle (reused across all tasks in this worker) and
+    pre-computes atom index mappings to avoid per-task pickle overhead.
 
     Args:
         chk_file: Path to the checkpoint HDF5 file.
         ref_distances_list: List of reference distance arrays (n_pairs x 3).
     """
-    global _CHK_FILE, _UNIQUE_ATOMS
+    import atexit
+
+    global _CHK_HANDLE, _UNIQUE_ATOMS
     global _STATE_IDX_I, _STATE_IDX_J, _STATE_REF_DIST
 
-    _CHK_FILE = chk_file
+    _CHK_HANDLE = h5py.File(chk_file, "r")
+    atexit.register(_CHK_HANDLE.close)
 
     atom_groups = []
     for ref_dist in ref_distances_list:
@@ -276,10 +279,11 @@ def _worker_setup(chk_file, ref_distances_list):
 
 
 def _worker_chunk(args):
-    """Process a chunk of frames, opening a fresh h5py handle per task.
+    """Process a chunk of frames using the process-global HDF5 handle.
 
-    Each call opens its own h5py handle for cold-cache reads, ensuring
-    uniform I/O cost per chunk. Reference data accessed from process globals.
+    Reads positions for all frames in the chunk via a single HDF5 slice,
+    then computes dRMS for each reference state. Reference data and
+    atom index mappings are accessed from process globals (set by initializer).
 
     Args:
         args: Tuple of (frame_indices, replica_indices, dt).
@@ -287,14 +291,11 @@ def _worker_chunk(args):
     Returns:
         List of (times, drms) tuples, one per reference state.
     """
-    import h5py
-
     frame_indices, replica_indices, dt = args
 
-    with h5py.File(_CHK_FILE, "r") as f:
-        pos_all = f["positions"][
-            list(frame_indices), :, :, :
-        ][:, :, _UNIQUE_ATOMS, :]
+    pos_all = _CHK_HANDLE["positions"][
+        list(frame_indices), :, :, :
+    ][:, :, _UNIQUE_ATOMS, :]
 
     # Filter to requested replicas (read all from HDF5, slice in numpy)
     pos_all = pos_all[:, replica_indices, :, :]
