@@ -349,6 +349,16 @@ def extract_replicas(
         shm.close()
         shm.unlink()
 
+        # Progress report
+        elapsed = time.perf_counter() - t_start
+        fps = (block_idx + 1) * block_frames / elapsed if elapsed > 0 else 0
+        eta = (n_frames_out - (block_idx + 1) * block_frames) / fps if fps > 0 else 0
+        print(
+            f"  [{block_idx + 1}/{n_blocks} blocks, {(block_idx + 1) * 100 / n_blocks:.0f}%] "
+            f"elapsed: {elapsed:.0f}s, ETA: {eta:.0f}s, "
+            f"read: {t_read_total:.1f}s, write: {t_write_total:.1f}s"
+        )
+
     elapsed = time.perf_counter() - t_start
     total_gb = sum(
         os.path.getsize(
@@ -549,6 +559,15 @@ def extract_states(
 
         shm.close()
         shm.unlink()
+
+        elapsed = time.perf_counter() - t_start
+        fps = (block_idx + 1) * block_frames / elapsed if elapsed > 0 else 0
+        eta = (n_frames_out - (block_idx + 1) * block_frames) / fps if fps > 0 else 0
+        print(
+            f"  [{block_idx + 1}/{n_blocks} blocks, {(block_idx + 1) * 100 / n_blocks:.0f}%] "
+            f"elapsed: {elapsed:.0f}s, ETA: {eta:.0f}s, "
+            f"read: {t_read_total:.1f}s, write: {t_write_total:.1f}s"
+        )
 
     elapsed = time.perf_counter() - t_start
     print(

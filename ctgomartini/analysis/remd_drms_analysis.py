@@ -74,41 +74,7 @@ def _format_bytes(size_bytes: int) -> str:
     return f"{size_bytes:.1f} TB"
 
 
-def _estimate_chunk_size(
-    n_process_frames: int,
-    n_replicas: int,
-    n_pairs: int,
-    num_workers: int,
-) -> int:
-    """Automatically estimate optimal chunk_size based on worker count.
-
-    Targets one task per worker since dRMS has uniform per-frame cost.
-    Bounded by memory limit (500 MB) and absolute limits [10, 1000].
-
-    Args:
-        n_process_frames: Number of frames to process.
-        n_replicas: Number of replicas.
-        n_pairs: Number of atom pairs (for dRMS calculation).
-        num_workers: Number of worker processes.
-
-    Returns:
-        Optimal chunk_size.
-    """
-    if n_process_frames <= 0:
-        return 1
-
-    chunk_size = max(10, n_process_frames // max(num_workers, 1))
-
-    bytes_per_frame = n_replicas * n_pairs * 3 * 4
-    if bytes_per_frame > 0:
-        max_mem = 500 * 1024 * 1024
-        max_cs_memory = max(10, int(max_mem / bytes_per_frame))
-        chunk_size = min(chunk_size, max_cs_memory)
-
-    chunk_size = min(chunk_size, 1000, n_process_frames)
-    chunk_size = max(10, chunk_size)
-
-    return chunk_size
+_DEFAULT_CHUNK_SIZE = 10
 
 
 def _run_with_progress(executor, tasks):
@@ -327,7 +293,6 @@ def calculate_trajectory_drms(
     skip: int = 1,
     num_workers: Optional[int] = None,
     chunk_size: Optional[int] = None,
-    auto_chunk: bool = True,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """Calculate dRMS for entire trajectory using parallel processing.
 
@@ -342,8 +307,7 @@ def calculate_trajectory_drms(
         replica_indices: Replica indices to analyze (None for all).
         skip: Process every N-th frame.
         num_workers: Number of parallel workers (default: CPU count).
-        chunk_size: Frames per worker task (auto-optimized if None).
-        auto_chunk: Whether to automatically optimize chunk_size.
+        chunk_size: Frames per worker task (default: 10).
 
     Returns:
         Tuple of (times, drms_array) where drms_array is (n_frames, n_replicas).
@@ -367,18 +331,8 @@ def calculate_trajectory_drms(
         num_workers = multiprocessing.cpu_count()
     num_workers = min(num_workers, n_process_frames)
 
-    n_pairs = len(ref_distances)
-    if chunk_size is None and auto_chunk:
-        chunk_size = _estimate_chunk_size(
-            n_process_frames=n_process_frames,
-            n_replicas=len(replica_indices),
-            n_pairs=n_pairs,
-            num_workers=num_workers,
-        )
-        print(f"Auto-optimized chunk_size={chunk_size}")
-    elif chunk_size is None:
-        chunk_size = 100
-        print(f"Using default chunk_size={chunk_size}")
+    if chunk_size is None:
+        chunk_size = _DEFAULT_CHUNK_SIZE
     else:
         print(f"Using specified chunk_size={chunk_size}")
 
@@ -525,18 +479,11 @@ def main():
 
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
 
-    max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
     if args.chunk_size is not None:
         chunk_size = args.chunk_size
         print(f"Using specified chunk_size={chunk_size}")
     else:
-        chunk_size = _estimate_chunk_size(
-            n_process_frames=n_process_frames,
-            n_replicas=len(replica_indices),
-            n_pairs=max_pairs,
-            num_workers=num_workers,
-        )
-        print(f"Auto-optimized chunk_size={chunk_size}")
+        chunk_size = _DEFAULT_CHUNK_SIZE
 
     print(f"Using {num_workers} workers")
 

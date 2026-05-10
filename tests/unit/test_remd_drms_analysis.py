@@ -137,7 +137,6 @@ class TestCalculateTrajectoryDrms:
             replica_indices=np.array([0]),
             skip=1,
             num_workers=1,
-            auto_chunk=False,
             chunk_size=2,
         )
         
@@ -166,7 +165,6 @@ class TestCalculateTrajectoryDrms:
             replica_indices=np.array([0, 1, 2]),
             skip=1,
             num_workers=2,
-            auto_chunk=False,
             chunk_size=2,
         )
         
@@ -191,7 +189,6 @@ class TestCalculateTrajectoryDrms:
             replica_indices=np.array([0]),
             skip=1,
             num_workers=1,
-            auto_chunk=False,
             chunk_size=4,
         )
         
@@ -202,7 +199,6 @@ class TestCalculateTrajectoryDrms:
             replica_indices=np.array([0]),
             skip=2,
             num_workers=1,
-            auto_chunk=False,
             chunk_size=2,
         )
         
@@ -246,7 +242,6 @@ class TestIntegrationWithFixtures:
                 replica_indices=np.array([0, 1]),
                 skip=1,
                 num_workers=1,
-                auto_chunk=False,
                 chunk_size=4,
             )
             
@@ -289,7 +284,6 @@ class TestIntegrationWithFixtures:
             replica_indices=np.array([0]),
             skip=1,
             num_workers=1,
-            auto_chunk=False,
             chunk_size=4,
         )
         assert drms1.shape[1] == 1
@@ -302,7 +296,6 @@ class TestIntegrationWithFixtures:
             replica_indices=None,  # All replicas
             skip=1,
             num_workers=1,
-            auto_chunk=False,
             chunk_size=4,
         )
         assert drms_all.shape[1] >= 2  # At least 2 replicas
