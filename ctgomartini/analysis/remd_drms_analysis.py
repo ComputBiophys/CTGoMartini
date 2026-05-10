@@ -438,8 +438,6 @@ def main():
                         help="Frames per chunk (auto-optimized if not specified)")
     parser.add_argument("--auto-chunk", action="store_true", default=True,
                         help="Automatically optimize chunk size (enabled by default)")
-    parser.add_argument("--no-auto-chunk", action="store_false", dest="auto_chunk",
-                        help="Disable automatic chunk size optimization")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
 
