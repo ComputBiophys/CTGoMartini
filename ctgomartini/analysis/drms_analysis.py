@@ -164,7 +164,7 @@ def parse_arguments():
                       help='Atom selection criteria')
     parser.add_argument('-prefix', '--output_prefix', default='drms',
                       help='Output filename prefix')
-    parser.add_argument('-n', '--cores', type=int, default=10,
+    parser.add_argument('-n', '--num-workers', type=int, default=10,
                       help='Number of CPU cores to use')
 
     return parser.parse_args()
@@ -181,7 +181,7 @@ def main():
         'min_difference': 5.0,
         'excluded_residues': 4,
         'atom_selection': args.selection,
-        'cores': args.cores,
+        'num_workers': args.num_workers,
         'skip': args.skip
     }
     
@@ -200,7 +200,7 @@ def main():
         args.structure,
         args.trajectory,
         atom_selection=default_params['atom_selection'],
-        cores=default_params['cores'],
+        cores=default_params['num_workers'],
         skip=default_params['skip']
     )
     

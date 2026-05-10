@@ -771,7 +771,7 @@ def main():
         help="State index (for --mode frame)",
     )
     parser.add_argument(
-        "--block-frames", type=int, default=5000,
+        "--block-frames", type=int, default=500,
         help="Frames per block; tune for available RAM",
     )
     parser.add_argument(
@@ -783,7 +783,7 @@ def main():
         help="Number of parallel XTC writer processes",
     )
     parser.add_argument(
-        "-np", "--num-workers", type=int, default=None,
+        "-n", "--num-workers", type=int, default=10,
         help="Set both --num-readers and --num-writers to this value",
     )
     parser.add_argument(

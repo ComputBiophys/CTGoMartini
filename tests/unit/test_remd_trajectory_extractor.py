@@ -184,13 +184,13 @@ class TestCLIArguments:
             assert result == 1
 
     def test_cli_num_workers_sets_both(self):
-        """Test that -np sets both num_readers and num_writers."""
+        """Test that -n sets both num_readers and num_writers."""
         test_args = [
             "-nc", "output.nc",
             "-p", "topology.pdb",
             "--mode", "replica",
             "-o", "./output",
-            "-np", "4",
+            "-n", "4",
         ]
         with patch("sys.argv", ["remd_trajectory_extractor"] + test_args):
             with patch("ctgomartini.analysis.remd_trajectory_extractor.extract_replicas") as mock_extract:
