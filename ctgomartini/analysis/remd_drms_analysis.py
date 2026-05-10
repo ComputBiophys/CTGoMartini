@@ -430,6 +430,14 @@ def main():
                         help="Minimum difference between references")
     parser.add_argument("--excl-res", type=int, default=4,
                         help="Residue exclusion distance")
+    parser.add_argument(
+        "-b", "--begin", type=int, default=0,
+        help="Start frame (inclusive)",
+    )
+    parser.add_argument(
+        "-e", "--end", type=int, default=None,
+        help="End frame (exclusive, default: all)",
+    )
     parser.add_argument("--skip", type=int, default=1,
                         help="Process every N-th frame")
     parser.add_argument("--num-workers", type=int, default=None,
@@ -468,7 +476,8 @@ def main():
     if replica_indices is None:
         replica_indices = np.arange(n_replicas)
 
-    frame_indices = np.arange(0, n_frames, args.skip)
+    frame_end = args.end if args.end is not None else n_frames
+    frame_indices = np.arange(args.begin, frame_end, args.skip)
     n_process_frames = len(frame_indices)
 
     num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
