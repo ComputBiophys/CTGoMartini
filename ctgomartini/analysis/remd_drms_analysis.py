@@ -431,8 +431,8 @@ def main():
     )
     parser.add_argument("--skip", type=int, default=1,
                         help="Process every N-th frame")
-    parser.add_argument("-n", "--num-workers", type=int, default=None,
-                        help="Number of parallel workers (default: CPU count)")
+    parser.add_argument("-n", "--num-workers", type=int, default=10,
+                        help="Number of parallel workers")
     parser.add_argument("--chunk-size", type=int, default=10,
                         help="Frames per chunk")
     parser.add_argument("--replicas", type=str, default="all",
@@ -475,7 +475,7 @@ def main():
         print("Error: zero frames to process (check --begin, --end, --skip)")
         return
 
-    num_workers = args.num_workers if args.num_workers else multiprocessing.cpu_count()
+    num_workers = args.num_workers
 
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
 
