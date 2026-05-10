@@ -102,9 +102,9 @@ def _reader_worker(args):
 
     Args:
         args: Tuple of (chk_file, shm_name, shm_shape, r_start_local,
-              r_end_global, r_start_global, _unused, stride).
+              r_end_local, r_start_global, r_end_global, stride).
     """
-    chk_file, shm_name, shm_shape, r_start_local, r_end_global, r_start_global, _unused, stride = args
+    chk_file, shm_name, shm_shape, r_start_local, r_end_local, r_start_global, r_end_global, stride = args
 
     shm = shared_memory.SharedMemory(name=shm_name)
     try:
