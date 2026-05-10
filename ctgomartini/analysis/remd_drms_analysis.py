@@ -431,7 +431,7 @@ def main():
     )
     parser.add_argument("--skip", type=int, default=1,
                         help="Process every N-th frame")
-    parser.add_argument("-n", "--num-workers", type=int, default=10,
+    parser.add_argument("-n", "--num-workers", type=int, default=None,
                         help="Number of parallel workers (default: CPU count)")
     parser.add_argument("--chunk-size", type=int, default=10,
                         help="Frames per chunk")
