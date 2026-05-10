@@ -30,6 +30,8 @@ dependencies = [
     "matplotlib>=3.3.3",
     "vermouth==0.14.0",
     "openmm>=8.1",
+    "h5py",
+    "mdtraj",
 ]
 
 [project.optional-dependencies]

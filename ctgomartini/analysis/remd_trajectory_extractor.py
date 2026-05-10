@@ -760,7 +760,7 @@ def main():
         help="Number of parallel HDF5 reader processes",
     )
     parser.add_argument(
-        "--num-writers", type=int, default=21,
+        "--num-writers", type=int, default=11,
         help="Number of parallel XTC writer processes",
     )
     parser.add_argument(
