@@ -436,8 +436,9 @@ def main():
                         help="Number of parallel workers (default: CPU count)")
     parser.add_argument("--chunk-size", type=int, default=None,
                         help="Frames per chunk (auto-optimized if not specified)")
-    parser.add_argument("--auto-chunk", action="store_true", default=True,
-                        help="Automatically optimize chunk size (enabled by default)")
+    parser.add_argument("--auto-chunk", type=str, choices=["True", "False"],
+                        default="True",
+                        help="Automatically optimize chunk size (default: True)")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
 
@@ -478,7 +479,7 @@ def main():
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
 
     max_pairs = max(len(ref_dist) for ref_dist in all_ref_distances)
-    if args.chunk_size is None and args.auto_chunk:
+    if args.chunk_size is None and args.auto_chunk == "True":
         chunk_size = _estimate_chunk_size(
             n_process_frames=n_process_frames,
             n_replicas=len(replica_indices),
