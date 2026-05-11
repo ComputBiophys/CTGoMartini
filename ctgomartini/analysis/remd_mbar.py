@@ -320,7 +320,7 @@ class FESAnalyzer:
             raise RuntimeError(
                 f"FES calculation failed: {e}. "
                 f"This often occurs when the data range is too narrow or "
-                f"some bins have no samples. Try adjusting left_bound/right_bound "
+                f"some bins have no samples. Try adjusting ranges "
                 f"or using a different start_ratio."
             ) from e
         
