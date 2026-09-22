@@ -72,8 +72,10 @@ def write_itp(
                 'functype, phi, k, n\n'
             )
         elif category == 'multi_contacts':
+            rcut_column = ', rcut' if any(len(fields) == 8 for fields in fields_list) else ''
             itp_lines.append(
-                ';atomid1, atomid2, n_states, state, functype, sigma, epsilon\n'
+                ';atomid1, atomid2, n_states, state, functype, sigma, epsilon'
+                f'{rcut_column}\n'
             )
 
         # Process each entry in the current category
@@ -115,4 +117,3 @@ def write_itp(
     # Write the parameters file
     with open(params_file, 'w') as f:
         f.writelines(params_lines)
-
