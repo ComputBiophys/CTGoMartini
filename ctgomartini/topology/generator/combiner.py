@@ -484,7 +484,8 @@ def combine_exclusions(mols_exclusions_list: list[list[list[str]]]) -> list[list
 def combine_contacts(
     n_mols: int,
     mols_contacts_list: list[list[list[str]]],
-    cutoff: float
+    cutoff: float,
+    contact_rcut: float | None = None,
 ) -> tuple[list[list[str]], list[list[str]]]:
     """Combine contacts from multiple molecular states.
 
@@ -492,6 +493,9 @@ def combine_contacts(
         n_mols: Number of molecules being combined.
         mols_contacts_list: List of contact lists from each molecule.
         cutoff: Distance cutoff for considering contacts as similar.
+        contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
+            When provided, output entries use adjustable 6-12 contacts
+            (functype 2). When omitted, the legacy topology format is kept.
 
     Returns:
         Tuple of (mbcontacts, mbmulti_contacts) where mbcontacts are
@@ -522,7 +526,15 @@ def combine_contacts(
             for fields in value:
                 state = fields[0]
                 fields = fields[1:]
-                newfields = fields[:2] + [str(n_mols), state] + fields[2:]
+                if contact_rcut is None:
+                    newfields = fields[:2] + [str(n_mols), state] + fields[2:]
+                else:
+                    newfields = (
+                        fields[:2]
+                        + [str(n_mols), state, '2']
+                        + fields[3:5]
+                        + [str(contact_rcut)]
+                    )
                 mbmulti_contacts.append(newfields)
         else:
             sigma_list = [float(fields[1:][3]) for fields in value]
@@ -531,12 +543,36 @@ def combine_contacts(
             if diff_sigma <= cutoff:
                 mean_sigma = round(sum(sigma_list) / len(sigma_list), 10)
                 mean_epsilon = round(sum(epsilon_list) / len(epsilon_list), 10)
-                mbcontacts.append([str(key[0]), str(key[1]), '1', str(mean_sigma), str(mean_epsilon)])
+                if contact_rcut is None:
+                    mbcontacts.append([
+                        str(key[0]),
+                        str(key[1]),
+                        '1',
+                        str(mean_sigma),
+                        str(mean_epsilon),
+                    ])
+                else:
+                    mbcontacts.append([
+                        str(key[0]),
+                        str(key[1]),
+                        '2',
+                        str(mean_sigma),
+                        str(mean_epsilon),
+                        str(contact_rcut),
+                    ])
             else:
                 for fields in value:
                     state = fields[0]
                     fields = fields[1:]
-                    newfields = fields[:2] + [str(n_mols), state] + fields[2:]
+                    if contact_rcut is None:
+                        newfields = fields[:2] + [str(n_mols), state] + fields[2:]
+                    else:
+                        newfields = (
+                            fields[:2]
+                            + [str(n_mols), state, '2']
+                            + fields[3:5]
+                            + [str(contact_rcut)]
+                        )
                     mbmulti_contacts.append(newfields)
 
     return mbcontacts, mbmulti_contacts
