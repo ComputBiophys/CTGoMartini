@@ -11,7 +11,7 @@ This tutorial uses GlnBP (Glutamine-binding protein) as an example, transitionin
 
 ### Prerequisites
 
-- CTGoMartini installed with all dependencies
+- CTGōMartini installed with all dependencies
 - OpenMM with CUDA support (recommended)
 - Python 2 (for `insane.py`)
 - Basic understanding of Multiple-basin Go-Martini (see GlnBP standard tutorial)
@@ -221,7 +221,7 @@ After the simulation completes, you will have:
 
 ### (8) Analysis
 
-REMD simulations generate rich trajectory data that requires specialized analysis tools. CTGoMartini provides several analysis modules for extracting replica trajectories, calculating observables, and computing free energy surfaces.
+REMD simulations generate rich trajectory data that requires specialized analysis tools. CTGōMartini provides several analysis modules for extracting replica trajectories, calculating observables, and computing free energy surfaces.
 
 #### A. Calculate dRMS (Distance Root Mean Square)
 

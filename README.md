@@ -1,10 +1,10 @@
-# CTGoMartini: A Python Package for Protein Conformational Transitions and Associated Protein-Lipid Interactions with Gō-Martini Models
+# CTGōMartini: A Python Package for Protein Conformational Transitions and Associated Protein-Lipid Interactions with Gō-Martini Models
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ComputBiophys/CTGoMartini/releases)
 [![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-CTGoMartini is a Python package for single-basin Gō-Martini, Switching Gō-Martini, and Multiple-basin Gō-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of proteins, with particular focus on membrane proteins, using Gō-Martini models.
+CTGōMartini is a Python package for single-basin Gō-Martini, Switching Gō-Martini, and Multiple-basin Gō-Martini simulations. The main aim of this package is to provide a user-friendly way to simulate conformational transitions of proteins, with particular focus on membrane proteins, using Gō-Martini models.
 
 ## License
 
@@ -30,7 +30,7 @@ cd CTGoMartini
 # Create environment with all dependencies
 conda env create -f environment.yml
 
-# Activate and install CTGoMartini
+# Activate and install CTGōMartini
 conda activate ctgomartini
 pip install -e .
 
@@ -98,9 +98,9 @@ See [ROADMAP.md](ROADMAP.md) for project roadmap and future plans.
 
 ## Citation
 
-If you use CTGoMartini in your research, please cite:
+If you use CTGōMartini in your research, please cite:
 
 ```
-Yang, Song; Song, Chen*. CTGoMartini: A Python Package for Protein Conformational 
+Yang, Song; Song, Chen*. CTGōMartini: A Python Package for Protein Conformational 
 Transitions and Protein-Lipid Interactions with Gō-Martini Models, 2026.
 ```

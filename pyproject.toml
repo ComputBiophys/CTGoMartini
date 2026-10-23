@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ctgomartini"
 version = "1.0.0"
-description = "CTGoMartini - A Python Package for Protein Conformational Transitions and Protein-Lipid Interactions with Go-Martini models"
+description = "CTGōMartini - A Python Package for Protein Conformational Transitions and Protein-Lipid Interactions with Go-Martini models"
 readme = "README.md"
 license = "MIT"
 authors = [
