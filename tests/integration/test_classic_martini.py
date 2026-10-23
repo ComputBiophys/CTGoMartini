@@ -9,13 +9,19 @@ Note:
 """
 
 import os
+import shutil
 from ctgomartini.topology import MartiniTopFile
 from .function import *
 from tests.conftest import WorkingDirectoryContext
 
 
-def compare_results(working_dir, epsilon_r=15):
-    with WorkingDirectoryContext(os.path.join(working_dir, "openmm")):
+def compare_results(working_dir, tmp_dir, epsilon_r=15):
+    # Run the OpenMM calculation in a scratch copy so the tracked reference
+    # energy/forces files under tests/fixtures stay untouched.
+    scratch_dir = os.path.join(tmp_dir, "openmm")
+    shutil.copytree(os.path.join(working_dir, "openmm"), scratch_dir, symlinks=False)
+
+    with WorkingDirectoryContext(scratch_dir):
         strfile = "minimized.gro"
         topfile = "system.top"
 
@@ -57,156 +63,146 @@ class TestMartiniTopology:
 
     path = os.path.dirname(__file__)
 
-    def test_pol_water(self):
+    def test_pol_water(self, tmp_path):
         """Test polarizable water model."""
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/pol_water")
-        compare_results(working_dir, epsilon_r = 2.5)
+        compare_results(working_dir, tmp_path, epsilon_r = 2.5)
 
-    def test_thy2_m3(self):
+    def test_thy2_m3(self, tmp_path):
         """Test thymine with Martini 3."""
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/thy2_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1k6u_en_m3(self):
+    def test_1k6u_en_m3(self, tmp_path):
         """Test protein 1K6U with Martini 3."""
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/1k6u_en_m3")
-        compare_results(working_dir, epsilon_r = 15)
-        working_dir = os.path.join(self.path, "../fixtures/classic_martini/pol_water")
-        compare_results(working_dir, epsilon_r = 2.5)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_thy2_m3(self):
-        working_dir = os.path.join(self.path, "../fixtures/classic_martini/thy2_m3")
-        compare_results(working_dir, epsilon_r = 15)
-
-    def test_1k6u_en_m3(self):
-        working_dir = os.path.join(self.path, "../fixtures/classic_martini/1k6u_en_m3")
-        compare_results(working_dir, epsilon_r = 15)
-
-    def test_1j4n_en_m3(self):
+    def test_1j4n_en_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/1j4n_en_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_MOL1(self):
+    def test_MOL1(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/MOL1")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_PEG(self):
+    def test_PEG(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/PEG")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_simple_lipid(self):
+    def test_simple_lipid(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/simple_lipid")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1k6u_go_m3(self):
+    def test_1k6u_go_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/1k6u_go_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_CLPR(self):
+    def test_CLPR(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/mono/CLPR")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_3HT(self):
+    def test_3HT(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/mono/3HT")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_4NIAN(self):
+    def test_4NIAN(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/mono/4NIAN")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_2T(self):
+    def test_2T(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/2T")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_CNAP(self):
+    def test_CNAP(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/CNAP")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_TDMBI(self):
+    def test_TDMBI(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/TDMBI")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_CAFF(self):
+    def test_CAFF(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/CAFF")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_NDMBI(self):
+    def test_NDMBI(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/NDMBI")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_ANTH(self):
+    def test_ANTH(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/small_mols_m3/poly/ANTH")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1ubq_en_m3(self):
+    def test_1ubq_en_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/1ubq_en_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_popc_m3(self):
+    def test_popc_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/popc_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_aden_m3(self):
+    def test_aden_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/aden_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1NACL(self):
+    def test_1NACL(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/others_m3/1NACL")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1POPC(self):
+    def test_1POPC(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/others_m3/1POPC")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1DOD(self):
+    def test_1DOD(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/others_m3/1DOD")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_2W(self):
+    def test_2W(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/others_m3/2W")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_GlnBP_go_m3(self):
+    def test_GlnBP_go_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/GlnBP_go_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_GlnBP_go_m3_pairs(self):
+    def test_GlnBP_go_m3_pairs(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/GlnBP_go_m3_pairs")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_beta_hairpin_go_m2(self):
+    def test_beta_hairpin_go_m2(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/beta-hairpin_go_m2")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_protein(self):
+    def test_protein(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/protein")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1ubq_go_m3(self):
+    def test_1ubq_go_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/1ubq_go_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_thym_m3(self):
+    def test_thym_m3(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/classic_martini/thym_m3")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
     # The following test all involve cholesterol.
     # It is not possible to have the constraints work
     # exactly the same in openmm as gromacs, so we have
     # temporarily removed these tests.
-    # def test_m2_chol2(self):
+    # def test_m2_chol2(self, tmp_path):
     #     working_dir = os.path.join(self.path, "../fixtures/classic_martini/m2_chol2")
-    #     compare_results(working_dir, epsilon_r = 15)
+    #     compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    # def test_complex_lipid(self):
+    # def test_complex_lipid(self, tmp_path):
     #     working_dir = os.path.join(self.path, "../fixtures/classic_martini/complex_lipid")
-    #     compare_results(working_dir, epsilon_r = 15)
+    #     compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    # def test_membrane_protein(self):
+    # def test_membrane_protein(self, tmp_path):
     #     working_dir = os.path.join(self.path, "../fixtures/classic_martini/membrane_protein")
-    #     compare_results(working_dir, epsilon_r = 15)
+    #     compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    # def test_m2_chol(self):
+    # def test_m2_chol(self, tmp_path):
     #     working_dir = os.path.join(self.path, "../fixtures/classic_martini/m2_chol")
-    #     compare_results(working_dir, epsilon_r = 15)
+    #     compare_results(working_dir, tmp_path, epsilon_r = 15)
 

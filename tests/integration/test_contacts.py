@@ -11,13 +11,19 @@ Systems tested:
 """
 
 import os
+import shutil
 from ctgomartini.topology import MartiniTopFile
 from .function import *
 from tests.conftest import WorkingDirectoryContext
 
 
-def compare_results(working_dir, epsilon_r=15):
-    with WorkingDirectoryContext(os.path.join(working_dir, "Contacts")):
+def compare_results(working_dir, tmp_dir, epsilon_r=15):
+    # Run the OpenMM calculation in a scratch copy so the tracked reference
+    # energy/forces files under tests/fixtures stay untouched.
+    scratch_dir = os.path.join(tmp_dir, "Contacts")
+    shutil.copytree(os.path.join(working_dir, "Contacts"), scratch_dir, symlinks=False)
+
+    with WorkingDirectoryContext(scratch_dir):
         strfile = "minimized.gro"
         topfile = "system.top"
 
@@ -52,34 +58,34 @@ class TestMartiniTopology:
     """
     path = os.path.dirname(__file__)
 
-    def test_KALP(self):
+    def test_KALP(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/KALP")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1GB1(self):
+    def test_1GB1(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/1GB1")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_1UBQ(self):
+    def test_1UBQ(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/1UBQ")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_GlnBP_Open(self):
+    def test_GlnBP_Open(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/GlnBP_Open")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_GlnBP_Closed(self):
+    def test_GlnBP_Closed(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/GlnBP_Closed")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_AdK_Closed(self):
+    def test_AdK_Closed(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/AdK_Closed")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_Beta2AR_Active(self):
+    def test_Beta2AR_Active(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/Beta2AR_Active")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)
 
-    def test_TREK1_Down(self):
+    def test_TREK1_Down(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/contacts/TREK1_Down")
-        compare_results(working_dir, epsilon_r = 15)
+        compare_results(working_dir, tmp_path, epsilon_r = 15)

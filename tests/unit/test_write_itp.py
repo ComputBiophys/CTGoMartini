@@ -9,6 +9,7 @@ Note:
 """
 
 import os
+import shutil
 from functools import partial
 
 from ctgomartini.topology import create_mb_topology, MartiniTopFile
@@ -40,12 +41,12 @@ def compare_topology_sections(mbmol_ref, mbmol_test):
         assert same is True, f"Error: comparison of {category} between test and ref is not the same!"
 
 
-def compare_itp_topology(working_dir, molname, topfile):
+def compare_itp_topology(test_dir, ref_dir, molname, topfile):
     """Compare ITP topology between test and reference directories."""
-    with WorkingDirectoryContext(os.path.join(working_dir, "test")):
+    with WorkingDirectoryContext(test_dir):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
+    with WorkingDirectoryContext(ref_dir):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
     compare_topology_sections(mbmol_ref, mbmol_test)
@@ -61,7 +62,7 @@ class TestWriteItp:
 
     path = os.path.dirname(__file__)
 
-    def test_write_itp_glnbp(self):
+    def test_write_itp_glnbp(self, tmp_path):
         """
         Test ITP generation for GlnBP (Glutamine Binding Protein).
 
@@ -73,7 +74,11 @@ class TestWriteItp:
         """
         working_dir = os.path.join(self.path, "../fixtures/write_itp/write_itp_basic")
 
-        with WorkingDirectoryContext(os.path.join(working_dir, "test")):
+        # Run in a scratch copy so the tracked fixtures stay untouched
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "test"), test_dir, symlinks=False)
+
+        with WorkingDirectoryContext(test_dir):
             topfileA = 'system_open.top'
             mol_nameA = 'gbp_open'
             topfileB = 'system_closed.top'
@@ -91,7 +96,7 @@ class TestWriteItp:
             mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
             write_itp(mbmol)
 
-        compare_itp_topology(working_dir, 'gbp', 'system.top')
+        compare_itp_topology(str(test_dir), os.path.join(working_dir, "ref"), 'gbp', 'system.top')
 
 
 

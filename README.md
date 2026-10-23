@@ -54,9 +54,18 @@ cuda-version=11  # or 10.2
 Run the test suite to verify your installation:
 
 ```bash
-# Run all tests
+# Fast default: unit + integration tests (parallel with pytest-xdist)
 pytest tests/
+
+# Full suite including end-to-end tests (runs martinize2 and short MD runs)
+# Note: e2e tests shell out to bare `python` and `martinize2`, so make sure
+# the conda environment's bin/ directory is on PATH first
+export PATH="$CONDA_PREFIX/bin:$PATH"
+pytest -m e2e
 ```
+
+End-to-end tests (marked `e2e`) are deselected by default; `-m e2e` on the
+command line overrides the default marker expression and runs only them.
 
 ## Quick Start
 

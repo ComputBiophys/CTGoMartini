@@ -6,6 +6,7 @@ elastic network bonds based on reference structure distances.
 """
 
 import os
+import shutil
 from functools import partial
 
 from ctgomartini.topology import create_mb_topology, MartiniTopFile
@@ -37,12 +38,12 @@ def compare_topology_sections(mbmol_ref, mbmol_test):
         assert same is True, f"Error: comparison of {category} between test and ref is not the same!"
 
 
-def compare_itp_topology(working_dir, molname, topfile):
+def compare_itp_topology(test_dir, ref_dir, molname, topfile):
     """Compare ITP topology between test and reference directories."""
-    with WorkingDirectoryContext(os.path.join(working_dir, "test")):
+    with WorkingDirectoryContext(test_dir):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    with WorkingDirectoryContext(os.path.join(working_dir, "ref")):
+    with WorkingDirectoryContext(ref_dir):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
     compare_topology_sections(mbmol_ref, mbmol_test)
@@ -58,7 +59,7 @@ class TestConvertLongShortElasticBonds:
 
     path = os.path.dirname(__file__)
 
-    def test_convert_elastic_bonds_glnbp(self):
+    def test_convert_elastic_bonds_glnbp(self, tmp_path):
         """
         Test long/short elastic bond conversion for GlnBP.
 
@@ -70,43 +71,44 @@ class TestConvertLongShortElasticBonds:
         """
         working_dir = os.path.join(self.path, "../fixtures/write_itp/LongShortElasticBondsConversion")
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -r test')
-            os.system('cp -a template test')
+        # Run in a scratch copy so the tracked fixtures stay untouched
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
+        test_dir = str(test_dir)
 
-            # Process OpenItp
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test/OpenItp/')):
-                prefix = 'gbp_open'
-                ref_pdb = '../GBP_open_cg.pdb'
-                convert_long_short_elastic_bonds(prefix, ref_pdb, convert_long_elastic_bonds=True, convert_short_elastic_bonds=False, lj_epsilon=12)
+        # Process OpenItp
+        with WorkingDirectoryContext(os.path.join(test_dir, 'OpenItp')):
+            prefix = 'gbp_open'
+            ref_pdb = '../GBP_open_cg.pdb'
+            convert_long_short_elastic_bonds(prefix, ref_pdb, convert_long_elastic_bonds=True, convert_short_elastic_bonds=False, lj_epsilon=12)
 
-            # Process ClosedItp
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test/ClosedItp/')):
-                prefix = 'gbp_closed'
-                ref_pdb = '../GBP_closed_cg.pdb'
-                convert_long_short_elastic_bonds(prefix, ref_pdb, convert_long_elastic_bonds=True, convert_short_elastic_bonds=False, lj_epsilon=12)
+        # Process ClosedItp
+        with WorkingDirectoryContext(os.path.join(test_dir, 'ClosedItp')):
+            prefix = 'gbp_closed'
+            ref_pdb = '../GBP_closed_cg.pdb'
+            convert_long_short_elastic_bonds(prefix, ref_pdb, convert_long_elastic_bonds=True, convert_short_elastic_bonds=False, lj_epsilon=12)
 
-            # Write mb_itp
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test/')):
-                topfileA = 'system_open.top'
-                mol_nameA = 'gbp_open'
-                topfileB = 'system_closed.top'
-                mol_nameB = 'gbp_closed'
-                mbmol_name = 'gbp'
-                mols_list = [
-                    [topfileA, mol_nameA],
-                    [topfileB, mol_nameB]
-                ]
-                dict_cutoffs = {
-                    'cutoff_BBB_angles': 15,
-                    'cutoff_BBBB_dihedrals': 30,
-                    'cutoff_SBBS_dihedrals': 30,
-                    'cutoff_contacts': 0.06 }
-                mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
-                write_itp(mbmol)
+        # Write mb_itp
+        with WorkingDirectoryContext(test_dir):
+            topfileA = 'system_open.top'
+            mol_nameA = 'gbp_open'
+            topfileB = 'system_closed.top'
+            mol_nameB = 'gbp_closed'
+            mbmol_name = 'gbp'
+            mols_list = [
+                [topfileA, mol_nameA],
+                [topfileB, mol_nameB]
+            ]
+            dict_cutoffs = {
+                'cutoff_BBB_angles': 15,
+                'cutoff_BBBB_dihedrals': 30,
+                'cutoff_SBBS_dihedrals': 30,
+                'cutoff_contacts': 0.06 }
+            mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
+            write_itp(mbmol)
 
         # Check Comparison
-        compare_itp_topology(working_dir, 'gbp', 'system.top')
+        compare_itp_topology(test_dir, os.path.join(working_dir, "ref"), 'gbp', 'system.top')
 
 
 

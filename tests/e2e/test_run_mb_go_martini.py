@@ -12,6 +12,7 @@ Note:
 """
 
 import os
+import shutil
 from functools import partial
 import ctgomartini
 import subprocess
@@ -34,30 +35,31 @@ class TestRunMBGoMartini:
     """
     path = os.path.dirname(__file__)
 
-    def test_run_mb_exp(self):
+    def test_run_mb_exp(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/md_run/EXP")
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -r test 2>/dev/null; cp -a template test')
+        # Run in a scratch copy so tracked fixtures stay untouched
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
 
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
-                # Fetch run_ctgomartini.py
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
-                # Generate Itp
-                run_script("python run_ctgomartini.py -i npt.inp > npt.log")
-                run_script("python run_ctgomartini.py -i md.inp > md.log")
-                run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")
+        with WorkingDirectoryContext(test_dir):
+            # Fetch run_ctgomartini.py
+            os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
+            # Generate Itp
+            run_script("python run_ctgomartini.py -i npt.inp > npt.log")
+            run_script("python run_ctgomartini.py -i md.inp > md.log")
+            run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")
 
-    def test_run_mb_ham(self):
+    def test_run_mb_ham(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/md_run/HAM")
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -r test 2>/dev/null; cp -a template test')
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
 
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
-                # Fetch run_ctgomartini.py
-                os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
-                # Generate Itp
-                run_script("python run_ctgomartini.py -i npt.inp > npt.log")
-                run_script("python run_ctgomartini.py -i md.inp > md.log")
-                run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")
+        with WorkingDirectoryContext(test_dir):
+            # Fetch run_ctgomartini.py
+            os.system(f"cp {os.path.join(ctgomartini.__path__[0], 'cli/run_ctgomartini.py')} .")
+            # Generate Itp
+            run_script("python run_ctgomartini.py -i npt.inp > npt.log")
+            run_script("python run_ctgomartini.py -i md.inp > md.log")
+            run_script("python run_ctgomartini.py -i md_cpi.inp >> md.log")

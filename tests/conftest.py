@@ -10,6 +10,11 @@ from pathlib import Path
 
 import pytest
 
+# Keep JAX (the pymbar backend used by REMD MBAR analysis) on CPU. With
+# pytest-xdist every worker process would otherwise try to initialize a CUDA
+# context, exhausting GPU memory (CUDA_ERROR_OUT_OF_MEMORY).
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
+
 
 class WorkingDirectoryContext:
     """

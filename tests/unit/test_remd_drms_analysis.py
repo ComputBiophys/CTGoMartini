@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 # Fixture paths
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures" / "remd"
-MD_RUN_DIR = Path(__file__).parent.parent / "fixtures" / "md_run" / "EXP" / "test"
+MD_RUN_DIR = Path(__file__).parent.parent / "fixtures" / "md_run" / "EXP" / "template"
 
 
 class TestCalculateReferenceDistances:

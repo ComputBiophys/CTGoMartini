@@ -9,6 +9,7 @@ These tests ensure force field implementations are equivalent.
 """
 
 import os
+import shutil
 from ctgomartini.topology import MartiniTopFile
 from .function import *
 from ctgomartini.simulation import generate_restraints, add_restraints
@@ -32,10 +33,15 @@ def add_position_restraints(simulation):
     simulation.context.reinitialize()
 
 
-def compare_openmm_gromacs(working_dir, strfile='md.gro', epsilon_r=15.0, **kwargs):
+def compare_openmm_gromacs(working_dir, tmp_dir, strfile='md.gro', epsilon_r=15.0, **kwargs):
     print(working_dir)
 
-    with WorkingDirectoryContext(os.path.join(working_dir, "openmm")):
+    # Run the OpenMM calculation in a scratch copy so the tracked reference
+    # energy/forces files under tests/fixtures stay untouched.
+    scratch_dir = os.path.join(tmp_dir, "openmm")
+    shutil.copytree(os.path.join(working_dir, "openmm"), scratch_dir, symlinks=False)
+
+    with WorkingDirectoryContext(scratch_dir):
         # strfile = "md.gro"
         topfile = "system.top"
 
@@ -78,11 +84,11 @@ class TestEnergyItemComparison:
     """
     path = os.path.dirname(__file__)
 
-    def test_pull_code(self):
+    def test_pull_code(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/energy_item_comparison/PullCode/GlnBP/")
-        compare_openmm_gromacs(working_dir, strfile='md.gro', epsilon_r=15)
+        compare_openmm_gromacs(working_dir, tmp_path, strfile='md.gro', epsilon_r=15)
 
-    def test_restraints(self):
+    def test_restraints(self, tmp_path):
         working_dir = os.path.join(self.path, "../fixtures/energy_item_comparison/Restraints/GlnBP_Open/")
-        compare_openmm_gromacs(working_dir, strfile='minimized.gro', epsilon_r=15, rest=True)
+        compare_openmm_gromacs(working_dir, tmp_path, strfile='minimized.gro', epsilon_r=15, rest=True)
 

@@ -18,6 +18,7 @@ Reference files:
 """
 
 import os
+import shutil
 from functools import partial
 
 import ctgomartini
@@ -53,19 +54,19 @@ def get_ref_dir(base_dir: str) -> str:
     return os.path.join(base_dir, "ref_current")
 
 
-def compare_itp_topology(working_dir: str, molname: str, topfile: str, ref_subdir: str = "ref") -> None:
+def compare_itp_topology(test_dir: str, ref_dir: str, molname: str, topfile: str) -> None:
     """Compare ITP topology between test and reference directories.
-    
+
     Args:
-        working_dir: Base working directory containing test/ and ref*/ subdirs
+        test_dir: Directory containing the freshly generated topology
+        ref_dir: Reference directory (ref_legacy or ref_current)
         molname: Molecule name to compare
         topfile: Topology file name (e.g., 'system.top')
-        ref_subdir: Reference subdirectory name ('ref_legacy' or 'ref_current')
     """
-    with WorkingDirectoryContext(os.path.join(working_dir, "test")):
+    with WorkingDirectoryContext(test_dir):
         mbmol_test = MartiniTopFile(topfile)._moleculeTypes[molname]
 
-    with WorkingDirectoryContext(os.path.join(working_dir, ref_subdir)):
+    with WorkingDirectoryContext(ref_dir):
         mbmol_ref = MartiniTopFile(topfile)._moleculeTypes[molname]
 
     compare_topology_sections(mbmol_ref, mbmol_test)
@@ -203,93 +204,94 @@ class TestGenMBItp:
     """
     path = os.path.dirname(__file__)
 
-    def test_generate_mb_itp_exp(self):
+    def test_generate_mb_itp_exp(self, tmp_path):
         """Test EXP method multiple-basin topology generation."""
         working_dir = os.path.join(self.path, "../fixtures/write_itp/EXP")
         ref_subdir = "ref_legacy" if is_legacy_vermouth() else "ref_current"
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -rf test 2>/dev/null; cp -a template test')
+        # Generate in a scratch directory so tracked fixtures stay untouched
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
 
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
-                # Generate ITP using ctgomartinize
-                subprocess.run(
-                    f"python -m ctgomartini.cli.ctgomartinize "
-                    f"-s 1GGG_1_clean.pdb 1WDN_1_clean.pdb "
-                    f"-m 1GGG_1_clean.map 1WDN_1_clean.map "
-                    f"-mol gbp_open gbp_closed "
-                    f"-mbmol gbp "
-                    f"-ff martini3001 "
-                    f"-method exp",
-                    shell=True,
-                    check=True
-                )
+        with WorkingDirectoryContext(test_dir):
+            # Generate ITP using ctgomartinize
+            subprocess.run(
+                f"python -m ctgomartini.cli.ctgomartinize "
+                f"-s 1GGG_1_clean.pdb 1WDN_1_clean.pdb "
+                f"-m 1GGG_1_clean.map 1WDN_1_clean.map "
+                f"-mol gbp_open gbp_closed "
+                f"-mbmol gbp "
+                f"-ff martini3001 "
+                f"-method exp",
+                shell=True,
+                check=True
+            )
 
         # Compare with appropriate reference
-        compare_itp_topology(working_dir, 'gbp', 'system.top', ref_subdir)
+        compare_itp_topology(str(test_dir), os.path.join(working_dir, ref_subdir), 'gbp', 'system.top')
 
-    def test_generate_mb_itp_ham(self):
+    def test_generate_mb_itp_ham(self, tmp_path):
         """Test HAM method multiple-basin topology generation."""
         working_dir = os.path.join(self.path, "../fixtures/write_itp/HAM")
         ref_subdir = "ref_legacy" if is_legacy_vermouth() else "ref_current"
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -rf test 2>/dev/null; cp -a template test')
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
 
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
-                # Generate ITP using ctgomartinize
-                subprocess.run(
-                    f"python -m ctgomartini.cli.ctgomartinize "
-                    f"-s 1GGG_1_clean.pdb 1WDN_1_clean.pdb "
-                    f"-m 1GGG_1_clean.map 1WDN_1_clean.map "
-                    f"-mol gbp_open gbp_closed "
-                    f"-mbmol gbp "
-                    f"-ff martini3001 "
-                    f"-method ham",
-                    shell=True,
-                    check=True
-                )
+        with WorkingDirectoryContext(test_dir):
+            # Generate ITP using ctgomartinize
+            subprocess.run(
+                f"python -m ctgomartini.cli.ctgomartinize "
+                f"-s 1GGG_1_clean.pdb 1WDN_1_clean.pdb "
+                f"-m 1GGG_1_clean.map 1WDN_1_clean.map "
+                f"-mol gbp_open gbp_closed "
+                f"-mbmol gbp "
+                f"-ff martini3001 "
+                f"-method ham",
+                shell=True,
+                check=True
+            )
 
         # Compare with appropriate reference
-        compare_itp_topology(working_dir, 'gbp', 'system.top', ref_subdir)
+        compare_itp_topology(str(test_dir), os.path.join(working_dir, ref_subdir), 'gbp', 'system.top')
 
-    def test_generate_mb_itp_exp_multichains(self):
+    def test_generate_mb_itp_exp_multichains(self, tmp_path):
         """Test EXP method with multi-chain membrane protein (TRAAK).
-        
+
         This test validates the multi-chain topology generation for the
-        TRAAK potassium channel. 
-        
+        TRAAK potassium channel.
+
         Note: Multi-chain Go-Martini support requires vermouth >= 0.14.0.
         For older versions, this test is skipped.
         """
         import pytest
-        
+
         # Skip for vermouth < 0.14.0 (no multi-chain support)
         if is_legacy_vermouth():
             pytest.skip("Multi-chain Go-Martini requires vermouth >= 0.14.0")
-        
+
         working_dir = os.path.join(self.path, "../fixtures/write_itp/EXP_multichains")
         ref_subdir = "ref_current"  # Only test with >= 0.14.0
 
-        with WorkingDirectoryContext(working_dir):
-            os.system('rm -rf test 2>/dev/null; cp -a template test')
+        test_dir = tmp_path / "test"
+        shutil.copytree(os.path.join(working_dir, "template"), test_dir, symlinks=False)
 
-            with WorkingDirectoryContext(os.path.join(working_dir, 'test')):
-                # Generate ITP using ctgomartinize
-                # Note: Order is 7LJB (Up) first, then 4WFE (Down)
-                subprocess.run(
-                    f"python -m ctgomartini.cli.ctgomartinize "
-                    f"-s 7LJB_clean.pdb 4WFE_clean.pdb "
-                    f"-m 7LJB_clean.map 4WFE_clean.map "
-                    f"-mol Up Down "
-                    f"-mbmol TRAAK "
-                    f"-dssp "
-                    f"-ff martini3001 "
-                    f"-method exp "
-                    f"-other_params='-nt -cys 0.25'",
-                    shell=True,
-                    check=True
-                )
+        with WorkingDirectoryContext(test_dir):
+            # Generate ITP using ctgomartinize
+            # Note: Order is 7LJB (Up) first, then 4WFE (Down)
+            subprocess.run(
+                f"python -m ctgomartini.cli.ctgomartinize "
+                f"-s 7LJB_clean.pdb 4WFE_clean.pdb "
+                f"-m 7LJB_clean.map 4WFE_clean.map "
+                f"-mol Up Down "
+                f"-mbmol TRAAK "
+                f"-dssp "
+                f"-ff martini3001 "
+                f"-method exp "
+                f"-other_params='-nt -cys 0.25'",
+                shell=True,
+                check=True
+            )
 
         # Compare with reference
-        compare_itp_topology(working_dir, 'TRAAK', 'system.top', ref_subdir)
+        compare_itp_topology(str(test_dir), os.path.join(working_dir, ref_subdir), 'TRAAK', 'system.top')

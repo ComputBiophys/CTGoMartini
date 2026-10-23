@@ -21,6 +21,53 @@ import pytest
 import ctgomartini
 from ctgomartini.cli.ctgomartinize import SBGOMartinize
 from ctgomartini.utils import convert_map_format
+from tests.conftest import WorkingDirectoryContext
+
+
+@pytest.fixture(scope="module")
+def sbp_run_dir():
+    """Run SBGOMartinize once in a temp directory and share the outputs.
+
+    The three contacts-conversion tests only parse the generated files.
+    The original working directory is always restored (SBGOMartinize
+    resolves paths against the process cwd).
+    """
+    test_data_dir = os.path.join(
+        os.path.dirname(__file__),
+        "../fixtures/write_itp/write_itp_basic/ref"
+    )
+    map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
+    if not os.path.exists(map_file):
+        pytest.skip(f"Test data not found: {map_file}")
+
+    temp_dir = tempfile.mkdtemp()
+    original_cwd = os.getcwd()
+    try:
+        shutil.copy(os.path.join(test_data_dir, "1GGG_1_clean.pdb"), temp_dir)
+        shutil.copy(map_file, temp_dir)
+
+        # Copy force field
+        ff_source = os.path.join(
+            ctgomartini.__path__[0],
+            "data/ForceFields/Martini300/martini_v3.0.0.itp"
+        )
+        shutil.copy(ff_source, os.path.join(temp_dir, "martini_v3.0.0.itp"))
+
+        os.chdir(temp_dir)
+        SBGOMartinize(
+            aa_strfile_list=["1GGG_1_clean.pdb"],
+            map_file_list=["1GGG_1_clean.map"],
+            state_name_list=["Open"],
+            method="SBP",
+            dssp=None,  # Use MDTraj
+            ff="martini3001",
+            other_params=""
+        )
+    finally:
+        os.chdir(original_cwd)
+
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 class TestVermouth015Contacts:
@@ -171,16 +218,16 @@ class TestVermouth015Contacts:
         )
 
         # Run martinize2 with -go
-        os.chdir(temp_work_dir)
-        result = subprocess.run(
-            f"martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top "
-            f"-ff martini3001 -p backbone -dssp "
-            f"-go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 "
-            f"-name Open",
-            shell=True,
-            capture_output=True,
-            encoding='utf-8'
-        )
+        with WorkingDirectoryContext(temp_work_dir):
+            result = subprocess.run(
+                f"martinize2 -f 1GGG_1_clean.pdb -x protein_cg.pdb -o system.top "
+                f"-ff martini3001 -p backbone -dssp "
+                f"-go contact_map.out -go-low 0.3 -go-up 1.1 -go-eps 12.0 "
+                f"-name Open",
+                shell=True,
+                capture_output=True,
+                encoding='utf-8'
+            )
 
         assert result.returncode == 0, f"martinize2 failed: {result.stderr}"
 
@@ -194,7 +241,7 @@ class TestVermouth015Contacts:
         )
         assert len(nbparams) > 0, "go_nbparams.itp is empty"
 
-    def test_sbgomartinize_contacts_conversion(self, test_data_dir, temp_work_dir):
+    def test_sbgomartinize_contacts_conversion(self, sbp_run_dir):
         """
         Test SBGOMartinize correctly converts go_nbparams to [contacts]
 
@@ -204,47 +251,15 @@ class TestVermouth015Contacts:
         3. Final Protein.itp has [contacts] section with converted interactions
         4. All contacts are correctly mapped (virtual_site ID -> atom ID)
         """
-        # Copy input files
-        pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
-        map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-
-        if not os.path.exists(map_file):
-            pytest.skip(f"Test data not found: {map_file}")
-
-        work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
-        work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
-        shutil.copy(pdb_file, work_pdb)
-        shutil.copy(map_file, work_map)
-
-        # Copy force field
-        ff_source = os.path.join(
-            ctgomartini.__path__[0],
-            "data/ForceFields/Martini300/martini_v3.0.0.itp"
-        )
-        ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
-        shutil.copy(ff_source, ff_dest)
-
-        # Run SBGOMartinize
-        os.chdir(temp_work_dir)
-        SBGOMartinize(
-            aa_strfile_list=["1GGG_1_clean.pdb"],
-            map_file_list=["1GGG_1_clean.map"],
-            state_name_list=["Open"],
-            method="SBP",
-            dssp=None,  # Use MDTraj
-            ff="martini3001",
-            other_params=""
-        )
-
         # Parse go_nbparams.itp from Open directory
-        go_nbparams_file = os.path.join(temp_work_dir, "Open", "go_nbparams.itp")
+        go_nbparams_file = os.path.join(sbp_run_dir, "Open", "go_nbparams.itp")
         assert os.path.exists(go_nbparams_file), "go_nbparams.itp not found"
 
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         assert len(nb_contacts) > 0, "go_nbparams.itp has no contacts"
 
         # Parse [contacts] from Open.itp
-        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
+        protein_itp_file = os.path.join(sbp_run_dir, "Open.itp")
         assert os.path.exists(protein_itp_file), "Open.itp not found"
 
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
@@ -270,45 +285,13 @@ class TestVermouth015Contacts:
             f"Protein.itp={len(protein_contacts)}"
         )
 
-    def test_contact_sigma_values_match(self, test_data_dir, temp_work_dir):
+    def test_contact_sigma_values_match(self, sbp_run_dir):
         """
         Test that sigma values are preserved during contacts conversion
         """
-        # Copy input files
-        pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
-        map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-
-        if not os.path.exists(map_file):
-            pytest.skip(f"Test data not found: {map_file}")
-
-        work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
-        work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
-        shutil.copy(pdb_file, work_pdb)
-        shutil.copy(map_file, work_map)
-
-        # Copy force field
-        ff_source = os.path.join(
-            ctgomartini.__path__[0],
-            "data/ForceFields/Martini300/martini_v3.0.0.itp"
-        )
-        ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
-        shutil.copy(ff_source, ff_dest)
-
-        # Run SBGOMartinize
-        os.chdir(temp_work_dir)
-        SBGOMartinize(
-            aa_strfile_list=["1GGG_1_clean.pdb"],
-            map_file_list=["1GGG_1_clean.map"],
-            state_name_list=["Open"],
-            method="SBP",
-            dssp=None,
-            ff="martini3001",
-            other_params=""
-        )
-
         # Parse both files
-        go_nbparams_file = os.path.join(temp_work_dir, "Open", "go_nbparams.itp")
-        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
+        go_nbparams_file = os.path.join(sbp_run_dir, "Open", "go_nbparams.itp")
+        protein_itp_file = os.path.join(sbp_run_dir, "Open.itp")
 
         nb_contacts = self.parse_go_nbparams(go_nbparams_file)
         protein_contacts = self.parse_protein_contacts(protein_itp_file)
@@ -330,7 +313,7 @@ class TestVermouth015Contacts:
             f"{sigma_mismatches[:5]}"
         )
 
-    def test_virtual_site_id_mapping(self, test_data_dir, temp_work_dir):
+    def test_virtual_site_id_mapping(self, sbp_run_dir):
         """
         Test virtual site ID to atom ID mapping (512 offset)
 
@@ -339,40 +322,8 @@ class TestVermouth015Contacts:
         - Virtual sites for Go contacts start at 513
         - The mapping is: virtual_site_id = atom_id + 512
         """
-        # Copy input files
-        pdb_file = os.path.join(test_data_dir, "1GGG_1_clean.pdb")
-        map_file = os.path.join(test_data_dir, "1GGG_1_clean.map")
-
-        if not os.path.exists(map_file):
-            pytest.skip(f"Test data not found: {map_file}")
-
-        work_pdb = os.path.join(temp_work_dir, "1GGG_1_clean.pdb")
-        work_map = os.path.join(temp_work_dir, "1GGG_1_clean.map")
-        shutil.copy(pdb_file, work_pdb)
-        shutil.copy(map_file, work_map)
-
-        # Copy force field
-        ff_source = os.path.join(
-            ctgomartini.__path__[0],
-            "data/ForceFields/Martini300/martini_v3.0.0.itp"
-        )
-        ff_dest = os.path.join(temp_work_dir, "martini_v3.0.0.itp")
-        shutil.copy(ff_source, ff_dest)
-
-        # Run SBGOMartinize
-        os.chdir(temp_work_dir)
-        SBGOMartinize(
-            aa_strfile_list=["1GGG_1_clean.pdb"],
-            map_file_list=["1GGG_1_clean.map"],
-            state_name_list=["Open"],
-            method="SBP",
-            dssp=None,
-            ff="martini3001",
-            other_params=""
-        )
-
         # Check that virtual site IDs in contacts are in correct range
-        protein_itp_file = os.path.join(temp_work_dir, "Open.itp")
+        protein_itp_file = os.path.join(sbp_run_dir, "Open.itp")
 
         with open(protein_itp_file) as f:
             content = f.read()

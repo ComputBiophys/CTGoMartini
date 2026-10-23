@@ -10,6 +10,7 @@ Systems tested:
 """
 
 import os
+import shutil
 import pickle
 from ctgomartini.topology import MartiniTopFile
 from ctgomartini.utils import write_itp
@@ -143,15 +144,19 @@ def calculate_mbp_results(energy_stateA, forces_stateA, energy_stateB, forces_st
     return (result_energy, abs_energy_error, relative_energy_error,
             result_forces, max_allclose, abs_force_error, relative_force_error)
 
-def compare_results(base_dir, strfile='strfile_No1.gro', epsilon_r=15,
+def compare_results(base_dir, work_dir, strfile='strfile_No1.gro', epsilon_r=15,
                    mbp_parameters=['True', 'exp', '2', '1/300', '-300', '0']):
-    """Compare results between MBP calculation and OpenMM simulation."""
+    """Compare results between MBP calculation and OpenMM simulation.
+
+    Reads pre-calculated state data from base_dir (fixtures, read-only) and
+    runs the OpenMM MBP calculation inside work_dir (scratch copy).
+    """
     # Load State A and State B data (these are pre-calculated)
     energy_stateA, forces_stateA = load_state_data(base_dir, 'StateA', strfile)
     energy_stateB, forces_stateB = load_state_data(base_dir, 'StateB', strfile)
 
     # Calculate MBP energy and forces using OpenMM
-    working_dir = os.path.join(base_dir, mbp_parameters[1].upper())
+    working_dir = os.path.join(work_dir, mbp_parameters[1].upper())
     energy_mbp, forces_mbp = calculate_openmm_energy_forces(working_dir, strfile, epsilon_r=epsilon_r)
     mbp_param = get_mbp_parameters(working_dir, topfile='system.top')[0]
 
@@ -174,10 +179,10 @@ def calculate_sbp_states(base_dir, strfile='strfile_No1.gro', epsilon_r=15):
 from multiprocessing import Pool, cpu_count
 from functools import partial
 
-def compare_frame(i, base_dir, mixing_parameters, prefix_strfile='GlnBP'):
+def compare_frame(i, base_dir, work_dir, mixing_parameters, prefix_strfile='GlnBP'):
     strfile = os.path.join(base_dir,f'Strfiles/{prefix_strfile}_No{i}.gro')
     print(strfile)
-    result_energy, abs_energy_error, relative_energy_error, result_forces, max_allclose, abs_force_error, relative_force_error = compare_results(base_dir, strfile=strfile, epsilon_r=15, mbp_parameters=mixing_parameters)
+    result_energy, abs_energy_error, relative_energy_error, result_forces, max_allclose, abs_force_error, relative_force_error = compare_results(base_dir, work_dir, strfile=strfile, epsilon_r=15, mbp_parameters=mixing_parameters)
     return (mixing_parameters, result_energy, abs_energy_error, relative_energy_error, result_forces, max_allclose, abs_force_error, relative_force_error)
 
 
@@ -187,8 +192,13 @@ class TestMultipleBasinPotential:
     """
     path = os.path.dirname(__file__)
 
-    def test_mbp_exp_glnbp(self):
+    def test_mbp_exp_glnbp(self, tmp_path):
         base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/GlnBP/")
+        # Run the OpenMM calculations in a scratch copy of the EXP directory
+        # so the tracked fixtures stay untouched.
+        work_dir = os.path.join(tmp_path, "GlnBP")
+        shutil.copytree(os.path.join(base_dir, "EXP"), os.path.join(work_dir, "EXP"), symlinks=False)
+
         EXP_parameters_list = [['True', 'exp', '2', '1/300', '-300', '0'],
                                 ['True', 'exp', '2', '1/500', '-300', '0'],
                                 ['True', 'exp', '2', '1/300', '-600', '0'],
@@ -203,18 +213,21 @@ class TestMultipleBasinPotential:
             print(EXP_parameters)
 
             # Set MBP parameters once before parallel execution to avoid race conditions
-            working_dir = os.path.join(base_dir, 'EXP')
+            working_dir = os.path.join(work_dir, 'EXP')
             set_mbp_parameters(working_dir, topfile='system.top', mbp_parameters=EXP_parameters)
 
-            Compare_per_frame = partial(compare_frame, base_dir=base_dir, mixing_parameters=EXP_parameters, prefix_strfile='GlnBP')
+            Compare_per_frame = partial(compare_frame, base_dir=base_dir, work_dir=work_dir, mixing_parameters=EXP_parameters, prefix_strfile='GlnBP')
             with Pool(max(cpu_count(),10)) as pool:
                 results = pool.map(Compare_per_frame, range(10))
 
-            with open(os.path.join(base_dir, f'./EXP/EXP_results_{j}.pickle'), 'wb') as f:
+            with open(os.path.join(working_dir, f'EXP_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
 
-    def test_mbp_ham_glnbp(self):
+    def test_mbp_ham_glnbp(self, tmp_path):
         base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/GlnBP/")
+        work_dir = os.path.join(tmp_path, "GlnBP")
+        shutil.copytree(os.path.join(base_dir, "HAM"), os.path.join(work_dir, "HAM"), symlinks=False)
+
         HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
                                 ['True', 'ham', '2', '600', '-200', '0'],
                                 ['True', 'ham', '2', '100', '-900', '0'],
@@ -229,18 +242,21 @@ class TestMultipleBasinPotential:
             print(HAM_parameters)
 
             # Set MBP parameters once before parallel execution to avoid race conditions
-            working_dir = os.path.join(base_dir, 'HAM')
+            working_dir = os.path.join(work_dir, 'HAM')
             set_mbp_parameters(working_dir, topfile='system.top', mbp_parameters=HAM_parameters)
 
-            Compare_per_frame = partial(compare_frame, base_dir=base_dir, mixing_parameters=HAM_parameters, prefix_strfile='GlnBP')
+            Compare_per_frame = partial(compare_frame, base_dir=base_dir, work_dir=work_dir, mixing_parameters=HAM_parameters, prefix_strfile='GlnBP')
             with Pool(max(cpu_count(),10)) as pool:
                 results = pool.map(Compare_per_frame, range(10))
 
-            with open(os.path.join(base_dir, f'./HAM/HAM_results_{j}.pickle'), 'wb') as f:
+            with open(os.path.join(working_dir, f'HAM_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
 
-    def test_mbp_exp_beta2ar(self):
+    def test_mbp_exp_beta2ar(self, tmp_path):
         base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/Beta2AR/")
+        work_dir = os.path.join(tmp_path, "Beta2AR")
+        shutil.copytree(os.path.join(base_dir, "EXP"), os.path.join(work_dir, "EXP"), symlinks=False)
+
         EXP_parameters_list = [['True', 'exp', '2', '1/300', '-300', '0'],
                                 ['True', 'exp', '2', '1/500', '-300', '0'],
                                 ['True', 'exp', '2', '1/300', '-600', '0'],
@@ -255,20 +271,23 @@ class TestMultipleBasinPotential:
             print(EXP_parameters)
 
             # Set MBP parameters once before parallel execution to avoid race conditions
-            working_dir = os.path.join(base_dir, 'EXP')
+            working_dir = os.path.join(work_dir, 'EXP')
             set_mbp_parameters(working_dir, topfile='system.top', mbp_parameters=EXP_parameters)
 
-            Compare_per_frame = partial(compare_frame, base_dir=base_dir, mixing_parameters=EXP_parameters, prefix_strfile='Beta2AR')
+            Compare_per_frame = partial(compare_frame, base_dir=base_dir, work_dir=work_dir, mixing_parameters=EXP_parameters, prefix_strfile='Beta2AR')
             with Pool(max(cpu_count(),10)) as pool:
                 results = pool.map(Compare_per_frame, range(10))
 
-            with open(os.path.join(base_dir, f'./EXP/EXP_results_{j}.pickle'), 'wb') as f:
+            with open(os.path.join(working_dir, f'EXP_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
 
 
 
-    def test_mbp_ham_beta2ar(self):
+    def test_mbp_ham_beta2ar(self, tmp_path):
         base_dir = os.path.join(self.path, "../fixtures/mb_go_martini/Beta2AR/")
+        work_dir = os.path.join(tmp_path, "Beta2AR")
+        shutil.copytree(os.path.join(base_dir, "HAM"), os.path.join(work_dir, "HAM"), symlinks=False)
+
         HAM_parameters_list = [['True', 'ham', '2', '100', '-200', '0'],
                                 ['True', 'ham', '2', '600', '-200', '0'],
                                 ['True', 'ham', '2', '100', '-900', '0'],
@@ -283,12 +302,12 @@ class TestMultipleBasinPotential:
             print(HAM_parameters)
 
             # Set MBP parameters once before parallel execution to avoid race conditions
-            working_dir = os.path.join(base_dir, 'HAM')
+            working_dir = os.path.join(work_dir, 'HAM')
             set_mbp_parameters(working_dir, topfile='system.top', mbp_parameters=HAM_parameters)
 
-            Compare_per_frame = partial(compare_frame, base_dir=base_dir, mixing_parameters=HAM_parameters, prefix_strfile='Beta2AR')
+            Compare_per_frame = partial(compare_frame, base_dir=base_dir, work_dir=work_dir, mixing_parameters=HAM_parameters, prefix_strfile='Beta2AR')
             with Pool(max(cpu_count(),10)) as pool:
                 results = pool.map(Compare_per_frame, range(10))
 
-            with open(os.path.join(base_dir, f'./HAM/HAM_results_{j}.pickle'), 'wb') as f:
+            with open(os.path.join(working_dir, f'HAM_results_{j}.pickle'), 'wb') as f:
                 pickle.dump(results, f)
