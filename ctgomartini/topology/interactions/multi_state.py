@@ -658,7 +658,13 @@ class MultiAllBonds(Interaction):
         
         # Define fixed handler order for backward compatibility
         # Order: angles -> dihedrals -> contacts (same as original implementation)
-        _handler_order = ['g96_angle', 'restricted_angle', 'periodic_dihedral', 'contact_lj']
+        _handler_order = [
+            'g96_angle',
+            'restricted_angle',
+            'periodic_dihedral',
+            'contact_lj',
+            'contact_lj_adj',
+        ]
         
         # Instantiate used handlers in fixed order
         for name in _handler_order:
