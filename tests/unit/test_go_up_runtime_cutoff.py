@@ -1,6 +1,7 @@
 import pytest
 
 from ctgomartini.topology.generator.combiner import combine_contacts
+from ctgomartini.topology.generator.single_basin import _apply_contact_rcut
 from ctgomartini.topology.interactions.bonds import Contacts6_12
 from ctgomartini.topology.interactions.multi_state import MultiAllBonds
 
@@ -71,3 +72,17 @@ def test_multi_contact_force_reads_runtime_cutoff() -> None:
 
     assert 'rcut' in parameter_names
     assert float(parameters[parameter_names.index('rcut')]) == pytest.approx(1.5)
+
+
+def test_sb_contacts_written_with_runtime_cutoff() -> None:
+    contacts = [['1', '5', '1', '0.50', '15.0'], ['2', '8', '1', '0.70', '12.0']]
+
+    assert _apply_contact_rcut(contacts, 1.5) == [
+        ['1', '5', '2', '0.50', '15.0', '1.5'],
+        ['2', '8', '2', '0.70', '12.0', '1.5'],
+    ]
+
+
+def test_sb_contacts_reject_non_functype1_input() -> None:
+    with pytest.raises(AssertionError):
+        _apply_contact_rcut([['1', '5', '2', '0.50', '15.0', '1.1']], 1.5)

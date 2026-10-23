@@ -49,11 +49,34 @@ def _change_atom_type(
         # Reconstruct the atom field with the new atom type
         newatoms.append([field[0], newatomtype] + field[2:])
     return newatoms
+
+
+def _apply_contact_rcut(
+    contacts: list[list[str]], contact_rcut: float
+) -> list[list[str]]:
+    """Convert fixed-cutoff contacts to adjustable 6-12 contacts.
+
+    Rewrites each contact entry from functype 1 (fixed 1.1 nm runtime cutoff)
+    to functype 2 with a per-contact runtime cutoff.
+
+    Args:
+        contacts: Contact entries [atomid1, atomid2, '1', sigma, epsilon].
+        contact_rcut: Runtime cutoff in nanometers, appended to each entry.
+
+    Returns:
+        Converted entries [atomid1, atomid2, '2', sigma, epsilon, rcut].
+    """
+    converted: list[list[str]] = []
+    for fields in contacts:
+        assert fields[2] == '1', f"Error: only support functype 1 contacts: {fields}"
+        converted.append(fields[:2] + ['2'] + fields[3:] + [str(contact_rcut)])
+    return converted
     
 
 def create_sb_topology(
     mols_list: list[list[str]], 
-    sbmol_name: str
+    sbmol_name: str,
+    contact_rcut: float | None = None
 ) -> Any:
     """
     Generate a single-basin (SB) Martini topology from a list of molecules.
@@ -64,6 +87,10 @@ def create_sb_topology(
         mols_list: List of [topfile, mol_name] pairs.
             Example: [['topfileA.itp', 'molA'], ['topfileB.itp', 'molB']]
         sbmol_name: Name for the new single-basin molecule.
+        contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
+            When provided, contacts are written as adjustable 6-12 contacts
+            (functype 2) with this per-contact cutoff. When omitted, the
+            legacy fixed-cutoff format (functype 1) is kept.
         
     Returns:
         SBMolecule: Single-basin molecule object with topology attributes:
@@ -146,6 +173,12 @@ def create_sb_topology(
     sbmol._topology['dihedrals'] = mol._topology['dihedrals']
     sbmol._topology['contacts'] = mol._topology['contacts']
     sbmol._topology['exclusions'] = mol._topology['exclusions']
+
+    # Optionally convert contacts to adjustable 6-12 form with runtime cutoff
+    if contact_rcut is not None:
+        sbmol._topology['contacts'] = _apply_contact_rcut(
+            sbmol._topology['contacts'], contact_rcut
+        )
 
     # Process any additional topology categories
     categories_list: list[str] = []

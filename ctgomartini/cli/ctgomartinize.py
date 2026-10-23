@@ -420,7 +420,7 @@ def SBGOMartinize(
     print(f"  Generating single-basin topology...")
     
     mols_list: list[list[str]] = [[f'{state_name}/system.top', state_name]]
-    sbmol = create_sb_topology(mols_list, state_name)
+    sbmol = create_sb_topology(mols_list, state_name, contact_rcut=go_up)
 
     if method.lower() != "sbp":
         raise ValueError(f'Error: Unsupported method: {method}')
@@ -518,7 +518,7 @@ def SwitchingGOMartinize(
         # Generate single-basin topology for switching (inside state dir)
         print(f"\n  Generating single-basin topology for {state_name}...")
         mols_list: list[list[str]] = [[str(state_dir / 'system.top'), state_name]]
-        sbmol = create_sb_topology(mols_list, state_name)
+        sbmol = create_sb_topology(mols_list, state_name, contact_rcut=go_up)
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
 

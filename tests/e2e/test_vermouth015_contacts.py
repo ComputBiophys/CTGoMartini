@@ -96,8 +96,9 @@ class TestVermouth015Contacts:
                     break
                 if in_contacts and line and line[0].isdigit():
                     parts = line.split()
-                    # Format: atom1 atom2 1 sigma epsilon
-                    if len(parts) >= 5 and parts[2] == '1':
+                    # Format: atom1 atom2 functype sigma epsilon [rcut]
+                    # functype 1: fixed cutoff; functype 2: adjustable rcut (6th field)
+                    if len(parts) >= 5 and parts[2] in ('1', '2'):
                         atom1 = int(parts[0])
                         atom2 = int(parts[1])
                         sigma = float(parts[3])
