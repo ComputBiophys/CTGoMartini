@@ -10,6 +10,8 @@ Supports the mixed-state analysis (EXP and HAM methods).
 
 from __future__ import annotations
 
+import csv
+import json
 import os
 import pickle
 from pathlib import Path
@@ -65,13 +67,17 @@ class FESAnalyzer:
         Initialize the FES analyzer with simulation data files.
         
         Args:
-            output_file: Path to simulation output NetCDF file.
+            output_file: Path to simulation output: an openmmtools NetCDF file,
+                or an OpenMM >= 8.6 built-in REMD output directory (containing
+                metadata.json and energy.csv).
             cv_file: Path to collective variable (CV) data file.
             interval: Interval for getting CV data compared to energies.
                       For example, if energy is saved every frame but CV
                       is saved every 5 frames, interval=5.
                       If None (default), will auto-detect from checkpoint_interval
-                      in the NetCDF file.
+                      in the NetCDF file; for a built-in REMD directory the
+                      data is already spaced by the report interval, so the
+                      default is 1.
         
         Raises:
             FileNotFoundError: If input files do not exist.
@@ -87,6 +93,12 @@ class FESAnalyzer:
         self.u_kn: Optional[np.ndarray] = None
         self.concatenated_cv: Optional[np.ndarray] = None
         self.subsampled_unsampled_energies: Optional[np.ndarray] = None
+        # Raw basin energies in kJ/mol (built-in REMD directories only), in
+        # the same [replica][basin][frame] layout as unsampled_energies. The
+        # mixing analysis uses them directly so that no temperature rescaling
+        # is involved (correct for mixed-temperature REMD).
+        self._basin_energies_kj: np.ndarray | None = None
+        self._subsampled_basin_energies_kj: np.ndarray | None = None
         
         self._validate_files()
         self._load_simulation_data()  # This will also set self.interval
@@ -100,16 +112,22 @@ class FESAnalyzer:
     
     def _load_simulation_data(self) -> None:
         """Load basic simulation data from files.
-        
-        Also auto-detects interval from checkpoint_interval if not specified by user.
+
+        Dispatches on the output layout: an OpenMM >= 8.6 built-in REMD output
+        directory (metadata.json + energy.csv) or an openmmtools NetCDF file.
+        Also auto-detects interval if not specified by user.
         """
+        if self.output_file.is_dir():
+            self._load_openmm_data()
+            return
+
         MultiStateReporter, ReplicaExchangeAnalyzer = _import_openmmtools()
-        
+
         try:
             # Load reporter and analyzer
             reporter = MultiStateReporter(str(self.output_file), open_mode="r")
             analyzer = ReplicaExchangeAnalyzer(reporter)
-            
+
             # Auto-detect interval if not specified by user
             if self._user_interval is None:
                 try:
@@ -118,20 +136,20 @@ class FESAnalyzer:
                     self.interval = 1
             else:
                 self.interval = self._user_interval
-            
+
             # Read simulation data
             states, _ = reporter.read_thermodynamic_states()
             temperature_list = [s.temperature for s in states]
-            
+
             # Read energies and states
             replica_energies, unsampled_energies, _, replica_state_indices = analyzer.read_energies()
-            
+
             # Downsample energies to match CV interval
             self.replica_energies = replica_energies[:, :, ::self.interval]
             self.unsampled_energies = unsampled_energies[:, :, ::self.interval]
-            
+
             reporter.close()
-            
+
             # Verify number of replicas matches number of states
             n_replicas = self.replica_energies.shape[0]
             n_states = len(states)
@@ -140,24 +158,122 @@ class FESAnalyzer:
                     f"Number of replicas ({n_replicas}) does not match "
                     f"number of states ({n_states})"
                 )
-            
+
             # Process temperature data
             self.n_states = n_states
             self.temperatures_k = np.array([
                 temp.value_in_unit(unit.kelvin) for temp in temperature_list
             ])
             self.beta_k = 1 / (kB * self.temperatures_k)
-            
+
             # Load CV data
-            cv_data = np.loadtxt(self.cv_file)
-            if cv_data.shape[1] != n_states + 1:
+            self._load_cv_data()
+
+        except Exception as e:
+            raise RuntimeError(f"Error loading simulation data: {e}")
+
+    def _load_cv_data(self) -> None:
+        """Load the external CV data file and transpose to (n_states, n_frames).
+
+        Expects n_states + 1 columns (first column is time/index).
+        """
+        cv_data = np.loadtxt(self.cv_file, ndmin=2)
+        if cv_data.shape[1] != self.n_states + 1:
+            raise ValueError(
+                f"CV data has wrong shape. Expected {self.n_states + 1} columns, "
+                f"got {cv_data.shape[1]}"
+            )
+        # Transpose to get (n_states, n_frames)
+        self.cv_values_replica = cv_data[:, 1:].T
+
+    def _load_openmm_data(self) -> None:
+        """Load simulation data from an OpenMM >= 8.6 built-in REMD directory.
+
+        Reads metadata.json, energy.csv, log.csv and cv_energies.csv as written
+        by BuiltinREMDRunner. Does not require openmmtools. Frames are already
+        spaced by the run's report interval, so the default interval is 1.
+
+        Raises:
+            RuntimeError: If data loading fails.
+        """
+        try:
+            metadata = json.loads((self.output_file / "metadata.json").read_text())
+            n_basins = metadata.get("n_basins", 2)
+            if n_basins != 2:
                 raise ValueError(
-                    f"CV data has wrong shape. Expected {n_states + 1} columns, "
-                    f"got {cv_data.shape[1]}"
+                    f"Mixing analysis supports only two-basin setups "
+                    f"(n_basins=2); metadata.json reports n_basins={n_basins}."
                 )
-            # Transpose to get (n_states, n_frames)
-            self.cv_values_replica = cv_data[:, 1:].T
-            
+            temperatures = [float(s["temperature"]) for s in metadata["states"]]
+            n_states = len(temperatures)
+            # Data is already written every reportInterval iterations.
+            self.interval = self._user_interval if self._user_interval is not None else 1
+
+            # energy.csv: one row per reported iteration holding every
+            # replica x state reduced energy, [replica][state] flattened.
+            energy = np.loadtxt(
+                self.output_file / "energy.csv", delimiter=",", ndmin=2
+            )
+            n_frames = energy.shape[0]
+            if energy.shape[1] != n_states * n_states:
+                raise ValueError(
+                    f"energy.csv has {energy.shape[1]} columns, expected "
+                    f"{n_states * n_states} (replica x state)"
+                )
+            u_rsn = energy.reshape(n_frames, n_states, n_states)
+            # u_kln: [state, replica, frame]
+            self.replica_energies = u_rsn.transpose(2, 1, 0)[:, :, ::self.interval]
+
+            # log.csv: per-iteration state assignment (Iteration,Step,Replica_i_State...)
+            log = np.loadtxt(
+                self.output_file / "log.csv", delimiter=",", skiprows=1, ndmin=2
+            )
+            state_assignment = log[:, 2 : 2 + n_states].astype(int)
+
+            # cv_energies.csv: long table Iteration,Replica,Molecule,E1,E2[,...];
+            # sum over molecules to get the total basin energies per replica.
+            basin: dict[tuple[int, int], list[float]] = {}
+            with open(self.output_file / "cv_energies.csv") as f:
+                for row in csv.DictReader(f):
+                    key = (int(row["Iteration"]), int(row["Replica"]))
+                    e1, e2 = float(row["E1"]), float(row["E2"])
+                    if key in basin:
+                        basin[key][0] += e1
+                        basin[key][1] += e2
+                    else:
+                        basin[key] = [e1, e2]
+            cv_iterations = sorted({iteration for iteration, _ in basin})
+            if len(cv_iterations) != n_frames or log.shape[0] != n_frames:
+                raise ValueError(
+                    f"Frame count mismatch: energy.csv has {n_frames}, log.csv has "
+                    f"{log.shape[0]}, cv_energies.csv has {len(cv_iterations)}"
+                )
+
+            # Reduce basin energies by the temperature of the state each
+            # replica occupies at that frame, and keep the raw kJ/mol values
+            # alongside: the mixing analysis combines the raw energies, which
+            # is exact even when states differ in temperature.
+            # Both arrays follow the openmmtools layout [replica][basin][frame].
+            basin_energies_kj = np.zeros((n_states, 2, n_frames))
+            unsampled_energies = np.zeros((n_states, 2, n_frames))
+            for frame, iteration in enumerate(cv_iterations):
+                for replica in range(n_states):
+                    e1, e2 = basin[(iteration, replica)]
+                    kt_replica = kB * temperatures[state_assignment[frame][replica]]
+                    basin_energies_kj[replica, 0, frame] = e1
+                    basin_energies_kj[replica, 1, frame] = e2
+                    unsampled_energies[replica, 0, frame] = e1 / kt_replica
+                    unsampled_energies[replica, 1, frame] = e2 / kt_replica
+            self.unsampled_energies = unsampled_energies[:, :, ::self.interval]
+            self._basin_energies_kj = basin_energies_kj[:, :, ::self.interval]
+
+            self.n_states = n_states
+            self.temperatures_k = np.array(temperatures)
+            self.beta_k = 1 / (kB * self.temperatures_k)
+
+            # Load CV data
+            self._load_cv_data()
+
         except Exception as e:
             raise RuntimeError(f"Error loading simulation data: {e}")
     
@@ -254,6 +370,10 @@ class FESAnalyzer:
             self.u_kn = u_kn
             self.concatenated_cv = np.concatenate(cv_kn)
             self.subsampled_unsampled_energies = self.unsampled_energies[:, :, self.subsampled_indices]
+            if self._basin_energies_kj is not None:
+                self._subsampled_basin_energies_kj = self._basin_energies_kj[
+                    :, :, self.subsampled_indices
+                ]
             
         except Exception as e:
             raise RuntimeError(f"Failed to initialize FES: {e}")
@@ -414,6 +534,32 @@ class FESAnalyzer:
         
         return self.analyze(u_n, self.concatenated_cv, temperature, **kwargs)
     
+    def _get_basin_energies(self, temperature: float) -> tuple[np.ndarray, np.ndarray]:
+        """Return (E1, E2) basin energies in kJ/mol for all subsampled samples.
+
+        Concatenated replica-major (replica 0 frames, then replica 1 frames,
+        ...), matching the sample order of concatenated_cv. Built-in REMD
+        directories store the raw basin energies in kJ/mol, so they are used
+        directly (no temperature rescaling); openmmtools NetCDF files store
+        reduced basin energies, which are converted back to kJ/mol at the
+        analysis temperature.
+
+        Args:
+            temperature: Analysis temperature (K), used only to un-reduce
+                openmmtools reduced energies.
+        """
+        if self._subsampled_basin_energies_kj is not None:
+            E1 = np.concatenate(self._subsampled_basin_energies_kj[:, 0, :])
+            E2 = np.concatenate(self._subsampled_basin_energies_kj[:, 1, :])
+        else:
+            E1 = np.concatenate(self.subsampled_unsampled_energies[:, 0, :]) * (
+                kB * temperature
+            )
+            E2 = np.concatenate(self.subsampled_unsampled_energies[:, 1, :]) * (
+                kB * temperature
+            )
+        return E1, E2
+
     def _exp_mixing(self, beta: float, C1: float, C2: float,
                    temperature: float) -> np.ndarray:
         """
@@ -424,8 +570,7 @@ class FESAnalyzer:
         Numerical stability is improved by subtracting the mean energy
         to avoid large exponential values.
         """
-        E1 = np.concatenate(self.subsampled_unsampled_energies[:, 0, :]) * (kB * temperature)
-        E2 = np.concatenate(self.subsampled_unsampled_energies[:, 1, :]) * (kB * temperature)
+        E1, E2 = self._get_basin_energies(temperature)
         
         # Avoid large exp values by subtracting mean energy (numerical stability)
         E1_mean = E1.mean()
@@ -448,8 +593,7 @@ class FESAnalyzer:
         Energy = (E1+E2+dV)/2 - sqrt[((E1-E2-dV)/2)^2 + delta^2]
         where dV = C2 - C1
         """
-        E1 = np.concatenate(self.subsampled_unsampled_energies[:, 0, :]) * (kB * temperature)
-        E2 = np.concatenate(self.subsampled_unsampled_energies[:, 1, :]) * (kB * temperature)
+        E1, E2 = self._get_basin_energies(temperature)
         
         dV = C2 - C1
         part1 = (E1 + E2 + dV) / 2

@@ -110,7 +110,8 @@ class SimulationConfig:
         self.replica_c2: list[float] = []  # C2 parameters
         
         # REMD output and advanced settings
-        self.remd_output: str = 'output.nc'  # Main NetCDF output file
+        self.remd_backend: str = 'openmmtools'  # REMD backend: openmmtools | openmm (OpenMM >= 8.6 built-in)
+        self.remd_output: str = 'output.nc'  # openmmtools: NetCDF file; openmm: output directory
         self.remd_checkpoint_interval: int = 5  # Checkpoint interval (iterations)
         self.remd_online_analysis_interval: int | None = 2000  # Online analysis interval (iterations), None to disable
         self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
@@ -321,6 +322,8 @@ class SimulationConfig:
             self.replica_c2 = [float(x) for x in value.split()]
         elif param == 'REMD_OUTPUT':
             self.remd_output = str(value)
+        elif param == 'REMD_BACKEND':
+            self.remd_backend = str(value).lower()
         elif param == 'REMD_CHECKPOINT_INTERVAL':
             self.remd_checkpoint_interval = int(value)
         elif param == 'REMD_ONLINE_ANALYSIS_INTERVAL':
@@ -355,7 +358,14 @@ def load_config(input_file: str) -> SimulationConfig:
         ValueError: If REMD is enabled but exc_freq is not specified.
     """
     config = SimulationConfig().read(input_file)
-    
+
+    # Validate REMD backend selection
+    if config.remd_backend not in ('openmmtools', 'openmm'):
+        raise ValueError(
+            f"Invalid remd_backend '{config.remd_backend}'. "
+            f"Must be 'openmmtools' (default) or 'openmm' (built-in, requires OpenMM >= 8.6)."
+        )
+
     # Validate REMD configuration
     if config.remd == 'yes':
         if config.exc_freq is None:
