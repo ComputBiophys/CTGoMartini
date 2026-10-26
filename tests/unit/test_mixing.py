@@ -1,5 +1,6 @@
 import math
 
+import numpy as np
 import openmm as mm
 import openmm.unit as unit
 import pytest
@@ -34,6 +35,12 @@ def _energy(context: mm.Context) -> float:
     return state.getPotentialEnergy().value_in_unit(unit.kilojoule_per_mole)
 
 
+def _forces(context: mm.Context) -> np.ndarray:
+    """Forces in kJ/mol/nm as an (N, 3) array."""
+    state = context.getState(getForces=True)
+    return state.getForces(asNumpy=True).value_in_unit(unit.kilojoule_per_mole / unit.nanometer)
+
+
 def _exp_energy(e1: float, e2: float, beta: float, c1: float, c2: float) -> float:
     return -math.log(math.exp(-beta * (e1 + c1)) + math.exp(-beta * (e2 + c2))) / beta
 
@@ -41,6 +48,23 @@ def _exp_energy(e1: float, e2: float, beta: float, c1: float, c2: float) -> floa
 def _ham_energy(e1: float, e2: float, delta: float, c1: float, c2: float) -> float:
     dv = c2 - c1
     return (e1 + e2 + dv) / 2 - math.sqrt(((e1 - e2 - dv) / 2) ** 2 + delta**2)
+
+
+def _exp_weights(e1: float, e2: float, beta: float, c1: float, c2: float) -> tuple[float, float]:
+    """Basin weights of the EXP mixing energy: dE/dE_i = exp(-beta*(E_i+C_i)) / sum_j."""
+    a1 = -beta * (e1 + c1)
+    a2 = -beta * (e2 + c2)
+    m = max(a1, a2)
+    p1, p2 = math.exp(a1 - m), math.exp(a2 - m)
+    return p1 / (p1 + p2), p2 / (p1 + p2)
+
+
+def _ham_weights(e1: float, e2: float, delta: float, c1: float, c2: float) -> tuple[float, float]:
+    """Basin weights of the HAM mixing energy: dE/dE1 = (1 - alpha/sqrt(alpha^2+delta^2))/2."""
+    dv = c2 - c1
+    alpha = (e1 - e2 - dv) / 2
+    w1 = 0.5 * (1 - alpha / math.sqrt(alpha**2 + delta**2))
+    return w1, 1.0 - w1
 
 
 # With r0=1.0 nm and particles 0.3 nm apart, a bond with force constant k has
@@ -242,3 +266,52 @@ def test_parameterized_ham_matches_legacy_hardcoded_expression() -> None:
     mbp_new = HAMInteraction().addForce(_ham_force_dict(), 5.0, [10.0, 20.0], molname='GBP')
 
     assert _energy(_make_context(mbp_new)) == pytest.approx(_energy(_make_context(legacy)))
+
+
+def test_exp_forces_are_weighted_combination_of_basin_forces() -> None:
+    # The energy tests above use beta=5, where w2 underflows to zero for these
+    # basin energies; a force test would then be insensitive to state 2.
+    # beta=0.05 keeps both weights well away from 0/1.
+    mbp_force = EXPInteraction().addForce(_exp_force_dict(), 0.05, [10.0, 20.0], molname='GBP')
+    context = _make_context(mbp_force)
+    forces1 = _forces(_make_context(_bond_force(100.0)))
+    forces2 = _forces(_make_context(_bond_force(200.0)))
+
+    def check(beta: float, c1: float, c2: float) -> np.ndarray:
+        w1, w2 = _exp_weights(STATE1_ENERGY, STATE2_ENERGY, beta, c1, c2)
+        assert 0.01 < w2 < 0.99  # both basins must contribute
+        mixed = _forces(context)
+        np.testing.assert_allclose(mixed, w1 * forces1 + w2 * forces2, rtol=1e-9, atol=1e-9)
+        return mixed
+
+    default_forces = check(0.05, 10.0, 20.0)
+
+    context.setParameter('ctg_GBP_beta', 0.06)
+    context.setParameter('ctg_GBP_C1', 8.0)
+    context.setParameter('ctg_GBP_C2', 22.0)
+    shifted_forces = check(0.06, 8.0, 22.0)
+
+    assert np.abs(shifted_forces - default_forces).max() > 1.0
+
+
+def test_ham_forces_are_weighted_combination_of_basin_forces() -> None:
+    mbp_force = HAMInteraction().addForce(_ham_force_dict(), 50.0, [10.0, 20.0], molname='GBP')
+    context = _make_context(mbp_force)
+    forces1 = _forces(_make_context(_bond_force(100.0)))
+    forces2 = _forces(_make_context(_bond_force(200.0)))
+
+    def check(delta: float, c1: float, c2: float) -> np.ndarray:
+        w1, w2 = _ham_weights(STATE1_ENERGY, STATE2_ENERGY, delta, c1, c2)
+        assert 0.01 < w2 < 0.99  # both basins must contribute
+        mixed = _forces(context)
+        np.testing.assert_allclose(mixed, w1 * forces1 + w2 * forces2, rtol=1e-9, atol=1e-9)
+        return mixed
+
+    default_forces = check(50.0, 10.0, 20.0)
+
+    context.setParameter('ctg_GBP_delta', 10.0)
+    context.setParameter('ctg_GBP_C1', 30.0)
+    context.setParameter('ctg_GBP_C2', -40.0)
+    shifted_forces = check(10.0, 30.0, -40.0)
+
+    assert np.abs(shifted_forces - default_forces).max() > 1.0
