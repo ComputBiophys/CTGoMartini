@@ -229,7 +229,9 @@ def write_checkpoint(simulation: Simulation, input_ochk: str) -> None:
         simulation: Simulation object to save.
         input_ochk: Path to output checkpoint file.
     """
-    state = simulation.context.getState(getPositions=True, getVelocities=True)
+    state = simulation.context.getState(
+        getPositions=True, getVelocities=True, getParameters=True
+    )
     with open(input_ochk, "w") as f:
         f.write(mm.XmlSerializer.serialize(state))
     print(f"\nWrite checkpoint file: {input_ochk}")
