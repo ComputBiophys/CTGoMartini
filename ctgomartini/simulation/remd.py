@@ -487,7 +487,7 @@ class REMDRunner(SimulationRunner):
             self.sampler = ReplicaExchangeSampler.from_storage(self.output_data)
 
         # Set online analysis interval
-        self.sampler._online_analysis_interval = self.config.remd_online_analysis_interval
+        self.sampler.online_analysis_interval = self.config.remd_online_analysis_interval
 
         # Determine number of iterations to run
         current_iteration = self.sampler.iteration
