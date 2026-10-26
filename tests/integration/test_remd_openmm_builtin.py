@@ -19,7 +19,7 @@ pytest.importorskip("openmm.app.replicaexchangesampler")
 
 import openmm.unit as unit
 
-from ctgomartini.analysis.remd_mbar import FESAnalyzer, kB
+from ctgomartini.analysis.remd_mbar import BAR_NM3_TO_KJMOL, FESAnalyzer, kB
 from ctgomartini.simulation.remd_openmm import (
     BuiltinREMDRunner,
     read_exchange_statistics,
@@ -44,9 +44,14 @@ def ham_mixing(e1, e2, delta, c1, c2):
     return (e1 + e2 + dv) / 2 - math.sqrt(((e1 - e2 - dv) / 2) ** 2 + delta**2)
 
 
-def _write_remd_inp(test_dir, nstep, method, pcouple="no", c1="-50 0"):
+def _write_remd_inp(test_dir, nstep, method, pcouple="no", c1="-50 0",
+                    devices=None, gen_seed=None, gen_vel="no",
+                    p_type="isotropic", replica_temp="300 310", p_tens=None):
     inp_path = os.path.join(test_dir, "remd.inp")
     coupling = "1/1000 1/500" if method == "exp" else "1000 800"
+    devices_line = f"remd_devices = {devices}\n" if devices is not None else ""
+    gen_seed_line = f"gen_seed = {gen_seed}\n" if gen_seed is not None else ""
+    p_tens_line = f"p_tens = {p_tens}\n" if p_tens is not None else ""
     with open(inp_path, "w") as f:
         f.write(
             f"""
@@ -61,23 +66,24 @@ input       = ions.gro
 topol       = system.top
 ichk        = mini.chk
 mini_nstep  = 0
-gen_vel     = no
-rest        = no
+gen_vel     = {gen_vel}
+{gen_seed_line}rest        = no
 pcouple     = {pcouple}
-
+p_type      = {p_type}
+{p_tens_line}
 REMD = yes
 remd_backend = openmm
 exc_freq = 5
 replica_count = 2
 replica_molname = gbp
 replica_method = {method}
-replica_temp = 300 310
+replica_temp = {replica_temp}
 replica_coupling = {coupling}
 replica_c1 = {c1}
 replica_c2 = 0 0
 remd_checkpoint_interval = 1
 remd_xtc_output = yes
-"""
+{devices_line}"""
         )
     return inp_path
 
@@ -146,7 +152,7 @@ def _read_cv_energies(outdir):
     return table
 
 
-def _check_energy_consistency(outdir, method, n_iterations):
+def _check_energy_consistency(outdir, method, n_iterations, temperatures=None):
     """energy.csv (reduced) must match basin energies via the mixing formula.
 
     The total energy in state s is E_other(replica) + E_mixing,s(E1, E2), so
@@ -156,8 +162,11 @@ def _check_energy_consistency(outdir, method, n_iterations):
 
     where U(r, s) is the unreduced energy of replica r's conformation in
     state s. This simultaneously validates the global-parameter switching,
-    the sampler's energy matrix, and the CV reporter.
+    the sampler's energy matrix, and the CV reporter. energy.csv stores pure
+    potential energies (no PV term), so the identity holds under NPT as well.
     """
+    if temperatures is None:
+        temperatures = TEMPERATURES
     couplings = EXP_COUPLINGS if method == "exp" else HAM_COUPLINGS
     mixing = exp_mixing if method == "exp" else ham_mixing
 
@@ -171,7 +180,7 @@ def _check_energy_consistency(outdir, method, n_iterations):
         for replica in range(2):
             e1, e2 = cv_table[(iteration, replica)]
             unreduced = [
-                energy[frame][replica * 2 + s] * kB * TEMPERATURES[s] for s in range(2)
+                energy[frame][replica * 2 + s] * kB * temperatures[s] for s in range(2)
             ]
             modeled = [
                 mixing(e1, e2, couplings[s], C1_LIST[s], C2_LIST[s]) for s in range(2)
@@ -203,9 +212,12 @@ class TestBuiltinREMDEXP:
                      "replica_0.xtc", "replica_1.xtc"):
             assert os.path.isfile(os.path.join(outdir, name)), name
 
-        # log.csv: 3 rows, valid state indices
+        # log.csv: 3 rows, valid state indices. The Step column counts
+        # per-replica steps (the serial driver's reporters see the main
+        # Context holding the last replica's conformation count).
         log = np.loadtxt(os.path.join(outdir, "log.csv"), delimiter=",", skiprows=1)
         assert log.shape == (3, 4)
+        assert log[:, 1].tolist() == [5, 10, 15]
         assert set(log[:, 2:].flatten().astype(int)) <= {0, 1}
         assert log[:, 0].tolist() == [1, 2, 3]
 
@@ -273,12 +285,6 @@ class TestBuiltinREMDEXP:
                 BuiltinREMDRunner(inp, output_data=outdir).run()
             with pytest.raises(FileNotFoundError):
                 BuiltinREMDRunner(inp, output_data=os.path.join(exp_dir, "missing")).extend()
-
-    def test_pcouple_rejected(self, exp_dir):
-        with WorkingDirectoryContext(exp_dir):
-            inp = _write_remd_inp(exp_dir, nstep=10, method="exp", pcouple="yes")
-            with pytest.raises(ValueError, match="pressure coupling"):
-                BuiltinREMDRunner(inp, output_data=os.path.join(exp_dir, "output_npt"))
 
     def test_run_zero_iterations_rejected(self, exp_dir):
         outdir = os.path.join(exp_dir, "output_zero")
@@ -381,3 +387,165 @@ class TestBuiltinREMDHAM:
         max_dev = _check_energy_consistency(outdir, "ham", n_iterations=3)
         print(f"\nHAM max |DU - D(E_mixing)| = {max_dev:.3e} kJ/mol")
         assert max_dev < 1e-3
+
+
+class TestBuiltinREMDNPT:
+    """NPT runs (pcouple = yes) of the built-in backend.
+
+    The energy identity is unaffected by the barostat (energy.csv stores pure
+    potential energies); the NPT-specific checks are the volume/area outputs,
+    the metadata "npt" block, and the sampler's work-term parameters.
+    """
+
+    def test_npt_isotropic_same_temperature_ham(self, ham_dir):
+        outdir = os.path.join(ham_dir, "output_npt_iso")
+        with WorkingDirectoryContext(ham_dir):
+            inp = _write_remd_inp(
+                ham_dir, nstep=15, method="ham", pcouple="yes",
+                replica_temp="310 310", gen_seed=42, gen_vel="yes",
+            )
+            runner = BuiltinREMDRunner(inp, output_data=outdir)
+            runner.run()
+
+        assert runner.sampler.currentIteration == 3
+        # The sampler got the NPT correction parameters (gamma=0 for isotropic).
+        assert runner.sampler.pressure_bar == 1.0
+        assert runner.sampler.surface_tension_bar_nm == 0.0
+
+        # volume.csv: no header, one row per iteration, one volume per replica.
+        volume = np.loadtxt(os.path.join(outdir, "volume.csv"), delimiter=",")
+        assert volume.shape == (3, 2)
+        assert np.all(volume > 0)
+        assert not os.path.exists(os.path.join(outdir, "area.csv"))
+
+        with open(os.path.join(outdir, "metadata.json")) as f:
+            metadata = json.load(f)
+        assert metadata["npt"] == {
+            "enabled": True,
+            "p_type": "isotropic",
+            "pressure_bar": 1.0,
+            "surface_tension_bar_nm": None,
+        }
+
+        max_dev = _check_energy_consistency(
+            outdir, "ham", n_iterations=3, temperatures=[310.0, 310.0]
+        )
+        print(f"\nNPT HAM max |DU - D(E_mixing)| = {max_dev:.3e} kJ/mol")
+        assert max_dev < 1e-3
+
+    def test_npt_isotropic_mixed_temperature_smoke(self, exp_dir):
+        outdir = os.path.join(exp_dir, "output_npt_tremd")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=15, method="exp", pcouple="yes",
+                gen_seed=42, gen_vel="yes",
+            )
+            runner = BuiltinREMDRunner(inp, output_data=outdir)
+            runner.run()
+
+        # Mixed state temperatures: the exchange criterion takes the kT-list
+        # branch with the work-term correction.
+        assert runner.sampler._kT_list is not None
+        assert runner.sampler.currentIteration == 3
+        volume = np.loadtxt(os.path.join(outdir, "volume.csv"), delimiter=",")
+        assert volume.shape == (3, 2)
+        max_dev = _check_energy_consistency(outdir, "exp", n_iterations=3)
+        assert max_dev < 1e-3
+
+    def test_npt_membrane_writes_area(self, exp_dir):
+        outdir = os.path.join(exp_dir, "output_npt_memb")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=15, method="exp", pcouple="yes",
+                p_type="membrane", p_tens=5.0, gen_seed=42, gen_vel="yes",
+            )
+            runner = BuiltinREMDRunner(inp, output_data=outdir)
+            runner.run()
+
+        assert runner.sampler.surface_tension_bar_nm == 5.0
+        volume = np.loadtxt(os.path.join(outdir, "volume.csv"), delimiter=",")
+        area = np.loadtxt(os.path.join(outdir, "area.csv"), delimiter=",")
+        # area.csv is row-aligned with volume.csv, no header.
+        assert volume.shape == (3, 2)
+        assert area.shape == (3, 2)
+        assert np.all(area > 0)
+
+        with open(os.path.join(outdir, "metadata.json")) as f:
+            metadata = json.load(f)
+        assert metadata["npt"]["p_type"] == "membrane"
+        assert metadata["npt"]["surface_tension_bar_nm"] == 5.0
+
+        max_dev = _check_energy_consistency(outdir, "exp", n_iterations=3)
+        assert max_dev < 1e-3
+
+    def test_npt_extend_continues_output(self, exp_dir):
+        outdir = os.path.join(exp_dir, "output_npt_extend")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=10, method="exp", pcouple="yes",
+                gen_seed=42, gen_vel="yes",
+            )
+            runner = BuiltinREMDRunner(inp, output_data=outdir)
+            runner.run()
+            assert runner.sampler.currentIteration == 2
+
+            resumed = BuiltinREMDRunner(inp, output_data=outdir)
+            resumed.extend(n_iterations=2)
+            assert resumed.sampler.currentIteration == 4
+
+        volume = np.loadtxt(os.path.join(outdir, "volume.csv"), delimiter=",")
+        assert volume.shape == (4, 2)
+        log = np.loadtxt(os.path.join(outdir, "log.csv"), delimiter=",", skiprows=1)
+        assert log[:, 0].tolist() == [1, 2, 3, 4]
+        stats = read_exchange_statistics(os.path.join(outdir, "exchange.csv"))
+        assert stats[(0, 1)][1] == 16
+        max_dev = _check_energy_consistency(outdir, "exp", n_iterations=4)
+        assert max_dev < 1e-3
+
+    def test_extend_npt_mismatch_rejected(self, exp_dir):
+        outdir = os.path.join(exp_dir, "output_npt_mismatch")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=10, method="exp", gen_seed=42, gen_vel="yes"
+            )
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+            # A directory without an "npt" block is treated as NVT.
+            with open(os.path.join(outdir, "metadata.json")) as f:
+                metadata = json.load(f)
+            assert metadata["npt"]["enabled"] is False
+
+            inp = _write_remd_inp(
+                exp_dir, nstep=10, method="exp", pcouple="yes",
+                gen_seed=42, gen_vel="yes",
+            )
+            resumed = BuiltinREMDRunner(inp, output_data=outdir)
+            with pytest.raises(ValueError, match="npt"):
+                resumed.extend()
+
+    def test_npt_fes_analyzer_reads_npt_run(self, exp_dir, tmp_path):
+        """A real NPT output directory feeds the analyzer's work-term path."""
+        outdir = os.path.join(exp_dir, "output_npt_fes")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=10, method="exp", pcouple="yes",
+                gen_seed=42, gen_vel="yes",
+            )
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+
+        cv_file = tmp_path / "cv.dat"
+        np.savetxt(cv_file, np.arange(6, dtype=float).reshape(2, 3))
+        analyzer = FESAnalyzer(outdir, cv_file)
+        assert analyzer._work_energies_kj.shape == (2, 2)
+        volume = np.loadtxt(os.path.join(outdir, "volume.csv"), delimiter=",")
+        # p_ref = 1.0 bar, isotropic: W = p*V per replica frame.
+        expected_work = volume.T * BAR_NM3_TO_KJMOL
+        np.testing.assert_allclose(
+            analyzer._work_energies_kj, expected_work, rtol=1e-12
+        )
+        # And the reduced energies gained W/(kB*T_state).
+        energy = np.loadtxt(os.path.join(outdir, "energy.csv"), delimiter=",")
+        bare = energy.reshape(2, 2, 2).transpose(2, 1, 0)
+        expected = bare + expected_work[None, :, :] / (
+            kB * np.asarray(TEMPERATURES)[:, None, None]
+        )
+        np.testing.assert_allclose(analyzer.replica_energies, expected, rtol=1e-12)

@@ -159,6 +159,11 @@ def _run_remd(args: argparse.Namespace, config: Any) -> int:
         runner_class = REMDRunner
         output_data = config.remd_output
         missing_hint = "REMD requires openmmtools. Install with: conda install openmmtools"
+        if config.remd_devices:
+            print(
+                "Warning: remd_devices is only used by remd_backend = openmm; "
+                "ignoring it for the openmmtools backend."
+            )
 
     try:
         runner = runner_class(

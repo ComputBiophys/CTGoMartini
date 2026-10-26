@@ -10,11 +10,20 @@ which the sampler switches through ``Context.setParameter``.
 The OpenMM 8.6 sampler/reporter classes are imported lazily inside functions so
 this module stays importable under OpenMM < 8.6.
 
+With ``remd_devices`` set in the input file, the runner switches to the
+parallel multi-Context driver in :mod:`ctgomartini.simulation.remd_parallel`
+(one worker Context per replica, integrated concurrently in threads); output
+files and formats are identical to the serial driver.
+
 Output layout (``remd_output`` is a directory for this backend):
 
 - ``log.csv``, ``energy.csv``, ``checkpoint_<i>.xml`` and
   optional ``replica_<i>.xtc`` are written by the built-in
-  ``ReplicaExchangeReporter``.
+  ``ReplicaExchangeReporter``. With ``pcouple = yes`` the reporter also
+  writes ``volume.csv`` (per-replica box volumes in nm^3, one row per
+  report interval, no header); ``p_type = membrane`` additionally
+  produces ``area.csv`` (per-replica xy areas in nm^2, same layout,
+  written by :class:`AreaReporter`).
 - ``cv_energies.csv``: long table ``Iteration,Replica,Molecule,E1,E2[,E3...]``
   with the per-basin energies (kJ/mol) of every multiple-basin CustomCVForce
   of the target molecule (``replica_molname``), collected from each force's
@@ -22,7 +31,19 @@ Output layout (``remd_output`` is a directory for this backend):
 - ``exchange.csv``: long table ``Iteration,Pair,Accepted,Proposed`` with
   cumulative per-pair exchange counters.
 - ``metadata.json``: states, method, molecule name, timestep and reporting
-  intervals needed by the analysis tools.
+  intervals needed by the analysis tools, plus an ``npt`` block recording
+  the pressure coupling settings.
+
+NPT (``pcouple = yes``) is supported with the correct exchange criterion.
+The reduced potential of state s is u_s = beta_s * (U + p*V - gamma*A)
+(the gamma*A term is subtracted, matching openmmtools'
+``states.py:_compute_reduced_potential``), so for mixed-temperature REMD the
+acceptance exponent gains the correction term
+``(1/kT_si - 1/kT_sj) * (W_i - W_j)`` with ``W = p*V - gamma*A`` in kJ/mol
+(:func:`exchange_exponent`). At equal state temperatures the correction is
+identically zero and the criterion reduces to the built-in one. The MBAR
+analysis (:mod:`ctgomartini.analysis.remd_mbar`) adds the same work term back
+from ``volume.csv``/``area.csv``.
 """
 
 from __future__ import annotations
@@ -216,6 +237,101 @@ def read_exchange_statistics(csv_path: str | Path) -> dict[tuple[int, int], list
     return stats
 
 
+# 1 bar * nm^3 per particle, in kJ/mol (N_A * 1e5 Pa * 1e-27 m^3 / 1000).
+BAR_NM3_TO_KJMOL = 0.0602214076
+
+
+def npt_work_kjmol(
+    volume_nm3: float,
+    area_nm2: float,
+    pressure_bar: float,
+    surface_tension_bar_nm: float = 0.0,
+) -> float:
+    """NPT work term ``W = p*V - gamma*A`` of one replica conformation.
+
+    The gamma*A term is subtracted, matching the openmmtools reduced
+    potential ``u = beta * (U + p*V - gamma*A)``.
+
+    Args:
+        volume_nm3: Periodic box volume in nm^3.
+        area_nm2: Box cross-sectional xy area in nm^2 (a.x * b.y).
+        pressure_bar: Reference pressure in bar.
+        surface_tension_bar_nm: Membrane surface tension in bar*nm
+            (0 for isotropic pressure coupling).
+
+    Returns:
+        Work term in kJ/mol.
+    """
+    return (
+        pressure_bar * volume_nm3 - surface_tension_bar_nm * area_nm2
+    ) * BAR_NM3_TO_KJMOL
+
+
+def _as_kjmol(value: Any) -> float:
+    """Strip openmm units, assuming the value is in or convertible to kJ/mol."""
+    if u.is_quantity(value):
+        return float(value.value_in_unit(u.kilojoules_per_mole))
+    return float(value)
+
+
+def exchange_exponent(
+    e_i_si: Any,
+    e_i_sj: Any,
+    e_j_si: Any,
+    e_j_sj: Any,
+    kt_si: Any,
+    kt_sj: Any,
+    work_i: float = 0.0,
+    work_j: float = 0.0,
+) -> float:
+    """Exchange acceptance exponent for one replica pair (mixed temperatures).
+
+    With u_s = beta_s * (U + W_s), W = p*V - gamma*A being equal across
+    states, the exponent of min(1, exp(exponent)) is
+
+        (U_i(si) - U_j(si))/kT_si + (U_j(sj) - U_i(sj))/kT_sj
+        + (1/kT_si - 1/kT_sj) * (W_i - W_j)
+
+    where replica r occupies state s_r. All energies may be plain floats
+    (kJ/mol) or openmm Quantities; the return value is a dimensionless float.
+
+    Args:
+        e_i_si: Energy of replica i evaluated in state si.
+        e_i_sj: Energy of replica i evaluated in state sj.
+        e_j_si: Energy of replica j evaluated in state si.
+        e_j_sj: Energy of replica j evaluated in state sj.
+        kt_si: kT of state si (kJ/mol or Quantity).
+        kt_sj: kT of state sj (kJ/mol or Quantity).
+        work_i: NPT work term of replica i's conformation (kJ/mol).
+        work_j: NPT work term of replica j's conformation (kJ/mol).
+
+    Returns:
+        Dimensionless acceptance exponent.
+    """
+    kt_si = _as_kjmol(kt_si)
+    kt_sj = _as_kjmol(kt_sj)
+    exponent = (_as_kjmol(e_i_si) - _as_kjmol(e_j_si)) / kt_si + (
+        _as_kjmol(e_j_sj) - _as_kjmol(e_i_sj)
+    ) / kt_sj
+    delta_work = work_i - work_j
+    if delta_work != 0.0:
+        exponent += delta_work * (1.0 / kt_si - 1.0 / kt_sj)
+    return exponent
+
+
+def box_volume_nm3(state: mm.State) -> float:
+    """Periodic box volume of a State, in nm^3."""
+    return float(state.getPeriodicBoxVolume().value_in_unit(u.nanometer**3))
+
+
+def box_area_xy_nm2(state: mm.State) -> float:
+    """Box cross-sectional xy area of a State, in nm^2 (a.x * b.y)."""
+    a, b, _ = state.getPeriodicBoxVectors()
+    return float(
+        a[0].value_in_unit(u.nanometer) * b[1].value_in_unit(u.nanometer)
+    )
+
+
 # ---------------------------------------------------------------------------
 # Reporters
 # ---------------------------------------------------------------------------
@@ -349,6 +465,46 @@ class ExchangeStatisticsReporter:
         self.close()
 
 
+class AreaReporter:
+    """Record per-replica box xy areas to area.csv (membrane NPT only).
+
+    One row per report interval holding one area per replica in nm^2, no
+    header — the same layout as the built-in reporter's volume.csv, so the
+    two files stay row-aligned. Attached only for ``p_type = membrane``.
+    """
+
+    def __init__(
+        self, file_path: str | Path, report_interval: int, resume: bool = False
+    ) -> None:
+        """Create the reporter.
+
+        Args:
+            file_path: CSV output path (area.csv).
+            report_interval: Reporting interval in iterations.
+            resume: Append to the existing file.
+        """
+        self.file_path = str(file_path)
+        self.report_interval = int(report_interval)
+        self._file = open(self.file_path, "a" if resume else "w")  # noqa: SIM115
+
+    def __call__(self, sampler: Any) -> None:
+        """Write one row of per-replica xy areas for this iteration."""
+        if sampler.currentIteration % self.report_interval != 0:
+            return
+        areas = [box_area_xy_nm2(conf) for conf in sampler.replicaConformation]
+        print(",".join(str(area) for area in areas), file=self._file)
+        self._file.flush()
+
+    def close(self) -> None:
+        """Close the output file."""
+        if self._file is not None:
+            self._file.close()
+            self._file = None
+
+    def __del__(self) -> None:
+        self.close()
+
+
 # ---------------------------------------------------------------------------
 # Sampler (OpenMM >= 8.6, imported lazily)
 # ---------------------------------------------------------------------------
@@ -374,8 +530,9 @@ def _get_counting_sampler_class() -> type:
     """Return a ReplicaExchangeSampler subclass with per-pair exchange counters.
 
     The exchange logic is identical to the built-in random-pair scheme; only
-    the ``n_proposed``/``n_accepted`` bookkeeping (unordered pairs i<j) and a
-    restore hook for resuming are added.
+    the ``n_proposed``/``n_accepted`` bookkeeping (unordered pairs i<j), a
+    restore hook for resuming, and the NPT work-term correction
+    (:func:`exchange_exponent`) are added.
     """
     global _COUNTING_SAMPLER_CLASS
     if _COUNTING_SAMPLER_CLASS is not None:
@@ -385,13 +542,28 @@ def _get_counting_sampler_class() -> type:
     from openmm.app.replicaexchangesampler import ReplicaExchangeSampler
 
     class CountingReplicaExchangeSampler(ReplicaExchangeSampler):
-        """ReplicaExchangeSampler that records exchange statistics."""
+        """ReplicaExchangeSampler that records exchange statistics.
 
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
+        Args:
+            pressure_bar: Reference pressure (bar) for the NPT exchange
+                correction; None disables it (NVT).
+            surface_tension_bar_nm: Membrane surface tension (bar*nm) for
+                the NPT exchange correction; 0 for isotropic coupling.
+        """
+
+        def __init__(
+            self,
+            *args: Any,
+            pressure_bar: float | None = None,
+            surface_tension_bar_nm: float = 0.0,
+            **kwargs: Any,
+        ) -> None:
             super().__init__(*args, **kwargs)
             n = len(self.states)
             self.n_proposed = [[0] * n for _ in range(n)]
             self.n_accepted = [[0] * n for _ in range(n)]
+            self.pressure_bar = pressure_bar
+            self.surface_tension_bar_nm = float(surface_tension_bar_nm)
             self._kT_list: list[Any] | None = None
             if "temperature" in self.states[0]:
                 temperatures = []
@@ -408,11 +580,38 @@ def _get_counting_sampler_class() -> type:
                 self.n_accepted[i][j] = accepted
                 self.n_proposed[i][j] = proposed
 
+        def _npt_works_kjmol(self) -> list[float] | None:
+            """Per-replica NPT work terms (p*V - gamma*A) in kJ/mol.
+
+            Computed from the current replica conformations (which exchange
+            attempts only reassign, never modify), or None for NVT runs.
+            """
+            if self.pressure_bar is None:
+                return None
+            return [
+                npt_work_kjmol(
+                    box_volume_nm3(conformation),
+                    box_area_xy_nm2(conformation),
+                    self.pressure_bar,
+                    self.surface_tension_bar_nm,
+                )
+                for conformation in self.replicaConformation
+            ]
+
         def exchangeReplicas(self) -> None:  # noqa: N802
-            """Attempt exchanges between random replica pairs (built-in logic)."""
+            """Attempt exchanges between random replica pairs (built-in logic).
+
+            Under NPT with mixed state temperatures the acceptance exponent
+            includes the (1/kT_si - 1/kT_sj)*(W_i - W_j) work correction
+            (:func:`exchange_exponent`); same-temperature states and NVT runs
+            are exactly the built-in criterion.
+            """
             n = len(self.states)
             if n < 2:
                 return
+            # The correction is identically zero at equal temperatures, so it
+            # is only needed on the per-state-temperature branch.
+            works = self._npt_works_kjmol() if self._kT_list is not None else None
             for _ in range(self.exchangesPerIteration):
                 # Select a random pair of replicas.
                 i = j = 0
@@ -435,11 +634,18 @@ def _get_counting_sampler_class() -> type:
                         - self.replicaStateEnergy[j][si]
                     ) / kt
                 else:
-                    exponent = (
-                        self.replicaStateEnergy[i][si] - self.replicaStateEnergy[j][si]
-                    ) / self._kT_list[si] + (
-                        self.replicaStateEnergy[j][sj] - self.replicaStateEnergy[i][sj]
-                    ) / self._kT_list[sj]
+                    work_i = works[i] if works is not None else 0.0
+                    work_j = works[j] if works is not None else 0.0
+                    exponent = exchange_exponent(
+                        self.replicaStateEnergy[i][si],
+                        self.replicaStateEnergy[i][sj],
+                        self.replicaStateEnergy[j][si],
+                        self.replicaStateEnergy[j][sj],
+                        self._kT_list[si],
+                        self._kT_list[sj],
+                        work_i,
+                        work_j,
+                    )
                 probability = min(1.0, math.exp(exponent))
                 a, b = (i, j) if i < j else (j, i)
                 self.n_proposed[a][b] += 1
@@ -456,6 +662,15 @@ def _get_counting_sampler_class() -> type:
 # ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
+
+# metadata.json "npt" block for NVT runs (and the assumed value when extending
+# a run directory written before NPT support existed).
+_NPT_DISABLED_METADATA: dict[str, Any] = {
+    "enabled": False,
+    "p_type": None,
+    "pressure_bar": None,
+    "surface_tension_bar_nm": None,
+}
 
 
 class BuiltinREMDRunner(SimulationRunner):
@@ -492,14 +707,6 @@ class BuiltinREMDRunner(SimulationRunner):
         """
         _require_openmm86()
         super().__init__(inpfile)
-        if self.config.pcouple == "yes":
-            raise ValueError(
-                "The 'openmm' REMD backend does not support pressure coupling "
-                "(pcouple = yes): the built-in exchange criterion and the MBAR "
-                "analysis lack the PV term, so NPT results would be incorrect. "
-                "Use remd_backend = openmmtools for NPT, or equilibrate under "
-                "NPT and then run production under NVT."
-            )
         self.output_data = output_data
         if replica_params is not None:
             molname = replica_params["molname"]
@@ -540,6 +747,23 @@ class BuiltinREMDRunner(SimulationRunner):
         return os.path.isdir(self.output_data) and os.path.isfile(
             os.path.join(self.output_data, "log.csv")
         )
+
+    def _npt_metadata(self) -> dict[str, Any]:
+        """NPT settings block for metadata.json (single source for resume checks).
+
+        Returns the disabled sentinel for NVT runs so old run directories
+        without an "npt" key compare equal.
+        """
+        if self.config.pcouple != "yes":
+            return dict(_NPT_DISABLED_METADATA)
+        return {
+            "enabled": True,
+            "p_type": self.config.p_type,
+            "pressure_bar": self.config.p_ref,
+            "surface_tension_bar_nm": (
+                self.config.p_tens if self.config.p_type == "membrane" else None
+            ),
+        }
 
     def _check_resume_metadata(self) -> None:
         """Validate that the existing run's metadata matches this input file.
@@ -587,6 +811,10 @@ class BuiltinREMDRunner(SimulationRunner):
                             f"state {i} parameter '{key}': existing "
                             f"{old.get(key)!r} vs input {new.get(key)!r}"
                         )
+        existing_npt = metadata.get("npt", _NPT_DISABLED_METADATA)
+        current_npt = self._npt_metadata()
+        if existing_npt != current_npt:
+            differences.append(f"npt: existing {existing_npt!r} vs input {current_npt!r}")
         if differences:
             raise ValueError(
                 f"REMD state definition differs from the existing run in "
@@ -648,7 +876,12 @@ class BuiltinREMDRunner(SimulationRunner):
         return simulation
 
     def _create_sampler(self, simulation: Simulation) -> Any:
-        """Create the counting ReplicaExchangeSampler for the given Simulation."""
+        """Create the ReplicaExchangeSampler for the given Simulation.
+
+        With remd_devices set, returns the parallel multi-Context driver (one
+        worker Context per replica); otherwise the serial counting sampler.
+        Under NPT both get the work-term exchange correction parameters.
+        """
         validate_state_parameters(
             simulation.context, self.states, self.molname, self.config.replica_method
         )
@@ -658,12 +891,46 @@ class BuiltinREMDRunner(SimulationRunner):
                 f"No multiple-basin CustomCVForce found for molecule "
                 f"'{self.molname}' in the system. Check replica_molname."
             )
+        npt = self._npt_metadata()
+        npt_kwargs: dict[str, Any] = {}
+        if npt["enabled"]:
+            npt_kwargs = {
+                "pressure_bar": npt["pressure_bar"],
+                "surface_tension_bar_nm": npt["surface_tension_bar_nm"] or 0.0,
+            }
+        if self.config.remd_devices:
+            from ctgomartini.simulation.remd_parallel import (
+                _get_parallel_sampler_class,
+                assign_devices,
+            )
+
+            devices = assign_devices(len(self.states), self.config.remd_devices)
+            base_seed = self.config.gen_seed
+            if base_seed is None:
+                base_seed = random.SystemRandom().randrange(2**31)
+            print(
+                f"  Parallel driver: {len(self.states)} worker Contexts, "
+                f"replica -> device {devices}, worker integrator seeds "
+                f"{base_seed}+i"
+            )
+            return _get_parallel_sampler_class()(
+                self.states,
+                simulation,
+                self.config.exc_freq,
+                reinitializeVelocities=self.config.remd_reassign_velocities,
+                devices=devices,
+                platform=self.platform,
+                platform_properties=self.platform_properties,
+                base_seed=base_seed,
+                **npt_kwargs,
+            )
         sampler_class = _get_counting_sampler_class()
         return sampler_class(
             self.states,
             simulation,
             self.config.exc_freq,
             reinitializeVelocities=self.config.remd_reassign_velocities,
+            **npt_kwargs,
         )
 
     def _initialize_velocities(self, sampler: Any) -> None:
@@ -733,6 +1000,17 @@ class BuiltinREMDRunner(SimulationRunner):
         )
         sampler.reporters.append(self._exchange_reporter)
 
+        if self.config.pcouple == "yes" and self.config.p_type == "membrane":
+            # volume.csv is written by the built-in reporter; area.csv keeps
+            # the same row-aligned layout for the membrane work term.
+            sampler.reporters.append(
+                AreaReporter(
+                    os.path.join(self.output_data, "area.csv"),
+                    interval,
+                    resume=resume,
+                )
+            )
+
     def _finalize_reporters(self) -> None:
         """Flush the final exchange totals, then close all reporters."""
         if self._exchange_reporter is not None and self.sampler is not None:
@@ -775,7 +1053,13 @@ class BuiltinREMDRunner(SimulationRunner):
             "n_basins": max(
                 len(basin_cv_groups(force)) for force in self._mbp_forces
             ),
+            "devices": self.config.remd_devices,
+            "parallel": bool(self.config.remd_devices),
+            "npt": self._npt_metadata(),
         }
+        worker_seeds = getattr(self.sampler, "worker_seeds", None)
+        if worker_seeds is not None:
+            metadata["worker_seeds"] = list(worker_seeds)
         metadata_path = os.path.join(self.output_data, "metadata.json")
         with open(metadata_path, "w") as f:
             json.dump(metadata, f, indent=2)

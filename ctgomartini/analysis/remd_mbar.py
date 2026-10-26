@@ -24,6 +24,11 @@ from openmm import unit
 # Constants
 kB = (unit.MOLAR_GAS_CONSTANT_R).value_in_unit(unit.kilojoule / (unit.kelvin * unit.mole))
 
+# 1 bar * nm^3 per particle, in kJ/mol. Kept in sync with
+# ctgomartini.simulation.remd_openmm.BAR_NM3_TO_KJMOL (duplicated so this
+# module does not depend on the simulation package).
+BAR_NM3_TO_KJMOL = 0.0602214076
+
 
 def _import_pymbar():
     """Lazy import pymbar to avoid import-time overhead."""
@@ -99,6 +104,12 @@ class FESAnalyzer:
         # is involved (correct for mixed-temperature REMD).
         self._basin_energies_kj: np.ndarray | None = None
         self._subsampled_basin_energies_kj: np.ndarray | None = None
+        # NPT work term W = p*V - gamma*A in kJ/mol (built-in REMD directories
+        # with metadata npt.enabled only), [replica][frame]. It enters both
+        # the per-state reduced energies (replica_energies) and the mixing
+        # analysis target potential.
+        self._work_energies_kj: np.ndarray | None = None
+        self._subsampled_work_kj: np.ndarray | None = None
         
         self._validate_files()
         self._load_simulation_data()  # This will also set self.interval
@@ -193,6 +204,11 @@ class FESAnalyzer:
         by BuiltinREMDRunner. Does not require openmmtools. Frames are already
         spaced by the run's report interval, so the default interval is 1.
 
+        NPT runs (metadata "npt" block with enabled=true) additionally read
+        volume.csv (and area.csv for p_type=membrane): the reduced potential
+        of state s is beta_s*(U + p*V - gamma*A), so the per-state reduced
+        energies gain the work term W/(kB*T_s) with W = p*V - gamma*A.
+
         Raises:
             RuntimeError: If data loading fails.
         """
@@ -243,11 +259,42 @@ class FESAnalyzer:
                     else:
                         basin[key] = [e1, e2]
             cv_iterations = sorted({iteration for iteration, _ in basin})
-            if len(cv_iterations) != n_frames or log.shape[0] != n_frames:
-                raise ValueError(
-                    f"Frame count mismatch: energy.csv has {n_frames}, log.csv has "
-                    f"{log.shape[0]}, cv_energies.csv has {len(cv_iterations)}"
+
+            # volume.csv (and area.csv for membrane coupling) are written for
+            # NPT runs only, one row per reported iteration, one value per
+            # replica, row-aligned with energy.csv.
+            npt = metadata.get("npt") or {}
+            npt_enabled = bool(npt.get("enabled"))
+            volume = area = None
+            if npt_enabled:
+                volume = np.loadtxt(
+                    self.output_file / "volume.csv", delimiter=",", ndmin=2
                 )
+                if npt.get("p_type") == "membrane":
+                    area = np.loadtxt(
+                        self.output_file / "area.csv", delimiter=",", ndmin=2
+                    )
+
+            frame_counts = {
+                "energy.csv": n_frames,
+                "log.csv": log.shape[0],
+                "cv_energies.csv": len(cv_iterations),
+            }
+            if volume is not None:
+                frame_counts["volume.csv"] = volume.shape[0]
+            if area is not None:
+                frame_counts["area.csv"] = area.shape[0]
+            if len(set(frame_counts.values())) != 1:
+                details = ", ".join(
+                    f"{name} has {count}" for name, count in frame_counts.items()
+                )
+                raise ValueError(f"Frame count mismatch: {details}")
+            for name, table in (("volume.csv", volume), ("area.csv", area)):
+                if table is not None and table.shape[1] != n_states:
+                    raise ValueError(
+                        f"{name} has {table.shape[1]} columns, expected "
+                        f"{n_states} (one per replica)"
+                    )
 
             # Reduce basin energies by the temperature of the state each
             # replica occupies at that frame, and keep the raw kJ/mol values
@@ -266,6 +313,24 @@ class FESAnalyzer:
                     unsampled_energies[replica, 1, frame] = e2 / kt_replica
             self.unsampled_energies = unsampled_energies[:, :, ::self.interval]
             self._basin_energies_kj = basin_energies_kj[:, :, ::self.interval]
+
+            # NPT work term W = p*V - gamma*A per replica frame (kJ/mol). The
+            # reduced potential of state s gains W/(kB*T_s); W itself is
+            # state-independent (all states share the reference pressure).
+            if npt_enabled:
+                pressure = float(npt["pressure_bar"])
+                gamma = float(npt.get("surface_tension_bar_nm") or 0.0)
+                work_fr = pressure * volume  # [frame][replica]
+                if area is not None:
+                    work_fr = work_fr - gamma * area
+                # [replica][frame], downsampled like replica_energies
+                self._work_energies_kj = (work_fr * BAR_NM3_TO_KJMOL).T[
+                    :, ::self.interval
+                ]
+                self.replica_energies = self.replica_energies + (
+                    self._work_energies_kj[None, :, :]
+                    / (kB * np.asarray(temperatures)[:, None, None])
+                )
 
             self.n_states = n_states
             self.temperatures_k = np.array(temperatures)
@@ -373,6 +438,10 @@ class FESAnalyzer:
             if self._basin_energies_kj is not None:
                 self._subsampled_basin_energies_kj = self._basin_energies_kj[
                     :, :, self.subsampled_indices
+                ]
+            if self._work_energies_kj is not None:
+                self._subsampled_work_kj = self._work_energies_kj[
+                    :, self.subsampled_indices
                 ]
             
         except Exception as e:
@@ -531,7 +600,14 @@ class FESAnalyzer:
             u_n = self._ham_mixing(delta, C1, C2, temperature)
         else:
             raise ValueError(f"Invalid mixing method {method}. Must be 'EXP' or 'HAM'.")
-        
+
+        # NPT: the target reduced potential includes W/(kB*T) with
+        # W = p*V - gamma*A per sample (replica-major order, like the basin
+        # energies). analyze_onestate needs no addition: u_kn already carries
+        # the work term from the per-state reduced energies.
+        if self._subsampled_work_kj is not None:
+            u_n = u_n + np.concatenate(self._subsampled_work_kj) / (kB * temperature)
+
         return self.analyze(u_n, self.concatenated_cv, temperature, **kwargs)
     
     def _get_basin_energies(self, temperature: float) -> tuple[np.ndarray, np.ndarray]:

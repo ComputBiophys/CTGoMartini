@@ -17,13 +17,23 @@ import pytest
 import ctgomartini.cli.run_ctgomartini as cli
 from ctgomartini.simulation.config import load_config
 from ctgomartini.simulation.remd_openmm import (
+    BAR_NM3_TO_KJMOL,
+    AreaReporter,
     BasinEnergyReporter,
     ExchangeStatisticsReporter,
     basin_cv_groups,
+    box_area_xy_nm2,
+    box_volume_nm3,
     build_replica_states,
+    exchange_exponent,
     find_mbp_forces,
+    npt_work_kjmol,
     read_exchange_statistics,
     validate_state_parameters,
+)
+from ctgomartini.simulation.remd_parallel import (
+    assign_devices,
+    worker_platform_properties,
 )
 from ctgomartini.topology.interactions import EXPInteraction, HAMInteraction
 
@@ -134,6 +144,69 @@ class TestConfigRemdBackend:
     def test_invalid_backend(self, tmp_path):
         with pytest.raises(ValueError, match="remd_backend"):
             load_config(self._write_inp(tmp_path, "remd_backend = lammps\n"))
+
+
+class TestConfigRemdDevices:
+    def _write_inp(self, tmp_path, extra: str = "") -> str:
+        inp = tmp_path / "remd.inp"
+        inp.write_text(
+            "REMD = yes\n"
+            "exc_freq = 100\n"
+            "replica_count = 2\n"
+            "replica_temp = 300 310\n"
+            "platform = CPU\n"
+            f"{extra}"
+        )
+        return str(inp)
+
+    def test_default_devices_empty(self, tmp_path):
+        config = load_config(self._write_inp(tmp_path))
+        assert config.remd_devices == []
+
+    def test_parse_devices(self, tmp_path):
+        config = load_config(self._write_inp(tmp_path, "remd_devices = 0 1\n"))
+        assert config.remd_devices == [0, 1]
+
+    def test_invalid_devices(self, tmp_path):
+        with pytest.raises(ValueError, match="remd_devices"):
+            load_config(self._write_inp(tmp_path, "remd_devices = gpu0\n"))
+
+    def test_negative_devices(self, tmp_path):
+        with pytest.raises(ValueError, match="non-negative"):
+            load_config(self._write_inp(tmp_path, "remd_devices = 0 -1\n"))
+
+
+class TestParallelHelpers:
+    def test_assign_devices_round_robin(self):
+        assert assign_devices(4, [0, 1]) == [0, 1, 0, 1]
+        assert assign_devices(3, [2]) == [2, 2, 2]
+        assert assign_devices(2, [0, 1, 2]) == [0, 1]
+
+    def test_assign_devices_empty_rejected(self):
+        with pytest.raises(ValueError, match="remd_devices"):
+            assign_devices(2, [])
+
+    def test_worker_platform_properties_cuda_overrides_device(self):
+        try:
+            platform = mm.Platform.getPlatformByName("CUDA")
+        except mm.OpenMMException:
+            pytest.skip("CUDA platform not available")
+        base = {"CudaPrecision": "single", "DeviceIndex": "0"}
+        props = worker_platform_properties(platform, base, 1)
+        assert props == {"CudaPrecision": "single", "DeviceIndex": "1"}
+        assert base["DeviceIndex"] == "0"  # base dict not mutated
+
+    def test_worker_platform_properties_opencl(self):
+        try:
+            platform = mm.Platform.getPlatformByName("OpenCL")
+        except mm.OpenMMException:
+            pytest.skip("OpenCL platform not available")
+        props = worker_platform_properties(platform, {"Precision": "mixed"}, 2)
+        assert props == {"Precision": "mixed", "DeviceIndex": "2"}
+
+    def test_worker_platform_properties_cpu_ignores_device(self):
+        platform = mm.Platform.getPlatformByName("CPU")
+        assert worker_platform_properties(platform, {}, 3) == {}
 
 
 class TestFindAndValidateMBP:
@@ -295,6 +368,124 @@ class TestExchangeStatistics:
         }
 
 
+class TestNPTExchangeHelpers:
+    # e_i_si, e_i_sj, e_j_si, e_j_sj for the analytic checks
+    ENERGIES = {"e_i_si": 100.0, "e_i_sj": 110.0, "e_j_si": 120.0, "e_j_sj": 90.0}
+
+    def test_exchange_exponent_mixed_temperatures(self):
+        kt_si, kt_sj = 2.5, 2.6
+        base = (100.0 - 120.0) / kt_si + (90.0 - 110.0) / kt_sj
+        assert exchange_exponent(**self.ENERGIES, kt_si=kt_si, kt_sj=kt_sj) == (
+            pytest.approx(base)
+        )
+        work_i, work_j = 30.0, 10.0
+        expected = base + (1.0 / kt_si - 1.0 / kt_sj) * (work_i - work_j)
+        assert exchange_exponent(
+            **self.ENERGIES, kt_si=kt_si, kt_sj=kt_sj, work_i=work_i, work_j=work_j
+        ) == pytest.approx(expected)
+
+    def test_exchange_exponent_same_temperature_work_cancels(self):
+        # Equal state temperatures: (1/kt_si - 1/kt_sj) == 0, so the NPT work
+        # correction vanishes exactly and the criterion is unchanged.
+        base = exchange_exponent(**self.ENERGIES, kt_si=2.5, kt_sj=2.5)
+        with_work = exchange_exponent(
+            **self.ENERGIES, kt_si=2.5, kt_sj=2.5, work_i=30.0, work_j=10.0
+        )
+        assert with_work == base
+
+    def test_exchange_exponent_accepts_quantities(self):
+        kj = unit.kilojoules_per_mole
+        value = exchange_exponent(
+            100.0 * kj, 110.0 * kj, 120.0 * kj, 90.0 * kj,
+            2.5 * kj, 2.6 * kj, work_i=30.0, work_j=10.0,
+        )
+        expected = (
+            (100.0 - 120.0) / 2.5 + (90.0 - 110.0) / 2.6
+            + (1.0 / 2.5 - 1.0 / 2.6) * 20.0
+        )
+        assert isinstance(value, float)
+        assert value == pytest.approx(expected)
+
+    def test_npt_work_kjmol(self):
+        # P=1 bar, V=1000 nm^3, gamma=10 bar*nm, A=50 nm^2:
+        # W = (1*1000 - 10*50) bar*nm^3, gamma*A is subtracted.
+        assert npt_work_kjmol(1000.0, 50.0, 1.0, 10.0) == pytest.approx(
+            500.0 * BAR_NM3_TO_KJMOL
+        )
+        # Isotropic coupling: no surface tension term.
+        assert npt_work_kjmol(1000.0, 50.0, 1.0) == pytest.approx(
+            1000.0 * BAR_NM3_TO_KJMOL
+        )
+        # 1 bar * 1 nm^3 = 0.0602214076 kJ/mol
+        assert npt_work_kjmol(1.0, 0.0, 1.0) == pytest.approx(0.0602214076)
+
+    def test_box_helpers(self):
+        system = mm.System()
+        system.addParticle(1.0)
+        system.setDefaultPeriodicBoxVectors(
+            mm.Vec3(4, 0, 0), mm.Vec3(1, 5, 0), mm.Vec3(0, 0, 6)
+        )
+        context = mm.Context(
+            system,
+            mm.VerletIntegrator(0.001),
+            mm.Platform.getPlatformByName("Reference"),
+        )
+        context.setPositions([mm.Vec3(0, 0, 0)])
+        state = context.getState(getPositions=True)
+        assert box_volume_nm3(state) == pytest.approx(4 * 5 * 6)
+        # a.x * b.y (not the |a x b| cross-section of a tilted box)
+        assert box_area_xy_nm2(state) == pytest.approx(4 * 5)
+
+
+class TestAreaReporter:
+    def _conformations(self):
+        """Two conformations with different boxes (areas 20 and 24 nm^2)."""
+        system = mm.System()
+        system.addParticle(1.0)
+        context = mm.Context(
+            system,
+            mm.VerletIntegrator(0.001),
+            mm.Platform.getPlatformByName("Reference"),
+        )
+        context.setPositions([mm.Vec3(0, 0, 0)])
+        context.setPeriodicBoxVectors(
+            mm.Vec3(4, 0, 0), mm.Vec3(0, 5, 0), mm.Vec3(0, 0, 6)
+        )
+        conf1 = context.getState(getPositions=True)
+        context.setPeriodicBoxVectors(
+            mm.Vec3(6, 0, 0), mm.Vec3(0, 4, 0), mm.Vec3(0, 0, 5)
+        )
+        conf2 = context.getState(getPositions=True)
+        return context, [conf1, conf2]
+
+    def test_writes_row_aligned_areas_no_header(self, tmp_path):
+        context, conformations = self._conformations()
+        out = tmp_path / "area.csv"
+        reporter = AreaReporter(out, 1)
+        reporter(_mock_sampler(context, conformations, iteration=1))
+        reporter.close()
+        lines = out.read_text().splitlines()
+        assert len(lines) == 1  # no header, one row per report
+        assert [float(x) for x in lines[0].split(",")] == [
+            pytest.approx(20.0),
+            pytest.approx(24.0),
+        ]
+
+    def test_interval_and_resume_append(self, tmp_path):
+        context, conformations = self._conformations()
+        out = tmp_path / "area.csv"
+        reporter = AreaReporter(out, 2)
+        reporter(_mock_sampler(context, conformations, iteration=1))  # skipped
+        reporter(_mock_sampler(context, conformations, iteration=2))
+        reporter.close()
+        assert len(out.read_text().splitlines()) == 1
+
+        reporter = AreaReporter(out, 2, resume=True)
+        reporter(_mock_sampler(context, conformations, iteration=4))
+        reporter.close()
+        assert len(out.read_text().splitlines()) == 2
+
+
 class TestCLIDispatch:
     def _remd_inp(self, tmp_path, extra: str = "") -> str:
         inp = tmp_path / "remd.inp"
@@ -355,4 +546,16 @@ class TestCLIDispatch:
         with patch.object(cli, "REMDRunner", return_value=mock_runner) as runner_class:
             assert cli._run_remd(args, config) == 0
         assert runner_class.call_args.kwargs["output_data"] == "my.nc"
+        mock_runner.run.assert_called_once()
+
+    def test_openmmtools_backend_warns_devices_ignored(self, tmp_path, capsys):
+        from unittest.mock import MagicMock, patch
+
+        inp = self._remd_inp(tmp_path, "remd_devices = 0 1\n")
+        config = load_config(inp)
+        args = argparse.Namespace(inpfile=inp, append=False)
+        mock_runner = MagicMock()
+        with patch.object(cli, "REMDRunner", return_value=mock_runner):
+            assert cli._run_remd(args, config) == 0
+        assert "remd_devices" in capsys.readouterr().out
         mock_runner.run.assert_called_once()

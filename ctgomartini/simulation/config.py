@@ -117,6 +117,7 @@ class SimulationConfig:
         self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
         self.remd_reassign_velocities: bool = False  # Reassign velocities at each move
         self.remd_unsampled_topfiles: list[str] = []  # Unsampled state topology files
+        self.remd_devices: list[int] = []  # openmm backend device indices (empty = serial)
         
         # REMD XTC output settings
         self.remd_xtc_output: str = 'no'  # Enable XTC separate output ('yes'/'no')
@@ -342,6 +343,14 @@ class SimulationConfig:
             self.remd_xtc_output = 'yes' if value.upper() == 'YES' else 'no'
         elif param == 'REMD_XTC_DIR':
             self.remd_xtc_dir = str(value)
+        elif param == 'REMD_DEVICES':
+            try:
+                self.remd_devices = [int(x) for x in value.split()]
+            except ValueError:
+                raise ValueError(
+                    f"Invalid remd_devices value '{value}': expected space-separated "
+                    f"integer device indices (e.g. '0 1')."
+                ) from None
 
 
 def load_config(input_file: str) -> SimulationConfig:
@@ -365,6 +374,9 @@ def load_config(input_file: str) -> SimulationConfig:
             f"Invalid remd_backend '{config.remd_backend}'. "
             f"Must be 'openmmtools' (default) or 'openmm' (built-in, requires OpenMM >= 8.6)."
         )
+
+    if any(device < 0 for device in config.remd_devices):
+        raise ValueError("remd_devices must contain non-negative device indices.")
 
     # Validate REMD configuration
     if config.remd == 'yes':
