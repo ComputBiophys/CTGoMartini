@@ -13,6 +13,7 @@ parameter ordering.
 from __future__ import annotations
 
 import math
+import re
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
@@ -534,6 +535,8 @@ class MultiAllBonds(Interaction):
         self._handlers: dict[str, MultiStateInteraction] = {}
         self._mm_force: mm.CustomCompoundBondForce | None = None
         self._param_indices: dict[str, int] = {}
+        # _param_renames: handler name -> {original param name: registered name}
+        self._param_renames: dict[str, dict[str, str]] = {}
         
         # Configuration
         self.use_sigma_eps = use_sigma_eps
@@ -642,6 +645,7 @@ class MultiAllBonds(Interaction):
         self._handlers = {}
         self._mm_force = None
         self._param_indices = {}
+        self._param_renames = {}
         
         # Rebuild with all handlers (including new ones)
         # _build() will re-add all bonds from _collected with correct params
@@ -664,6 +668,7 @@ class MultiAllBonds(Interaction):
             'periodic_dihedral',
             'contact_lj',
             'contact_lj_adj',
+            'contact_1012',
         ]
         
         # Instantiate used handlers in fixed order
@@ -677,15 +682,45 @@ class MultiAllBonds(Interaction):
             self._finalized = True
             return
         
+        # Resolve per-bond parameter name collisions across handlers. OpenMM
+        # maps each expression identifier to a single parameter slot (for a
+        # duplicated name, the last registered slot wins), so a name shared by
+        # several handlers (e.g. C12 in the contact handlers) would make all
+        # of their expressions read one handler's slots. Those slots are
+        # zero-filled for bonds of the other handlers: contact energies then
+        # come out silently zero, or NaN via 0/0 cutoff-shift terms. The first
+        # handler in fixed order keeps the canonical names, so
+        # single-contact-type builds are unchanged; later colliding handlers
+        # get handler-specific names (e.g. C12_contact_1012) and their energy
+        # expressions rewritten.
+        self._param_renames = {}
+        seen_params: set[str] = set()
+        for handler in self._handlers.values():
+            renames = {}
+            for param_name in handler.per_bond_params:
+                if param_name in seen_params:
+                    renames[param_name] = f"{param_name}_{handler.name}"
+            self._param_renames[handler.name] = renames
+            for param_name in handler.per_bond_params:
+                seen_params.add(renames.get(param_name, param_name))
+
         # Build energy expression with used handlers in fixed order
         select_terms = []
         all_params = []
-        
+
         for handler in self._handlers.values():
+            renames = self._param_renames[handler.name]
             expr = handler.energy_expr
-            select_terms.append(f"select({handler.delta_flag}, {expr}, 0)")
-            all_params.extend(handler.per_bond_params)
-        
+            for original, renamed in renames.items():
+                expr = re.sub(rf"\b{re.escape(original)}\b", renamed, expr)
+            delta_name = renames.get(handler.delta_flag, handler.delta_flag)
+            select_terms.append(f"select({delta_name}, {expr}, 0)")
+            all_params.extend(renames.get(p, p) for p in handler.per_bond_params)
+
+        assert len(set(all_params)) == len(all_params), (
+            f"per-bond parameter names are not unique: {all_params}"
+        )
+
         energy_expr = " + ".join(select_terms) + ";"
         self._mm_force = mm.CustomCompoundBondForce(4, energy_expr)
         
