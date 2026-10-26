@@ -32,7 +32,75 @@ from .interactions import (
     LocalBondedInteractionDict,
     EXPInteraction,
     HAMInteraction,
+    MixingError,
 )
+
+
+def _register_mbp_global_params(
+    registry: dict[str, tuple[float, str]],
+    mbp_force: mm.CustomCVForce,
+    molname: str,
+    method: str,
+    n_states: int,
+) -> None:
+    """Register the global parameters of an MBP force, checking for collisions.
+
+    The registry maps each parameter name to its default value and the original
+    molecule name that defined it. Copies of the same molecule type define the
+    same parameter names with the same defaults, which OpenMM treats as one
+    shared parameter — that case is accepted silently. A name already
+    registered raises MixingError when:
+
+    - the original molecule name differs (distinct names collided after
+      sanitization, e.g. 'Mol-A' vs 'Mol_A'), regardless of the default
+      values — otherwise ``Context.setParameter`` would silently drive two
+      different molecules; or
+    - the molecule name matches but the default value differs.
+
+    OpenMM itself only rejects same-name parameters with different defaults,
+    and only at Context creation; same defaults from different molecules would
+    pass silently, so both cases are checked here at system build time.
+
+    Args:
+        registry: Accumulated mapping of parameter name to (default value,
+            original molecule name).
+        mbp_force: The CustomCVForce returned by the mixing interaction.
+        molname: Original molecule name owning these parameters.
+        method: Mixing method ("EXP" or "HAM"), used for error reporting.
+        n_states: Number of basin states, used for error reporting.
+
+    Raises:
+        MixingError: If a parameter name is already registered by a different
+            molecule, or by the same molecule with a different default value.
+    """
+    for i in range(mbp_force.getNumGlobalParameters()):
+        name = mbp_force.getGlobalParameterName(i)
+        default = mbp_force.getGlobalParameterDefaultValue(i)
+        if name in registry:
+            prev_default, prev_molname = registry[name]
+            if prev_molname != molname:
+                raise MixingError(
+                    method,
+                    n_states,
+                    reason=(
+                        f"MBP global parameter name collision: '{name}' is defined by both "
+                        f"molecule '{prev_molname}' and molecule '{molname}'. Distinct molecule "
+                        f"names collide after sanitization (non-alphanumeric characters become "
+                        f"'_'); rename one molecule."
+                    ),
+                )
+            if prev_default != default:
+                raise MixingError(
+                    method,
+                    n_states,
+                    reason=(
+                        f"MBP global parameter name collision: '{name}' has default "
+                        f"{prev_default} but the new MBP force defines {default} for the "
+                        f"same molecule '{molname}'."
+                    ),
+                )
+        else:
+            registry[name] = (default, molname)
 
 
 class MartiniTopFile(TopologyParser):
@@ -147,6 +215,7 @@ class MartiniTopFile(TopologyParser):
                   
         all_exceptions: list[tuple[int, int, float, float, float]] = []
         all_charges: list[float] = []
+        mbp_global_params: dict[str, tuple[float, str]] = {}
 
         # Build lookup table mapping atom types to integer indices
         used_atom_types: set[str] = set()
@@ -331,7 +400,11 @@ class MartiniTopFile(TopologyParser):
 
                         # Create and add MBP force
                         mbp_force = mbp_interaction.addForce(
-                            mbp_force_dict, coupling_constant, basin_energy_list
+                            mbp_force_dict, coupling_constant, basin_energy_list,
+                            molname=molecule_name,
+                        )
+                        _register_mbp_global_params(
+                            mbp_global_params, mbp_force, molecule_name, method, n_states
                         )
                         system.addForce(mbp_force)
         
