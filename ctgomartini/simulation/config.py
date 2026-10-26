@@ -110,18 +110,13 @@ class SimulationConfig:
         self.replica_c2: list[float] = []  # C2 parameters
         
         # REMD output and advanced settings
-        self.remd_backend: str = 'openmmtools'  # REMD backend: openmmtools | openmm (OpenMM >= 8.6 built-in)
-        self.remd_output: str = 'output.nc'  # openmmtools: NetCDF file; openmm: output directory
+        self.remd_output: str = 'output_remd'  # REMD output directory
         self.remd_checkpoint_interval: int = 5  # Checkpoint interval (iterations)
-        self.remd_online_analysis_interval: int | None = 2000  # Online analysis interval (iterations), None to disable
-        self.remd_mixing_scheme: str = 'swap-neighbors'  # Replica mixing scheme
         self.remd_reassign_velocities: bool = False  # Reassign velocities at each move
-        self.remd_unsampled_topfiles: list[str] = []  # Unsampled state topology files
-        self.remd_devices: list[int] = []  # openmm backend device indices (empty = serial)
-        
-        # REMD XTC output settings
-        self.remd_xtc_output: str = 'no'  # Enable XTC separate output ('yes'/'no')
-        self.remd_xtc_dir: str = 'xtc_trajs'  # Directory for XTC trajectory files
+        self.remd_devices: list[int] = []  # Worker device indices (empty = serial)
+
+        # REMD XTC output settings: 'no' | 'replica' | 'state' | 'both'
+        self.remd_xtc_output: str = 'no'
 
     def read(self, input_file: str) -> SimulationConfig:
         """
@@ -324,25 +319,50 @@ class SimulationConfig:
         elif param == 'REMD_OUTPUT':
             self.remd_output = str(value)
         elif param == 'REMD_BACKEND':
-            self.remd_backend = str(value).lower()
+            # The openmmtools backend was removed; the OpenMM >= 8.6 built-in
+            # backend is the only REMD engine. Accept 'openmm' as a no-op so
+            # old input files keep working.
+            backend = str(value).lower()
+            if backend == 'openmmtools':
+                raise ValueError(
+                    "remd_backend = openmmtools is no longer supported: the "
+                    "openmmtools REMD backend was removed in this version (the "
+                    "OpenMM >= 8.6 built-in backend is the only REMD engine). "
+                    "Remove the remd_backend option, or use an older release "
+                    "for the openmmtools workflow."
+                )
+            elif backend != 'openmm':
+                raise ValueError(
+                    f"Invalid remd_backend '{value}': the only REMD backend is "
+                    f"the OpenMM >= 8.6 built-in one; remove the remd_backend "
+                    f"option."
+                )
         elif param == 'REMD_CHECKPOINT_INTERVAL':
             self.remd_checkpoint_interval = int(value)
-        elif param == 'REMD_ONLINE_ANALYSIS_INTERVAL':
-            value_upper = value.upper()
-            if value_upper in ('0', 'NONE', 'NULL'):
-                self.remd_online_analysis_interval = None
-            else:
-                self.remd_online_analysis_interval = int(value)
-        elif param == 'REMD_MIXING_SCHEME':
-            self.remd_mixing_scheme = str(value)
+        elif param in (
+            'REMD_ONLINE_ANALYSIS_INTERVAL',
+            'REMD_MIXING_SCHEME',
+            'REMD_UNSAMPLED_TOPFILES',
+            'REMD_XTC_DIR',
+        ):
+            print(
+                f"Warning: {param.lower()} was removed together with the "
+                f"openmmtools REMD backend and is ignored."
+            )
         elif param == 'REMD_REASSIGN_VELOCITIES':
             self.remd_reassign_velocities = value.upper() == 'YES'
-        elif param == 'REMD_UNSAMPLED_TOPFILES':
-            self.remd_unsampled_topfiles = [x.strip() for x in value.split() if x.strip()]
         elif param == 'REMD_XTC_OUTPUT':
-            self.remd_xtc_output = 'yes' if value.upper() == 'YES' else 'no'
-        elif param == 'REMD_XTC_DIR':
-            self.remd_xtc_dir = str(value)
+            xtc = value.lower()
+            if xtc == 'yes':
+                # Backwards-compatible alias.
+                xtc = 'replica'
+            if xtc not in ('no', 'replica', 'state', 'both'):
+                raise ValueError(
+                    f"Invalid remd_xtc_output '{value}'. Must be one of "
+                    f"'no', 'replica', 'state', 'both' ('yes' is accepted as "
+                    f"an alias of 'replica')."
+                )
+            self.remd_xtc_output = xtc
         elif param == 'REMD_DEVICES':
             try:
                 self.remd_devices = [int(x) for x in value.split()]
@@ -367,13 +387,6 @@ def load_config(input_file: str) -> SimulationConfig:
         ValueError: If REMD is enabled but exc_freq is not specified.
     """
     config = SimulationConfig().read(input_file)
-
-    # Validate REMD backend selection
-    if config.remd_backend not in ('openmmtools', 'openmm'):
-        raise ValueError(
-            f"Invalid remd_backend '{config.remd_backend}'. "
-            f"Must be 'openmmtools' (default) or 'openmm' (built-in, requires OpenMM >= 8.6)."
-        )
 
     if any(device < 0 for device in config.remd_devices):
         raise ValueError("remd_devices must contain non-negative device indices.")

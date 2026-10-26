@@ -1,68 +1,72 @@
 #!/usr/bin/env python3
-"""
-REMD dRMS trajectory analysis and plotting.
+"""REMD dRMS trajectory analysis.
 
-Analyzes distance root-mean-square (dRMS) trajectories from replica exchange
-molecular dynamics simulations and generates publication-quality plots.
+Analyzes distance root-mean-square (dRMS) trajectories from the per-replica
+XTC trajectories (``replica_<i>.xtc``) of an OpenMM >= 8.6 built-in REMD
+output directory. The XTC trajectories carry no topology, so a topology file
+(pdb/gro, ``--top``) is required to interpret the atom indices.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import multiprocessing
 import time
-import warnings
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import List, Optional, Tuple
+from pathlib import Path
 
-import h5py
 import numpy as np
 
-warnings.filterwarnings("ignore")
 
+def _get_timestep(output_dir: str | Path) -> float:
+    """Read the frame timestep from a built-in REMD output directory.
 
-def _get_metadata(chk_file: str) -> Tuple[int, int, int]:
-    """Read basic dimensions from checkpoint file via h5py.
-
-    Args:
-        chk_file: Path to the checkpoint NetCDF file.
-
-    Returns:
-        Tuple of (n_frames, n_replicas, n_atoms).
-    """
-    with h5py.File(chk_file, "r") as f:
-        shape = f["positions"].shape
-    return shape[0], shape[1], shape[2]
-
-
-def _get_timestep(nc_file: str, chk_file: str) -> float:
-    """Read the frame timestep from REMD output files.
-
-    Uses openmmtools.MultiStateReporter to read MCMC move parameters,
-    then computes the timestep per frame. Falls back to 5.0 ps on error.
+    Computes ``dt * stepsPerIteration * reportInterval`` from metadata.json
+    (one log/trajectory row every reportInterval iterations of
+    stepsPerIteration MD steps each). Falls back to 5.0 ps on error.
 
     Args:
-        nc_file: Path to the main output.nc file.
-        chk_file: Path to the checkpoint file.
+        output_dir: Path to the built-in REMD output directory.
 
     Returns:
         Timestep in picoseconds per frame.
     """
     try:
-        from openmmtools.multistate import MultiStateReporter
-        from openmm import unit
-
-        reporter = MultiStateReporter(
-            nc_file, open_mode="r", checkpoint_storage=chk_file
+        metadata = json.loads((Path(output_dir) / "metadata.json").read_text())
+        dt = float(metadata["dt"])
+        steps_per_iteration = float(
+            metadata.get("stepsPerIteration", metadata["exc_freq"])
         )
-        try:
-            mcmove = reporter.read_mcmc_moves()[0]
-            dt = mcmove.timestep.value_in_unit(unit.picosecond) * mcmove.n_steps
-        finally:
-            reporter.close()
-        return dt
+        report_interval = float(metadata["reportInterval"])
+        return dt * steps_per_iteration * report_interval
     except Exception:
         return 5.0
+
+
+def _get_n_replicas(output_dir: str | Path) -> int:
+    """Read the replica count from metadata.json."""
+    metadata = json.loads((Path(output_dir) / "metadata.json").read_text())
+    return int(metadata["replica_count"])
+
+
+def _count_xtc_frames(xtc_path: str | Path, topology_file: str | Path) -> int:
+    """Return the number of frames of an XTC trajectory.
+
+    Uses the XTC frame offsets (no trajectory decoding).
+
+    Raises:
+        FileNotFoundError: If the trajectory does not exist.
+    """
+    import MDAnalysis as mda  # noqa: N813
+
+    if not Path(xtc_path).is_file():
+        raise FileNotFoundError(
+            f"Replica trajectory {xtc_path} does not exist. Run REMD with "
+            f"'remd_xtc_output = replica' (or 'both') to write per-replica "
+            f"XTC trajectories."
+        )
+    return len(mda.Universe(str(topology_file), str(xtc_path)).trajectory)
 
 
 def _format_bytes(size_bytes: int) -> str:
@@ -72,9 +76,6 @@ def _format_bytes(size_bytes: int) -> str:
             return f"{size_bytes:.1f} {unit}"
         size_bytes /= 1024.0
     return f"{size_bytes:.1f} TB"
-
-
-_DEFAULT_CHUNK_SIZE = 10
 
 
 def _run_with_progress(executor, tasks):
@@ -91,31 +92,26 @@ def _run_with_progress(executor, tasks):
         List of results in submission order.
     """
     n_total = len(tasks)
-    futures = {executor.submit(_worker_chunk, t): i for i, t in enumerate(tasks)}
+    futures = {executor.submit(_worker_replica, t): i for i, t in enumerate(tasks)}
     results = [None] * n_total
-    n_done = 0
     t_start = time.perf_counter()
     last_print = 0.0
     print_interval = 2.0  # seconds
 
-    for future in as_completed(futures):
+    for n_done, future in enumerate(as_completed(futures), start=1):
         idx = futures[future]
         results[idx] = future.result()
-        n_done += 1
 
         now = time.perf_counter()
         if now - last_print >= print_interval or n_done == n_total:
             elapsed = now - t_start
             fps = n_done / elapsed if elapsed > 0 else 0
-            if fps > 0:
-                eta = (n_total - n_done) / fps
-            else:
-                eta = 0
+            eta = (n_total - n_done) / fps if fps > 0 else 0
             pct = n_done * 100 / n_total
             print(
-                f"  [{n_done}/{n_total} chunks, {pct:.0f}%] "
+                f"  [{n_done}/{n_total} replicas, {pct:.0f}%] "
                 f"elapsed: {elapsed:.0f}s, ETA: {eta:.0f}s, "
-                f"speed: {fps:.1f} chunks/s"
+                f"speed: {fps:.1f} replicas/s"
             )
             last_print = now
 
@@ -150,7 +146,7 @@ def calculate_reference_distances(
         List of reference distance arrays, one per state (n_pairs x 3):
         [atom_i, atom_j, distance].
     """
-    import MDAnalysis as mda
+    import MDAnalysis as mda  # noqa: N813
 
     ref_universes = [mda.Universe(f) for f in ref_files]
     ref_atoms = [u.select_atoms(selected_atom) for u in ref_universes]
@@ -182,9 +178,9 @@ def calculate_reference_distances(
                 dist = np.linalg.norm(pos_i - pos_j)
                 dists.append(dist)
 
-            min_difference = min(abs(dists[k] - dists[l])
+            min_difference = min(abs(dists[k] - dists[m])
                                 for k in range(n_states)
-                                for l in range(k + 1, n_states))
+                                for m in range(k + 1, n_states))
 
             if min_difference >= min_diff:
                 for state_idx in range(n_states):
@@ -197,31 +193,28 @@ def calculate_reference_distances(
 
 # ---- Worker process globals (set once per process via initializer) ----
 
-_CHK_HANDLE = None
+_TOP_FILE = None
 _UNIQUE_ATOMS = None
 _STATE_IDX_I = None
 _STATE_IDX_J = None
 _STATE_REF_DIST = None
 
 
-def _worker_setup(chk_file, ref_distances_list):
+def _worker_setup(topology_file, ref_distances_list):
     """Initialize worker process globals.
 
     Called once per worker process by ProcessPoolExecutor initializer.
-    Opens an h5py handle (reused across all tasks in this worker) and
-    pre-computes atom index mappings to avoid per-task pickle overhead.
+    Pre-computes atom index mappings to avoid per-task pickle overhead.
 
     Args:
-        chk_file: Path to the checkpoint HDF5 file.
+        topology_file: Topology file (pdb/gro) for reading the XTC
+            trajectories with MDAnalysis.
         ref_distances_list: List of reference distance arrays (n_pairs x 3).
     """
-    import atexit
-
-    global _CHK_HANDLE, _UNIQUE_ATOMS
+    global _TOP_FILE, _UNIQUE_ATOMS
     global _STATE_IDX_I, _STATE_IDX_J, _STATE_REF_DIST
 
-    _CHK_HANDLE = h5py.File(chk_file, "r")
-    atexit.register(_CHK_HANDLE.close)
+    _TOP_FILE = str(topology_file)
 
     atom_groups = []
     for ref_dist in ref_distances_list:
@@ -244,79 +237,146 @@ def _worker_setup(chk_file, ref_distances_list):
         _STATE_REF_DIST.append(ref_dist[:, 2])
 
 
-def _worker_chunk(args):
-    """Process a chunk of frames using the process-global HDF5 handle.
+def _worker_replica(args):
+    """Process all frames of one per-replica XTC trajectory.
 
-    Reads positions for all frames in the chunk via a single HDF5 slice,
-    then computes dRMS for each reference state. Reference data and
-    atom index mappings are accessed from process globals (set by initializer).
+    Loads the trajectory with MDAnalysis (subsetting to the atoms used by the
+    reference pairs), then computes dRMS for each reference state. Reference
+    data and atom index mappings are accessed from process globals (set by
+    initializer).
 
     Args:
-        args: Tuple of (frame_indices, replica_indices, dt).
+        args: Tuple of (replica_index, xtc_path, frame_indices, dt).
 
     Returns:
-        List of (times, drms) tuples, one per reference state.
+        List of (times, drms) tuples, one per reference state; drms has
+        shape (n_frames,) for this replica.
     """
-    frame_indices, replica_indices, dt = args
+    import MDAnalysis as mda  # noqa: N813
 
-    pos_all = _CHK_HANDLE["positions"][
-        list(frame_indices), :, :, :
-    ][:, :, _UNIQUE_ATOMS, :]
+    _replica_index, xtc_path, frame_indices, dt = args
 
-    # Filter to requested replicas (read all from HDF5, slice in numpy)
-    pos_all = pos_all[:, replica_indices, :, :]
-
-    pos_all *= 10.0  # nm to Angstrom
+    universe = mda.Universe(_TOP_FILE, xtc_path)
+    atoms = universe.atoms[_UNIQUE_ATOMS]
+    pos = np.empty((len(frame_indices), len(_UNIQUE_ATOMS), 3))
+    for k, frame_index in enumerate(frame_indices):
+        universe.trajectory[int(frame_index)]
+        pos[k] = atoms.positions  # already in Angstrom
 
     n_states = len(_STATE_IDX_I)
     results = []
 
     for state_idx in range(n_states):
-        pos_i = pos_all[:, :, _STATE_IDX_I[state_idx], :]
-        pos_j = pos_all[:, :, _STATE_IDX_J[state_idx], :]
+        pos_i = pos[:, _STATE_IDX_I[state_idx], :]
+        pos_j = pos[:, _STATE_IDX_J[state_idx], :]
         ref_dist = _STATE_REF_DIST[state_idx]
 
         distances = np.linalg.norm(pos_i - pos_j, axis=-1)
         drms = np.sqrt(np.mean((distances - ref_dist) ** 2, axis=-1))
 
-        times = np.array(frame_indices, dtype=np.float32) * dt
+        times = np.array(frame_indices, dtype=np.float64) * dt
         results.append((times, drms))
 
     return results
 
 
-def calculate_trajectory_drms(
-    netcdf_file: str,
-    checkpoint_file: str,
-    ref_distances: np.ndarray,
-    replica_indices: Optional[np.ndarray] = None,
-    skip: int = 1,
-    num_workers: Optional[int] = None,
-    chunk_size: Optional[int] = None,
-) -> Tuple[np.ndarray, np.ndarray]:
-    """Calculate dRMS for entire trajectory using parallel processing.
+def _calculate_all_states(
+    output_dir: str | Path,
+    topology_file: str,
+    ref_distances_list: list[np.ndarray],
+    replica_indices: np.ndarray,
+    frame_indices: np.ndarray,
+    dt: float,
+    num_workers: int,
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Compute dRMS against every reference state for the given replicas.
 
-    Uses direct h5py reads and ProcessPoolExecutor with per-worker
-    HDF5 handle reuse. Reference data is loaded once per worker via
-    initializer, eliminating per-task pickle overhead.
+    One worker task per replica (each loads its own ``replica_<i>.xtc``).
 
     Args:
-        netcdf_file: Path to NetCDF file (for timestep metadata).
-        checkpoint_file: Path to checkpoint file (for positions).
+        output_dir: Built-in REMD output directory with replica_<i>.xtc.
+        topology_file: Topology file (pdb/gro) for MDAnalysis.
+        ref_distances_list: Reference distance arrays, one per state.
+        replica_indices: Replica indices to analyze.
+        frame_indices: Frame indices to process (already begin/end/skip).
+        dt: Timestep per frame in ps.
+        num_workers: Number of parallel workers.
+
+    Returns:
+        List of (times, drms) per state, drms with shape
+        (n_frames, n_replicas).
+    """
+    output_dir = Path(output_dir)
+    tasks = []
+    for replica_index in replica_indices:
+        xtc_path = output_dir / f"replica_{replica_index}.xtc"
+        if not xtc_path.is_file():
+            raise FileNotFoundError(
+                f"Replica trajectory {xtc_path} does not exist. Run REMD with "
+                f"'remd_xtc_output = replica' (or 'both') to write per-replica "
+                f"XTC trajectories."
+            )
+        tasks.append((int(replica_index), str(xtc_path), frame_indices, dt))
+
+    num_workers = min(num_workers, len(tasks))
+    with ProcessPoolExecutor(
+        max_workers=num_workers,
+        initializer=_worker_setup,
+        initargs=(str(topology_file), ref_distances_list),
+    ) as executor:
+        per_replica = _run_with_progress(executor, tasks)
+
+    n_states = len(ref_distances_list)
+    results = []
+    for state_idx in range(n_states):
+        times = per_replica[0][state_idx][0]
+        drms = np.column_stack(
+            [per_replica[k][state_idx][1] for k in range(len(replica_indices))]
+        )
+        results.append((times, drms))
+    return results
+
+
+def calculate_trajectory_drms(
+    output_dir: str | Path,
+    topology_file: str,
+    ref_distances: np.ndarray,
+    replica_indices: np.ndarray | None = None,
+    skip: int = 1,
+    num_workers: int | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Calculate dRMS for entire trajectory using parallel processing.
+
+    Reads the per-replica XTC trajectories of a built-in REMD output
+    directory with MDAnalysis, one worker task per replica. Reference data
+    is loaded once per worker via initializer, eliminating per-task pickle
+    overhead.
+
+    Args:
+        output_dir: Path to the built-in REMD output directory.
+        topology_file: Topology file (pdb/gro) for reading the XTC
+            trajectories with MDAnalysis.
         ref_distances: Reference distances array (n_pairs x 3).
         replica_indices: Replica indices to analyze (None for all).
         skip: Process every N-th frame.
         num_workers: Number of parallel workers (default: CPU count).
-        chunk_size: Frames per worker task (default: 10).
 
     Returns:
         Tuple of (times, drms_array) where drms_array is (n_frames, n_replicas).
     """
-    n_frames, n_replicas, _n_atoms = _get_metadata(checkpoint_file)
-    dt = _get_timestep(netcdf_file, checkpoint_file)
-
+    output_dir = Path(output_dir)
+    if not output_dir.is_dir():
+        raise ValueError(
+            f"calculate_trajectory_drms requires a built-in REMD output "
+            f"directory (containing replica_<i>.xtc); got {output_dir}. "
+            f"openmmtools NetCDF (.nc) output is no longer supported."
+        )
     if replica_indices is None:
-        replica_indices = np.arange(n_replicas)
+        replica_indices = np.arange(_get_n_replicas(output_dir))
+    n_frames = _count_xtc_frames(
+        output_dir / f"replica_{replica_indices[0]}.xtc", topology_file
+    )
+    dt = _get_timestep(output_dir)
 
     frame_indices = np.arange(0, n_frames, skip)
     n_process_frames = len(frame_indices)
@@ -329,32 +389,18 @@ def calculate_trajectory_drms(
 
     if num_workers is None:
         num_workers = multiprocessing.cpu_count()
-    num_workers = min(num_workers, n_process_frames)
-
-    if chunk_size is None:
-        chunk_size = _DEFAULT_CHUNK_SIZE
-    else:
-        print(f"Using specified chunk_size={chunk_size}")
-
-    tasks = []
-    for i in range(0, n_process_frames, chunk_size):
-        chunk_end = min(i + chunk_size, n_process_frames)
-        chunk_frames = frame_indices[i:chunk_end]
-        tasks.append((chunk_frames, replica_indices, dt))
-
-    print(f"Using {num_workers} workers for {len(tasks)} chunks")
 
     start_time = time.time()
-    with ProcessPoolExecutor(
-        max_workers=num_workers,
-        initializer=_worker_setup,
-        initargs=(checkpoint_file, [ref_distances]),
-    ) as executor:
-        chunk_results = _run_with_progress(executor, tasks)
+    all_times, all_drms = _calculate_all_states(
+        output_dir,
+        topology_file,
+        [ref_distances],
+        replica_indices,
+        frame_indices,
+        dt,
+        num_workers,
+    )[0]
     elapsed = time.time() - start_time
-
-    all_times = np.concatenate([r[0][0] for r in chunk_results])
-    all_drms = np.vstack([r[0][1] for r in chunk_results])
 
     print(f"Total time: {elapsed:.1f}s ({n_process_frames/elapsed:.1f} fps)")
 
@@ -365,9 +411,8 @@ def save_drms_results(
     times: np.ndarray,
     drms_data: np.ndarray,
     output_file: str,
-    netcdf_file: str = "",
-    checkpoint_file: str = "",
-    replica_indices: Optional[np.ndarray] = None
+    output_dir: str | Path = "",
+    replica_indices: np.ndarray | None = None
 ):
     """Save dRMS results to file.
 
@@ -375,14 +420,12 @@ def save_drms_results(
         times: Time array (n_frames,).
         drms_data: dRMS array (n_frames, n_replicas).
         output_file: Output file path.
-        netcdf_file: NetCDF path for header comment.
-        checkpoint_file: Checkpoint path for header comment.
+        output_dir: REMD output directory path for header comment.
         replica_indices: Replica indices for header comment.
     """
     header_lines = [
-        f"# time(ps), dRMS values for each replica",
-        f"# NetCDF: {netcdf_file}",
-        f"# Checkpoint: {checkpoint_file}",
+        "# time(ps), dRMS values for each replica",
+        f"# Output directory: {output_dir}",
     ]
     if replica_indices is not None:
         header_lines.append(f"# Replicas: {','.join(map(str, replica_indices))}")
@@ -401,14 +444,14 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument("-nc", "--netcdf", required=True,
-                        help="NetCDF trajectory file")
-    parser.add_argument("-c", "--checkpoint", default="output_checkpoint.nc",
-                        help="Checkpoint NetCDF file")
+    parser.add_argument("-d", "--dir", default="output_remd",
+                        help="Built-in REMD output directory")
+    parser.add_argument("--top", "--topology", required=True,
+                        help="Topology file (pdb/gro) for reading the XTC trajectories")
     parser.add_argument("-ref", "--ref-files", nargs="+", required=True,
                         help="Reference structure files (pdb/gro)")
 
-    parser.add_argument("-o", "--output", default="dRMSTraj_nc",
+    parser.add_argument("-o", "--output", default="dRMSTraj",
                         help="Output prefix")
 
     parser.add_argument("--sel", "--selected-atom", default="name BB",
@@ -433,8 +476,6 @@ def main():
                         help="Process every N-th frame")
     parser.add_argument("-n", "--num-workers", type=int, default=10,
                         help="Number of parallel workers")
-    parser.add_argument("--chunk-size", type=int, default=10,
-                        help="Frames per chunk")
     parser.add_argument("--replicas", type=str, default="all",
                         help="Comma-separated replica indices or 'all'")
 
@@ -456,16 +497,20 @@ def main():
     for i, ref_dist in enumerate(all_ref_distances):
         print(f"  State {states_str[i]}: {len(ref_dist)} distance pairs")
 
+    output_dir = Path(args.dir)
+    if not output_dir.is_dir():
+        print(f"Error: {output_dir} is not a built-in REMD output directory")
+        return
+
     if args.replicas == "all":
-        replica_indices = None
+        replica_indices = np.arange(_get_n_replicas(output_dir))
     else:
         replica_indices = np.array([int(x) for x in args.replicas.split(",")])
 
-    n_frames, n_replicas, _n_atoms = _get_metadata(args.checkpoint)
-    dt = _get_timestep(args.netcdf, args.checkpoint)
-
-    if replica_indices is None:
-        replica_indices = np.arange(n_replicas)
+    n_frames = _count_xtc_frames(
+        output_dir / f"replica_{replica_indices[0]}.xtc", args.top
+    )
+    dt = _get_timestep(output_dir)
 
     frame_end = args.end if args.end is not None else n_frames
     frame_indices = np.arange(args.begin, frame_end, args.skip)
@@ -475,44 +520,31 @@ def main():
         print("Error: zero frames to process (check --begin, --end, --skip)")
         return
 
-    num_workers = args.num_workers
-
     print(f"\nProcessing {n_process_frames} frames (every {args.skip} of {n_frames})...")
-
-    chunk_size = args.chunk_size
-
-    print(f"Using {num_workers} workers")
-
-    tasks = []
-    for i in range(0, n_process_frames, chunk_size):
-        chunk_end = min(i + chunk_size, n_process_frames)
-        chunk_frames = frame_indices[i:chunk_end]
-        tasks.append((chunk_frames, replica_indices, dt))
+    print(f"Using {args.num_workers} workers")
 
     start_time = time.time()
-    with ProcessPoolExecutor(
-        max_workers=num_workers,
-        initializer=_worker_setup,
-        initargs=(args.checkpoint, all_ref_distances),
-    ) as executor:
-        all_chunk_results = _run_with_progress(executor, tasks)
+    per_state_results = _calculate_all_states(
+        output_dir,
+        args.top,
+        all_ref_distances,
+        replica_indices,
+        frame_indices,
+        dt,
+        args.num_workers,
+    )
 
     elapsed = time.time() - start_time
     print(f"\nComputation time: {elapsed:.1f}s ({n_process_frames/elapsed:.1f} fps)")
 
     for state_idx in range(n_states):
         print(f"\nSaving State {states_str[state_idx]}...")
-        state_times = np.concatenate(
-            [chunk_res[state_idx][0] for chunk_res in all_chunk_results]
-        )
-        state_drms = np.vstack(
-            [chunk_res[state_idx][1] for chunk_res in all_chunk_results]
-        )
+        state_times, state_drms = per_state_results[state_idx]
 
         output_file = f"{args.output}_State{states_str[state_idx]}.dat"
         save_drms_results(
             state_times, state_drms, output_file,
-            args.netcdf, args.checkpoint, replica_indices
+            output_dir=output_dir, replica_indices=replica_indices
         )
 
 

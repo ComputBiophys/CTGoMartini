@@ -629,7 +629,7 @@ Usage examples:
     # Convert constraints with custom force constant
     ctgomartinize -s protein.pdb -m auto -mol protein -ff martini3001 -dssp -method sbp -constraints2bonds 2000
 
-    # Extract single-state topologies for REMD unsampled states (EXP/HAM only)
+    # Extract single-state topologies from a multiple-basin system (EXP/HAM only)
     ctgomartinize -s StateA.pdb StateB.pdb -m auto -mol StateA StateB -mbmol protein -ff martini3001 -dssp -method exp -extract-states
     # Generates: protein.itp, protein_params.itp, protein_stateA.itp, protein_stateB.itp
 
@@ -692,7 +692,6 @@ Notes:
                         action='store_true',
                         help='Extract single-state topologies from multi-basin system. '
                              'Generates {mbmol}_stateA.itp, {mbmol}_stateB.itp, etc. '
-                             'for use as unsampled states in REMD simulations. '
                              'Only applicable for EXP and HAM methods.')
     args = parser.parse_args()
 

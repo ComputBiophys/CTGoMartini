@@ -25,12 +25,12 @@ requires-python = ">=3.12,<3.14"
 keywords = ["molecular-dynamics", "coarse-grained", "martini", "go-model", "protein", "membrane", "openmm"]
 dependencies = [
     "MDAnalysis>=2.4",
-    "numpy>=2.0,<2.4.0",
+    "numpy>=2.0",
     "pandas",
     "matplotlib>=3.3.3",
     "vermouth==0.14.0",
-    "openmm>=8.1",
-    "h5py",
+    "openmm>=8.6",
+    "pymbar",
     "mdtraj",
 ]
 

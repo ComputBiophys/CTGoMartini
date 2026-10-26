@@ -2,7 +2,7 @@
 State extraction utilities for CTGoMartini.
 
 Provides functionality to extract single-state topologies from multiple-basin
-topologies for use in REMD simulations as unsampled states.
+topologies.
 """
 
 from __future__ import annotations
@@ -24,8 +24,7 @@ def extract_state_topology(
     Extract a single-state topology from a multiple-basin topology.
     
     This function takes a multiple-basin topology and extracts the interactions
-    for a specific state, creating a single-state molecule that can be used
-    as an unsampled state in REMD simulations.
+    for a specific state, creating a single-state molecule.
     
     Args:
         topfile: Path to the topology file (.top)

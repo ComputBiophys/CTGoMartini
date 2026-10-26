@@ -62,12 +62,7 @@ replica_c1      = -480 -440 -400 -360 -320 -280 -240 -200 -160 -120 -80
 replica_c2      = 0                             ; Basin energy offset C2
 
 ; REMD Output and Advanced Settings
-remd_output = output.nc                         ; Main NetCDF output file
+remd_output = output_remd                       ; Output directory (log.csv, energy.csv, checkpoint_<i>.xml, ...)
 remd_checkpoint_interval = 5                    ; Checkpoint interval (iterations)
-remd_online_analysis_interval = 20000           ; Online analysis interval (iterations)
-remd_mixing_scheme = swap-neighbors             ; Replica mixing: swap-neighbors or swap-all
 remd_reassign_velocities = no                   ; Reassign velocities at each move: yes or no
-
-; Unsampled States for Multi-state Analysis
-; These are single-state topologies used for analysis
-remd_unsampled_topfiles = system_stateA.top system_stateB.top
+remd_xtc_output = replica                       ; XTC trajectories: no, replica (replica_<i>.xtc), state (state_<i>.xtc), or both

@@ -17,9 +17,11 @@ files and formats are identical to the serial driver.
 
 Output layout (``remd_output`` is a directory for this backend):
 
-- ``log.csv``, ``energy.csv``, ``checkpoint_<i>.xml`` and
-  optional ``replica_<i>.xtc`` are written by the built-in
-  ``ReplicaExchangeReporter``. With ``pcouple = yes`` the reporter also
+- ``log.csv``, ``energy.csv``, ``checkpoint_<i>.xml`` are written by the
+  built-in ``ReplicaExchangeReporter``, plus optional trajectories selected
+  by ``remd_xtc_output``: ``replica`` (``replica_<i>.xtc``, continuous per
+  replica), ``state`` (``state_<i>.xtc``, continuous per thermodynamic
+  state) or ``both``. With ``pcouple = yes`` the reporter also
   writes ``volume.csv`` (per-replica box volumes in nm^3, one row per
   report interval, no header); ``p_type = membrane`` additionally
   produces ``area.csv`` (per-replica xy areas in nm^2, same layout,
@@ -519,10 +521,9 @@ def _require_openmm86() -> None:
         import openmm.app.replicaexchangesampler  # noqa: F401
     except ImportError as e:
         raise ImportError(
-            "The 'openmm' REMD backend requires OpenMM >= 8.6 "
+            "REMD requires OpenMM >= 8.6 "
             f"(found {mm.__version__}), which provides "
-            "openmm.app.replicaexchangesampler. Upgrade OpenMM or use "
-            "remd_backend = openmmtools."
+            "openmm.app.replicaexchangesampler. Upgrade OpenMM to run REMD."
         ) from e
 
 
@@ -732,11 +733,6 @@ class BuiltinREMDRunner(SimulationRunner):
         self._mbp_forces: list[mm.CustomCVForce] = []
         self._exchange_reporter: ExchangeStatisticsReporter | None = None
         self._reporters_closed = False
-        if self.config.remd_unsampled_topfiles:
-            print(
-                "Warning: remd_unsampled_topfiles is ignored by the 'openmm' REMD "
-                "backend; basin energies are recorded directly in cv_energies.csv."
-            )
 
     def detect_existing_output(self) -> bool:
         """Detect if a previous run's output directory exists.
@@ -968,11 +964,13 @@ class BuiltinREMDRunner(SimulationRunner):
 
         self._reporters_closed = False
         interval = self.config.remd_checkpoint_interval
+        xtc_mode = self.config.remd_xtc_output
         builtin_reporter = ReplicaExchangeReporter(
             self.output_data,
             interval,
             sampler,
-            trajectoryPerReplica=(self.config.remd_xtc_output == "yes"),
+            trajectoryPerReplica=(xtc_mode in ("replica", "both")),
+            trajectoryPerState=(xtc_mode in ("state", "both")),
             energy=True,
             volume=(self.config.pcouple == "yes"),
             checkpoints=True,

@@ -46,7 +46,8 @@ def ham_mixing(e1, e2, delta, c1, c2):
 
 def _write_remd_inp(test_dir, nstep, method, pcouple="no", c1="-50 0",
                     devices=None, gen_seed=None, gen_vel="no",
-                    p_type="isotropic", replica_temp="300 310", p_tens=None):
+                    p_type="isotropic", replica_temp="300 310", p_tens=None,
+                    xtc="replica"):
     inp_path = os.path.join(test_dir, "remd.inp")
     coupling = "1/1000 1/500" if method == "exp" else "1000 800"
     devices_line = f"remd_devices = {devices}\n" if devices is not None else ""
@@ -72,7 +73,6 @@ pcouple     = {pcouple}
 p_type      = {p_type}
 {p_tens_line}
 REMD = yes
-remd_backend = openmm
 exc_freq = 5
 replica_count = 2
 replica_molname = gbp
@@ -82,7 +82,7 @@ replica_coupling = {coupling}
 replica_c1 = {c1}
 replica_c2 = 0 0
 remd_checkpoint_interval = 1
-remd_xtc_output = yes
+remd_xtc_output = {xtc}
 {devices_line}"""
         )
     return inp_path
@@ -247,6 +247,18 @@ class TestBuiltinREMDEXP:
 
         assert runner.detect_existing_output()
 
+    def test_run_state_trajectories(self, exp_dir):
+        """remd_xtc_output = both writes per-state trajectories as well."""
+        outdir = os.path.join(exp_dir, "output_state_xtc")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(exp_dir, nstep=15, method="exp", xtc="both")
+            runner = BuiltinREMDRunner(inp, output_data=outdir)
+            runner.run()
+
+        for name in ("replica_0.xtc", "replica_1.xtc",
+                     "state_0.xtc", "state_1.xtc"):
+            assert os.path.isfile(os.path.join(outdir, name)), name
+
     def test_extend_continues_output(self, exp_dir):
         outdir = os.path.join(exp_dir, "output_extend")
         with WorkingDirectoryContext(exp_dir):
@@ -368,6 +380,63 @@ class TestBuiltinREMDEXP:
                 assert analyzer._basin_energies_kj[replica, 1, frame] == pytest.approx(
                     e2
                 )
+
+
+    def _run_drms_fes_closure(self, exp_dir, tmp_path, name):
+        """REMD run -> dRMS (GRO top) -> dRMSTraj -> FESAnalyzer construction.
+
+        Uses the insane-generated ions.gro as --top: its trailing blank line
+        breaks mdtraj's GRO parser, so this guards the MDAnalysis reading path
+        on real REMD output. Returns the constructed FESAnalyzer.
+        """
+        from ctgomartini.analysis.remd_drms_analysis import (
+            calculate_reference_distances,
+            calculate_trajectory_drms,
+            save_drms_results,
+        )
+
+        outdir = os.path.join(exp_dir, name)
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(exp_dir, nstep=15, method="exp")
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+
+        ref_files = [
+            os.path.join(exp_dir, "GBP_open_cg.pdb"),
+            os.path.join(exp_dir, "GBP_closed_cg.pdb"),
+        ]
+        ref_distances = calculate_reference_distances(ref_files)[0]  # State A
+        top = os.path.join(exp_dir, "ions.gro")
+
+        times, drms = calculate_trajectory_drms(
+            outdir, top, ref_distances,
+            replica_indices=np.array([0, 1]), num_workers=1,
+        )
+        assert times.shape[0] == 3  # 3 iterations, reportInterval = 1
+        assert drms.shape == (3, 2)
+        assert np.all(drms >= 0)
+
+        cv_file = tmp_path / "dRMSTraj_StateA.dat"
+        save_drms_results(times, drms, str(cv_file), output_dir=outdir)
+
+        analyzer = FESAnalyzer(outdir, cv_file)
+        assert analyzer.n_states == 2
+        assert analyzer.cv_values_replica.shape == (2, 3)
+        return analyzer
+
+    def test_remd_drms_fes_closure(self, exp_dir, tmp_path):
+        """REMD -> dRMS -> dRMSTraj -> FESAnalyzer loads (no pymbar needed)."""
+        self._run_drms_fes_closure(exp_dir, tmp_path, "output_drms_fes")
+
+    def test_remd_drms_fes_pymbar(self, exp_dir, tmp_path):
+        """The dRMS-fed FESAnalyzer runs MBAR initialize_fes + analyze_onestate."""
+        pytest.importorskip("pymbar")
+        analyzer = self._run_drms_fes_closure(exp_dir, tmp_path, "output_drms_fes_mbar")
+        analyzer.initialize_fes(g=1.0)
+        # n_bins=2: with 3 frames x 2 replicas every bin stays occupied
+        # (min -> first bin, max -> last bin), which pymbar's histogram FES
+        # requires.
+        result = analyzer.analyze_onestate(selected_state=0, n_bins=2)
+        assert result["fes"].shape == (2,)
 
 
 class TestBuiltinREMDHAM:

@@ -273,7 +273,7 @@ replica_coupling = 1/300
         assert abs(inputs.replica_coupling[0] - expected) < 1e-6
 
     def test_remd_output_default(self, temp_dir):
-        """Test default remd_output."""
+        """Test default remd_output (a directory for the built-in backend)."""
         inp_content = """
 REMD = yes
 exc_freq = 1000
@@ -283,23 +283,23 @@ exc_freq = 1000
             f.write(inp_content)
 
         inputs = read_inputs(inp_file)
-        assert inputs.remd_output == "output.nc"
+        assert inputs.remd_output == "output_remd"
 
     def test_remd_output_custom(self, temp_dir):
         """Test custom remd_output."""
         inp_content = """
 REMD = yes
 exc_freq = 1000
-remd_output = my_remd.nc
+remd_output = my_remd
 """
         inp_file = os.path.join(temp_dir, "remd.inp")
         with open(inp_file, "w") as f:
             f.write(inp_content)
 
         inputs = read_inputs(inp_file)
-        assert inputs.remd_output == "my_remd.nc"
+        assert inputs.remd_output == "my_remd"
 
-    def test_remd_advanced_parameters(self, temp_dir):
+    def test_remd_advanced_parameters(self, temp_dir, capsys):
         """Test advanced REMD parameters."""
         inp_content = """
 REMD = yes
@@ -307,8 +307,6 @@ exc_freq = 1000
 replica_molname = MOL
 replica_method = exp
 remd_checkpoint_interval = 10
-remd_online_analysis_interval = 5000
-remd_mixing_scheme = swap-all
 remd_reassign_velocities = yes
 """
         inp_file = os.path.join(temp_dir, "remd.inp")
@@ -319,25 +317,42 @@ remd_reassign_velocities = yes
         assert inputs.replica_molname == "MOL"
         assert inputs.replica_method == "exp"
         assert inputs.remd_checkpoint_interval == 10
-        assert inputs.remd_online_analysis_interval == 5000
-        assert inputs.remd_mixing_scheme == "swap-all"
         assert inputs.remd_reassign_velocities == True
+        # No removed-key warnings for a clean configuration.
+        assert "removed" not in capsys.readouterr().out
 
-    def test_remd_unsampled_topfiles(self, temp_dir):
-        """Test remd_unsampled_topfiles parsing."""
+    def test_remd_removed_openmmtools_keys_warn(self, temp_dir, capsys):
+        """Removed openmmtools-only keys print a warning and are ignored."""
         inp_content = """
 REMD = yes
 exc_freq = 1000
-remd_unsampled_topfiles = stateA.top stateB.top stateC.top
+remd_online_analysis_interval = 5000
+remd_mixing_scheme = swap-all
+remd_unsampled_topfiles = stateA.top stateB.top
+remd_xtc_dir = xtc_output
 """
         inp_file = os.path.join(temp_dir, "remd.inp")
         with open(inp_file, "w") as f:
             f.write(inp_content)
 
         inputs = read_inputs(inp_file)
-        assert inputs.remd_unsampled_topfiles == ["stateA.top", "stateB.top", "stateC.top"]
 
-    def test_full_remd_configuration(self, temp_dir):
+        out = capsys.readouterr().out
+        for key in (
+            "remd_online_analysis_interval",
+            "remd_mixing_scheme",
+            "remd_unsampled_topfiles",
+            "remd_xtc_dir",
+        ):
+            assert key in out
+        assert out.count("removed") == 4
+        # The removed options leave no attributes behind.
+        assert not hasattr(inputs, "remd_online_analysis_interval")
+        assert not hasattr(inputs, "remd_mixing_scheme")
+        assert not hasattr(inputs, "remd_unsampled_topfiles")
+        assert not hasattr(inputs, "remd_xtc_dir")
+
+    def test_full_remd_configuration(self, temp_dir, capsys):
         """Test a complete REMD configuration like GlnBP tutorial."""
         inp_content = """
 REMD = yes
@@ -349,12 +364,10 @@ replica_temp = 310.0
 replica_coupling = 1/300
 replica_c1 = -480 -440 -400 -360 -320 -280 -240 -200 -160 -120 -80
 replica_c2 = 0
-remd_output = output.nc
+remd_output = output_remd
 remd_checkpoint_interval = 5
-remd_online_analysis_interval = 20000
-remd_mixing_scheme = swap-neighbors
 remd_reassign_velocities = no
-remd_unsampled_topfiles = system_stateA.top system_stateB.top
+remd_xtc_output = replica
 """
         inp_file = os.path.join(temp_dir, "remd.inp")
         with open(inp_file, "w") as f:
@@ -373,9 +386,8 @@ remd_unsampled_topfiles = system_stateA.top system_stateB.top
         assert inputs.replica_c1 == [-480.0, -440.0, -400.0, -360.0, -320.0,
                                       -280.0, -240.0, -200.0, -160.0, -120.0, -80.0]
         assert inputs.replica_c2 == [0.0] * 11
-        assert inputs.remd_output == "output.nc"
+        assert inputs.remd_output == "output_remd"
         assert inputs.remd_checkpoint_interval == 5
-        assert inputs.remd_online_analysis_interval == 20000
-        assert inputs.remd_mixing_scheme == "swap-neighbors"
         assert inputs.remd_reassign_velocities == False
-        assert inputs.remd_unsampled_topfiles == ["system_stateA.top", "system_stateB.top"]
+        assert inputs.remd_xtc_output == "replica"
+        assert "removed" not in capsys.readouterr().out

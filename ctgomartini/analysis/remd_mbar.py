@@ -37,12 +37,6 @@ def _import_pymbar():
     return pymbar, timeseries
 
 
-def _import_openmmtools():
-    """Lazy import openmmtools to avoid import-time warnings."""
-    from openmmtools.multistate import MultiStateReporter, ReplicaExchangeAnalyzer
-    return MultiStateReporter, ReplicaExchangeAnalyzer
-
-
 class FESAnalyzer:
     """
     Free Energy Surface (FES) analyzer for REMD simulations using MBAR.
@@ -52,7 +46,7 @@ class FESAnalyzer:
     (EXP and HAM methods).
     
     Attributes:
-        output_file: Path to REMD output NetCDF file.
+        output_file: Path to the built-in REMD output directory.
         cv_file: Path to collective variable (CV) data file.
         interval: Interval between CV frames and energy frames.
         n_states: Number of thermodynamic states/replicas.
@@ -60,7 +54,7 @@ class FESAnalyzer:
         beta_k: Inverse temperatures (1/kT) for each state.
     
     Example:
-        >>> analyzer = FESAnalyzer('output.nc', 'distance.dat', interval=5)
+        >>> analyzer = FESAnalyzer('output_remd', 'distance.dat', interval=5)
         >>> analyzer.initialize_fes(g=1.0, start_ratio=0.2)
         >>> results = analyzer.analyze_onestate(selected_state=5)
         >>> print(results['metrics']['barrier'])
@@ -72,16 +66,14 @@ class FESAnalyzer:
         Initialize the FES analyzer with simulation data files.
         
         Args:
-            output_file: Path to simulation output: an openmmtools NetCDF file,
-                or an OpenMM >= 8.6 built-in REMD output directory (containing
-                metadata.json and energy.csv).
+            output_file: Path to an OpenMM >= 8.6 built-in REMD output
+                directory (containing metadata.json and energy.csv).
             cv_file: Path to collective variable (CV) data file.
             interval: Interval for getting CV data compared to energies.
                       For example, if energy is saved every frame but CV
                       is saved every 5 frames, interval=5.
-                      If None (default), will auto-detect from checkpoint_interval
-                      in the NetCDF file; for a built-in REMD directory the
-                      data is already spaced by the report interval, so the
+                      If None (default), the built-in REMD directory data is
+                      already spaced by the report interval, so the
                       default is 1.
         
         Raises:
@@ -122,66 +114,23 @@ class FESAnalyzer:
             raise FileNotFoundError(f"CV file not found: {self.cv_file}")
     
     def _load_simulation_data(self) -> None:
-        """Load basic simulation data from files.
+        """Load basic simulation data from the built-in REMD output directory.
 
-        Dispatches on the output layout: an OpenMM >= 8.6 built-in REMD output
-        directory (metadata.json + energy.csv) or an openmmtools NetCDF file.
-        Also auto-detects interval if not specified by user.
+        Requires an OpenMM >= 8.6 built-in REMD output directory
+        (metadata.json + energy.csv). Also auto-detects interval if not
+        specified by user.
+
+        Raises:
+            ValueError: If output_file is not a built-in REMD directory.
         """
         if self.output_file.is_dir():
             self._load_openmm_data()
             return
-
-        MultiStateReporter, ReplicaExchangeAnalyzer = _import_openmmtools()
-
-        try:
-            # Load reporter and analyzer
-            reporter = MultiStateReporter(str(self.output_file), open_mode="r")
-            analyzer = ReplicaExchangeAnalyzer(reporter)
-
-            # Auto-detect interval if not specified by user
-            if self._user_interval is None:
-                try:
-                    self.interval = reporter.checkpoint_interval
-                except Exception:
-                    self.interval = 1
-            else:
-                self.interval = self._user_interval
-
-            # Read simulation data
-            states, _ = reporter.read_thermodynamic_states()
-            temperature_list = [s.temperature for s in states]
-
-            # Read energies and states
-            replica_energies, unsampled_energies, _, replica_state_indices = analyzer.read_energies()
-
-            # Downsample energies to match CV interval
-            self.replica_energies = replica_energies[:, :, ::self.interval]
-            self.unsampled_energies = unsampled_energies[:, :, ::self.interval]
-
-            reporter.close()
-
-            # Verify number of replicas matches number of states
-            n_replicas = self.replica_energies.shape[0]
-            n_states = len(states)
-            if n_replicas != n_states:
-                raise ValueError(
-                    f"Number of replicas ({n_replicas}) does not match "
-                    f"number of states ({n_states})"
-                )
-
-            # Process temperature data
-            self.n_states = n_states
-            self.temperatures_k = np.array([
-                temp.value_in_unit(unit.kelvin) for temp in temperature_list
-            ])
-            self.beta_k = 1 / (kB * self.temperatures_k)
-
-            # Load CV data
-            self._load_cv_data()
-
-        except Exception as e:
-            raise RuntimeError(f"Error loading simulation data: {e}")
+        raise ValueError(
+            f"FESAnalyzer requires an OpenMM >= 8.6 built-in REMD output "
+            f"directory (metadata.json + energy.csv); got {self.output_file}. "
+            f"openmmtools NetCDF (.nc) output is no longer supported."
+        )
 
     def _load_cv_data(self) -> None:
         """Load the external CV data file and transpose to (n_states, n_frames).
@@ -616,25 +565,17 @@ class FESAnalyzer:
         Concatenated replica-major (replica 0 frames, then replica 1 frames,
         ...), matching the sample order of concatenated_cv. Built-in REMD
         directories store the raw basin energies in kJ/mol, so they are used
-        directly (no temperature rescaling); openmmtools NetCDF files store
-        reduced basin energies, which are converted back to kJ/mol at the
-        analysis temperature.
+        directly (no temperature rescaling), which is exact even when states
+        differ in temperature.
 
         Args:
-            temperature: Analysis temperature (K), used only to un-reduce
-                openmmtools reduced energies.
+            temperature: Analysis temperature (K); unused, kept for call
+                signature compatibility.
         """
-        if self._subsampled_basin_energies_kj is not None:
-            E1 = np.concatenate(self._subsampled_basin_energies_kj[:, 0, :])
-            E2 = np.concatenate(self._subsampled_basin_energies_kj[:, 1, :])
-        else:
-            E1 = np.concatenate(self.subsampled_unsampled_energies[:, 0, :]) * (
-                kB * temperature
-            )
-            E2 = np.concatenate(self.subsampled_unsampled_energies[:, 1, :]) * (
-                kB * temperature
-            )
-        return E1, E2
+        return (
+            np.concatenate(self._subsampled_basin_energies_kj[:, 0, :]),
+            np.concatenate(self._subsampled_basin_energies_kj[:, 1, :]),
+        )
 
     def _exp_mixing(self, beta: float, C1: float, C2: float,
                    temperature: float) -> np.ndarray:

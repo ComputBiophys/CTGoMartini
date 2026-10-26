@@ -7,15 +7,13 @@ In this tutorial, we will demonstrate how to perform Replica Exchange Molecular 
 This tutorial uses GlnBP (Glutamine-binding protein) as an example, transitioning between open (1GGG) and closed (1WDN) states. Unlike standard MD, REMD uses:
 - Multiple replicas with different energy surfaces (controlled by C1 parameter)
 - Exchange attempts between replicas to enhance sampling
-- Single-state topologies as unsampled states for analysis
 
 ### Prerequisites
 
 - CTGōMartini installed with all dependencies
-- OpenMM with CUDA support (recommended)
+- OpenMM >= 8.6 (provides the built-in REMD backend; CUDA support recommended)
 - Python 2 (for `insane.py`)
 - Basic understanding of Multiple-basin Go-Martini (see GlnBP standard tutorial)
-- `openmmtools` for REMD
 
 ---
 
@@ -29,9 +27,9 @@ Water has been removed and residues trimmed to the same length.
 
 ---
 
-### (2) Generate Multiple-basin Topology with Single-state Extraction
+### (2) Generate Multiple-basin Topology
 
-Generate the multiple-basin topology along with single-state topologies for REMD analysis:
+Generate the multiple-basin topology:
 
 ```bash
 ctgomartinize -s 1GGG_clean.pdb 1WDN_clean.pdb \
@@ -40,13 +38,10 @@ ctgomartinize -s 1GGG_clean.pdb 1WDN_clean.pdb \
               -mbmol GlnBP \
               -dssp \
               -ff martini3001 \
-              -method exp \
-              -extract-states
+              -method exp
 ```
 
-**Key differences from standard MD:**
-- `-extract-states` flag generates single-state ITP files (`GlnBP_stateA.itp`, `GlnBP_stateB.itp`)
-- These are used as basic states for predicting free energies profiles at defined mixing parameters
+This generates the multiple-basin ITP files (`GlnBP.itp`, `GlnBP_params.itp`) used by all replicas.
 
 ---
 
@@ -85,54 +80,14 @@ CL        64
 
 ---
 
-### (4) Prepare System Topology Files
+### (4) Prepare System Topology File
 
-For REMD, you need three system topology files:
-
-**A. Main system.top (multiple-basin)** - Edit to add includes:
+Edit `system.top` (multiple-basin) to add includes:
 
 ```
 #include "FF/martini_v3.0.0.itp"
 #include "GlnBP_params.itp"
 #include "GlnBP.itp"
-#include "FF/martini_v3.0.0_solvents_v1.itp"
-#include "FF/martini_v3.0.0_ions_v1.itp"
-
-[ system ]
-Title of the system
-
-[ molecules ]
-GlnBP     1
-W      6109
-NA        67
-CL        64
-```
-
-**B. system_stateA.top (unsampled state A)**:
-
-```
-#include "FF/martini_v3.0.0.itp"
-#include "GlnBP_params.itp"
-#include "GlnBP_stateA.itp"
-#include "FF/martini_v3.0.0_solvents_v1.itp"
-#include "FF/martini_v3.0.0_ions_v1.itp"
-
-[ system ]
-Title of the system
-
-[ molecules ]
-GlnBP     1
-W      6109
-NA        67
-CL        64
-```
-
-**C. system_stateB.top (unsampled state B)**:
-
-```
-#include "FF/martini_v3.0.0.itp"
-#include "GlnBP_params.itp"
-#include "GlnBP_stateB.itp"
 #include "FF/martini_v3.0.0_solvents_v1.itp"
 #include "FF/martini_v3.0.0_ions_v1.itp"
 
@@ -173,47 +128,38 @@ run_ctgomartini -i remd.inp
 
 #### B. Multi-GPU Mode (recommended for production)
 
-For running REMD across multiple GPUs (e.g., 11 replicas on 4 GPUs):
+The built-in REMD backend can spread replicas across multiple GPUs with the
+`remd_devices` input key (one worker Context per replica, integrated
+concurrently; replicas are assigned to the listed devices round-robin). For
+example, to run 11 replicas on 4 GPUs, add to `remd.inp`:
 
-**Install MPI dependencies:**
-
-```bash
-conda install -c conda-forge mpi4py mpich=3 -y
+```
+remd_devices = 0 1 2 3
 ```
 
-**Generate MPI configuration files:**
-
-The `build_mpirun_configfile.py` script automatically detects your job scheduler (PBS, LSF, or SLURM) and generates the necessary configuration files for MPICH3:
+Then run as usual:
 
 ```bash
-python build_mpirun_configfile.py "run_ctgomartini -i remd.inp"
+run_ctgomartini -i remd.inp
 ```
 
-This creates two files:
-- `configfile`: MPI configuration with CUDA device assignments
-- `hostfile`: List of hosts for the MPI job
-
-**Run the REMD simulation:**
-
-using `mpiexec.hydra` (MPI launcher):
-```bash
-mpiexec.hydra -f hostfile -configfile configfile
-```
-
-**Note:** The script automatically handles:
-- CUDA_VISIBLE_DEVICES assignment for each replica
-- Host detection from PBS_GPUFILE, LSB_HOSTS, or SLURM_JOB_NODELIST
-- MPICH3-compatible configuration format
+Without `remd_devices`, all replicas share a single Context on one device.
 
 ---
 
 ### (7) REMD Output Files
 
-After the simulation completes, you will have:
+REMD output is a directory (set by `remd_output`, default `output_remd`):
 
-- `output.nc` - NetCDF file containing all replica trajectories and exchange information
-- `output_real_time_analysis.yaml` - Real-time analysis data 
-- `output_checkpoint.nc` - Checkpoint file for restarting simulations
+- `log.csv` - per-iteration state assignment of each replica
+- `energy.csv` - reduced energy of every replica in every state (for MBAR)
+- `cv_energies.csv` - per-basin energies (E1, E2) of every replica
+- `exchange.csv` - cumulative per-pair exchange counters
+- `volume.csv` - per-replica box volumes (pressure coupling on)
+- `metadata.json` - states, timestep and reporting intervals for the analysis tools
+- `checkpoint_<i>.xml` - per-replica checkpoints (used by `--append` restarts)
+- `replica_<i>.xtc` - continuous per-replica trajectories (`remd_xtc_output = replica`)
+- `state_<i>.xtc` - per-thermodynamic-state trajectories (`remd_xtc_output = state`)
 
 **Note:** REMD simulations are computationally intensive. 
 
@@ -221,19 +167,19 @@ After the simulation completes, you will have:
 
 ### (8) Analysis
 
-REMD simulations generate rich trajectory data that requires specialized analysis tools. CTGōMartini provides several analysis modules for extracting replica trajectories, calculating observables, and computing free energy surfaces.
+REMD simulations generate rich trajectory data that requires specialized analysis tools. CTGōMartini provides several analysis modules for calculating observables and computing free energy surfaces.
 
 #### A. Calculate dRMS (Distance Root Mean Square)
 
-dRMS measures the structural difference from reference states. This is essential for defining the collective variable (CV) used in free energy analysis.
+dRMS measures the structural difference from reference states. This is essential for defining the collective variable (CV) used in free energy analysis. It reads the per-replica XTC trajectories (`remd_xtc_output = replica` in `remd.inp`), which carry no topology, so a topology file (`--top`) is required:
 
 ```bash
 python -m ctgomartini.analysis.remd_drms_analysis \
-    -nc output.nc \
-    -c output_checkpoint.nc \
-    --num-workers 20 \
+    -d output_remd \
+    --top npt.pdb \
+    --num-workers 10 \
     -ref Open/Open_cg.pdb Closed/Closed_cg.pdb \
-    -o dRMStraj_nc
+    -o dRMSTraj
 ```
 
 #### B. Check Exchange Efficiency
@@ -241,7 +187,7 @@ python -m ctgomartini.analysis.remd_drms_analysis \
 Monitor the exchange acceptance ratio between replicas:
 
 ```bash
-python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
+python -m ctgomartini.analysis.remd_exchange_ratio -f output_remd
 ```
 
 #### C. Monitor Replica State Population
@@ -249,7 +195,7 @@ python -m ctgomartini.analysis.remd_exchange_ratio -f output.nc
 Track which conformational state each replica visits over time:
 
 ```bash
-python -m ctgomartini.analysis.remd_replica_state -f output.nc
+python -m ctgomartini.analysis.remd_replica_state -f output_remd
 ```
 
 #### D. Free Energy Analysis (MBAR)
@@ -269,28 +215,20 @@ jupyter notebook REMD_MBAR_Analysis.ipynb
 2. **Initialize** - Load dRMS data, setup FES analyzer
 3. **Single State Analysis** - Analyze each replica independently
 4. **Parameter Sweep** - Convergence test with different parameters
-5. **Mixed State Analysis** - Predict the free energy profile with unsampled mixing parameters
+5. **Mixed State Analysis** - Predict the free energy profile at arbitrary mixing parameters
 
 
 #### E. Additional Analysis Tools
 
-If you prefer to work with individual trajectory files, extract them first and then use standard dRMS analysis. This approach is useful for custom analysis workflows or visualization.
+The per-replica trajectories written with `remd_xtc_output = replica` (or `state`)
+are plain XTC files, so they can be fed directly into the standard dRMS
+analysis (or any other trajectory tool) without an extraction step:
 
-Extract individual replica trajectories:
-```bash
-python -m ctgomartini.analysis.remd_trajectory_extractor \
-    --mode replica \
-    -nc output.nc \
-    -c output_checkpoint.nc \
-    -p npt.pdb
-```
-
-Then calculate dRMS for each extracted trajectory:
 ```bash
 # Example: Analyze replica 0
 python -m ctgomartini.analysis.drms_analysis \
     -s npt.pdb \
-    -f extracted/replica_0.xtc \
+    -f output_remd/replica_0.xtc \
     -r Open/Open_cg.pdb Closed/Closed_cg.pdb \
     -sel "name BB" \
     -n 10 \

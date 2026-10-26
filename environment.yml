@@ -1,22 +1,16 @@
 name: ctgomartini
 channels:
   - conda-forge
-  - omnia
 dependencies:
   - python>=3.12,<3.14
   
-  # OpenMM and CUDA
-  - openmm>=8.1
+  # OpenMM >= 8.6 (provides the built-in REMD backend) and CUDA
+  - openmm>=8.6
   - cuda-version=12
   
-  # REMD dependencies
-  - openmmtools
-  - jax<=0.8.0
-  - numpy>=2.0,<2.4.0
-  
-  # Multi-GPU REMD (MPI)
-  - mpi4py
-  - mpich=3
+  # REMD MBAR analysis
+  - pymbar
+  - numpy>=2.0
   
   # Jupyter for analysis
   - jupyter
@@ -28,6 +22,7 @@ dependencies:
     - pandas
     - matplotlib>=3.3.3
     - vermouth==0.14.0
+    - mdtraj
     - pytest>=7.0
     - pytest-cov
     - black

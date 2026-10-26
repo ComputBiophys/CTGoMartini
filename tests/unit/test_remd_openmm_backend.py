@@ -133,17 +133,56 @@ class TestConfigRemdBackend:
         )
         return str(inp)
 
-    def test_default_backend(self, tmp_path):
+    def test_no_backend_attribute_by_default(self, tmp_path):
+        # The openmmtools backend was removed; only the OpenMM >= 8.6 built-in
+        # backend exists, so no remd_backend attribute is left on the config.
         config = load_config(self._write_inp(tmp_path))
-        assert config.remd_backend == 'openmmtools'
+        assert not hasattr(config, 'remd_backend')
 
-    def test_openmm_backend(self, tmp_path):
+    def test_openmm_backend_is_noop(self, tmp_path):
+        # 'openmm' stays accepted as a no-op so old input files keep working.
         config = load_config(self._write_inp(tmp_path, "remd_backend = openmm\n"))
-        assert config.remd_backend == 'openmm'
+        assert not hasattr(config, 'remd_backend')
+
+    def test_openmmtools_backend_rejected(self, tmp_path):
+        with pytest.raises(ValueError, match="no longer supported"):
+            load_config(self._write_inp(tmp_path, "remd_backend = openmmtools\n"))
 
     def test_invalid_backend(self, tmp_path):
         with pytest.raises(ValueError, match="remd_backend"):
             load_config(self._write_inp(tmp_path, "remd_backend = lammps\n"))
+
+
+class TestConfigRemdXtcOutput:
+    def _write_inp(self, tmp_path, extra: str = "") -> str:
+        inp = tmp_path / "remd.inp"
+        inp.write_text(
+            "REMD = yes\n"
+            "exc_freq = 100\n"
+            "replica_count = 2\n"
+            "replica_temp = 300 310\n"
+            "platform = CPU\n"
+            f"{extra}"
+        )
+        return str(inp)
+
+    def test_default_no(self, tmp_path):
+        config = load_config(self._write_inp(tmp_path))
+        assert config.remd_xtc_output == 'no'
+
+    def test_yes_alias_for_replica(self, tmp_path):
+        config = load_config(self._write_inp(tmp_path, "remd_xtc_output = yes\n"))
+        assert config.remd_xtc_output == 'replica'
+
+    def test_state_and_both(self, tmp_path):
+        config = load_config(self._write_inp(tmp_path, "remd_xtc_output = state\n"))
+        assert config.remd_xtc_output == 'state'
+        config = load_config(self._write_inp(tmp_path, "remd_xtc_output = both\n"))
+        assert config.remd_xtc_output == 'both'
+
+    def test_invalid_value(self, tmp_path):
+        with pytest.raises(ValueError, match="remd_xtc_output"):
+            load_config(self._write_inp(tmp_path, "remd_xtc_output = maybe\n"))
 
 
 class TestConfigRemdDevices:
@@ -516,7 +555,7 @@ class TestCLIDispatch:
         ) as runner_class:
             assert cli._run_remd(args, config) == 0
         runner_class.assert_called_once()
-        # The openmmtools default file name becomes a directory name.
+        # REMD output is a directory; the default is output_remd.
         assert runner_class.call_args.kwargs["output_data"] == "output_remd"
         mock_runner.run.assert_called_once()
 
@@ -535,27 +574,3 @@ class TestCLIDispatch:
             assert cli._run_remd(args, config) == 0
         assert runner_class.call_args.kwargs["output_data"] == "my_dir"
         mock_runner.extend.assert_called_once()
-
-    def test_openmmtools_backend_default(self, tmp_path):
-        from unittest.mock import MagicMock, patch
-
-        inp = self._remd_inp(tmp_path, "remd_output = my.nc\n")
-        config = load_config(inp)
-        args = argparse.Namespace(inpfile=inp, append=False)
-        mock_runner = MagicMock()
-        with patch.object(cli, "REMDRunner", return_value=mock_runner) as runner_class:
-            assert cli._run_remd(args, config) == 0
-        assert runner_class.call_args.kwargs["output_data"] == "my.nc"
-        mock_runner.run.assert_called_once()
-
-    def test_openmmtools_backend_warns_devices_ignored(self, tmp_path, capsys):
-        from unittest.mock import MagicMock, patch
-
-        inp = self._remd_inp(tmp_path, "remd_devices = 0 1\n")
-        config = load_config(inp)
-        args = argparse.Namespace(inpfile=inp, append=False)
-        mock_runner = MagicMock()
-        with patch.object(cli, "REMDRunner", return_value=mock_runner):
-            assert cli._run_remd(args, config) == 0
-        assert "remd_devices" in capsys.readouterr().out
-        mock_runner.run.assert_called_once()

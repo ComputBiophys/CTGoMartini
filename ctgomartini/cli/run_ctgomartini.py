@@ -14,7 +14,7 @@ import argparse
 import sys
 from typing import Any
 
-from ctgomartini.simulation import MDRunner, REMDRunner, load_config
+from ctgomartini.simulation import MDRunner, load_config
 
 
 def main() -> int:
@@ -139,31 +139,14 @@ def _run_remd(args: argparse.Namespace, config: Any) -> int:
         "C2": config.replica_c2,
     }
 
-    # Select the REMD backend
-    if config.remd_backend == "openmm":
-        # Lazy import: the new module itself is import-safe on OpenMM < 8.6 and
-        # only requires 8.6 when the runner is constructed.
-        from ctgomartini.simulation import BuiltinREMDRunner
+    # REMD always uses the OpenMM >= 8.6 built-in backend. Lazy import: the
+    # module itself is import-safe on OpenMM < 8.6 and only requires 8.6 when
+    # the runner is constructed.
+    from ctgomartini.simulation import BuiltinREMDRunner
 
-        runner_class: Any = BuiltinREMDRunner
-        # remd_output is a directory for the openmm backend; replace the
-        # openmmtools default file name with a directory name.
-        output_data = config.remd_output
-        if output_data == "output.nc":
-            output_data = "output_remd"
-        missing_hint = (
-            "The 'openmm' REMD backend requires OpenMM >= 8.6. "
-            "Upgrade OpenMM or set remd_backend = openmmtools."
-        )
-    else:
-        runner_class = REMDRunner
-        output_data = config.remd_output
-        missing_hint = "REMD requires openmmtools. Install with: conda install openmmtools"
-        if config.remd_devices:
-            print(
-                "Warning: remd_devices is only used by remd_backend = openmm; "
-                "ignoring it for the openmmtools backend."
-            )
+    runner_class: Any = BuiltinREMDRunner
+    output_data = config.remd_output
+    missing_hint = "REMD requires OpenMM >= 8.6."
 
     try:
         runner = runner_class(

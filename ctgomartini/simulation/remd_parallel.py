@@ -1,7 +1,7 @@
 """Multi-Context parallel driver for the built-in REMD backend (OpenMM >= 8.6).
 
-Selected by setting ``remd_devices`` in the input file (used only by
-``remd_backend = openmm``). One worker Context is created per replica; each
+Selected by setting ``remd_devices`` in the input file. One worker Context is
+created per replica; each
 worker owns its Context, LangevinIntegrator and ``MultistateSampler``, so all
 replicas of an iteration are integrated concurrently in a thread pool (OpenMM
 releases the GIL while integrating). The main Context is never stepped by the

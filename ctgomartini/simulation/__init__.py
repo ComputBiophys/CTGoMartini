@@ -14,7 +14,6 @@ Example:
 from ctgomartini.simulation.config import SimulationConfig, load_config
 from ctgomartini.simulation.base import SimulationRunner, add_restraints, generate_restraints
 from ctgomartini.simulation.md import MDRunner
-from ctgomartini.simulation.remd import REMDRunner
 from ctgomartini.simulation.remd_openmm import BuiltinREMDRunner
 
 __all__ = [
@@ -24,7 +23,6 @@ __all__ = [
     # Runners
     "SimulationRunner",
     "MDRunner",
-    "REMDRunner",
     "BuiltinREMDRunner",
     # Utility functions
     "add_restraints",

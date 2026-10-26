@@ -45,9 +45,9 @@ cuda-version=11  # or 10.2
 ```
 
 > **Important Notes**:
-> - `numpy<2.4.0` is required for REMD compatibility
+> - REMD requires `openmm>=8.6` (built-in replica exchange backend)
 > - `cuda-version` should match your NVIDIA driver
-> - Multi-GPU REMD uses `openmmtools` for replica exchange. See [YANK documentation](http://getyank.org/latest/running.html) for MPI configuration details.
+> - Multi-GPU REMD uses the `remd_devices` input key to spread replicas across GPUs (see the REMD tutorial)
 
 ## Testing
 
