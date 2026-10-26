@@ -357,29 +357,165 @@ class TestBuiltinREMDEXP:
         assert analyzer.temperatures_k.tolist() == TEMPERATURES
         assert analyzer.replica_energies.shape == (2, 2, 3)
 
-        # unsampled energies are the basin energies reduced by the temperature
-        # of the state the replica occupies at that frame; the layout is
-        # [replica][basin][frame], same as the openmmtools path. The raw
-        # kJ/mol channel mirrors the cv_energies.csv values exactly.
+        # The basin channels hold the FULL basin energies
+        # E_full_i = E_other + E_i: E_other is the state-independent remainder
+        # reconstructed from energy.csv (U_s = E_other + E_mix,s), and both
+        # ladder states must reconstruct the same E_other. unsampled_energies
+        # are the full energies reduced by the temperature of the state the
+        # replica occupies at that frame; the layout is [replica][basin][frame],
+        # same as the openmmtools path.
         cv_table = _read_cv_energies(outdir)
         log = np.loadtxt(os.path.join(outdir, "log.csv"), delimiter=",", skiprows=1)
+        energy = np.loadtxt(os.path.join(outdir, "energy.csv"), delimiter=",", ndmin=2)
+        max_e_other_dev = 0.0
         for frame in range(3):
             for replica in range(2):
                 state = int(log[frame][2 + replica])
                 e1, e2 = cv_table[(frame + 1, replica)]
                 kt = kB * TEMPERATURES[state]
+                # Independent E_other reconstruction per state s:
+                # E_other = U_s - E_mix,s(E1, E2).
+                e_other_per_state = []
+                for s in range(2):
+                    u_s = energy[frame][replica * 2 + s] * kB * TEMPERATURES[s]
+                    e_mix = exp_mixing(
+                        e1, e2, EXP_COUPLINGS[s], C1_LIST[s], C2_LIST[s]
+                    )
+                    e_other_per_state.append(u_s - e_mix)
+                max_e_other_dev = max(
+                    max_e_other_dev, abs(e_other_per_state[1] - e_other_per_state[0])
+                )
+                e_other = e_other_per_state[0]
                 assert analyzer.unsampled_energies[replica, 0, frame] == pytest.approx(
-                    e1 / kt
+                    (e_other + e1) / kt
                 )
                 assert analyzer.unsampled_energies[replica, 1, frame] == pytest.approx(
-                    e2 / kt
+                    (e_other + e2) / kt
                 )
                 assert analyzer._basin_energies_kj[replica, 0, frame] == pytest.approx(
-                    e1
+                    e_other + e1
                 )
                 assert analyzer._basin_energies_kj[replica, 1, frame] == pytest.approx(
-                    e2
+                    e_other + e2
                 )
+                assert analyzer._e_other_kj[replica, frame] == pytest.approx(e_other)
+        # E_other is state-independent: both ladder states reconstruct it.
+        print(f"\nmax |E_other(s=1) - E_other(s=0)| = {max_e_other_dev:.3e} kJ/mol")
+        assert max_e_other_dev < 1e-6
+
+    @staticmethod
+    def _capture_u_n(analyzer):
+        """Capture the u_n each analysis path passes to analyze()."""
+        captured = {}
+
+        def fake_analyze(u_n, cv_n, temperature, **kwargs):
+            captured["u_n"] = u_n
+            captured["temperature"] = temperature
+            return {}
+
+        analyzer.analyze = fake_analyze
+        n_frames = analyzer.replica_energies.shape[2]
+        analyzer.subsampled_indices = list(range(n_frames))
+        analyzer.concatenated_cv = np.concatenate(analyzer.cv_values_replica)
+        analyzer.subsampled_unsampled_energies = analyzer.unsampled_energies
+        analyzer._subsampled_basin_energies_kj = analyzer._basin_energies_kj
+        if analyzer._work_energies_kj is not None:
+            analyzer._subsampled_work_kj = analyzer._work_energies_kj
+        return captured
+
+    def test_mixing_path_matches_ladder_state(self, exp_dir, tmp_path):
+        """analyze_one_mixing_parameters of a ladder state == analyze_onestate.
+
+        The strongest end-to-end check of the E_other reconstruction: for the
+        mixing parameters of a state already on the ladder, the mixing path
+        (E_other + E_i through _exp_mixing) must reproduce the per-state
+        reduced energies (energy.csv) sample by sample.
+        """
+        outdir = os.path.join(exp_dir, "output_mixing_path")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(exp_dir, nstep=15, method="exp")
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+
+        cv_file = tmp_path / "cv.dat"
+        np.savetxt(cv_file, np.arange(9, dtype=float).reshape(3, 3))
+        analyzer = FESAnalyzer(outdir, cv_file)
+        captured = self._capture_u_n(analyzer)
+
+        for state in range(2):
+            analyzer.analyze_one_mixing_parameters(
+                {"beta": EXP_COUPLINGS[state], "C1": C1_LIST[state],
+                 "C2": C2_LIST[state]},
+                TEMPERATURES[state], method="EXP",
+            )
+            u_n_mixing = captured["u_n"]
+            # u_kn sample order is replica-major, same as the basin channels.
+            analyzer.u_kn = analyzer.replica_energies.reshape(analyzer.n_states, -1)
+            analyzer.analyze_onestate(selected_state=state)
+            u_n_onestate = captured["u_n"]
+            np.testing.assert_allclose(u_n_mixing, u_n_onestate, rtol=1e-9)
+
+    def test_mixing_path_matches_ladder_state_real_mbar(self, exp_dir, tmp_path):
+        """With real MBAR init, u_kn[s] from kln_to_kn equals the mixing u_n.
+
+        Guards the kln_to_kn axis convention ([sampled_group][state][frame],
+        i.e. the transposed replica_energies view) against regression. Runs
+        only where pymbar is installed.
+        """
+        pytest.importorskip("pymbar")
+        outdir = os.path.join(exp_dir, "output_mixing_path_mbar")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(exp_dir, nstep=15, method="exp")
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+
+        cv_file = tmp_path / "cv.dat"
+        np.savetxt(cv_file, np.arange(9, dtype=float).reshape(3, 3))
+        analyzer = FESAnalyzer(outdir, cv_file)
+        analyzer.initialize_fes(g=1.0)
+
+        captured = {}
+
+        def fake_analyze(u_n, cv_n, temperature, **kwargs):
+            captured["u_n"] = u_n
+            return {}
+
+        analyzer.analyze = fake_analyze
+        for state in range(2):
+            analyzer.analyze_one_mixing_parameters(
+                {"beta": EXP_COUPLINGS[state], "C1": C1_LIST[state],
+                 "C2": C2_LIST[state]},
+                TEMPERATURES[state], method="EXP",
+            )
+            u_n_mixing = captured["u_n"]
+            analyzer.analyze_onestate(selected_state=state)
+            np.testing.assert_allclose(u_n_mixing, captured["u_n"], rtol=1e-9)
+
+    def test_mixing_path_matches_ladder_state_npt(self, exp_dir, tmp_path):
+        """Same two-path identity under NPT (work term enters both sides)."""
+        outdir = os.path.join(exp_dir, "output_mixing_path_npt")
+        with WorkingDirectoryContext(exp_dir):
+            inp = _write_remd_inp(
+                exp_dir, nstep=15, method="exp", pcouple="yes",
+                gen_seed=42, gen_vel="yes",
+            )
+            BuiltinREMDRunner(inp, output_data=outdir).run()
+
+        cv_file = tmp_path / "cv.dat"
+        np.savetxt(cv_file, np.arange(9, dtype=float).reshape(3, 3))
+        analyzer = FESAnalyzer(outdir, cv_file)
+        assert analyzer._work_energies_kj is not None
+        captured = self._capture_u_n(analyzer)
+
+        for state in range(2):
+            analyzer.analyze_one_mixing_parameters(
+                {"beta": EXP_COUPLINGS[state], "C1": C1_LIST[state],
+                 "C2": C2_LIST[state]},
+                TEMPERATURES[state], method="EXP",
+            )
+            u_n_mixing = captured["u_n"]
+            analyzer.u_kn = analyzer.replica_energies.reshape(analyzer.n_states, -1)
+            analyzer.analyze_onestate(selected_state=state)
+            u_n_onestate = captured["u_n"]
+            np.testing.assert_allclose(u_n_mixing, u_n_onestate, rtol=1e-9)
 
 
     def _run_drms_fes_closure(self, exp_dir, tmp_path, name):

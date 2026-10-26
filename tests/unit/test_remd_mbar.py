@@ -20,39 +20,54 @@ TEMPERATURES = [300.0, 310.0]
 def _make_openmm_dir(tmp_path, n_frames: int = 100, seed: int = 0):
     """Create a synthetic OpenMM >= 8.6 built-in REMD output directory.
 
-    Reduced energies are built from a shared base plus small state offsets so
-    the two states overlap strongly (MBAR converges on the synthetic data).
+    Physically consistent data: basin energies E1/E2 and a randomized
+    state-independent remainder E_other (std 30 kJ/mol, so the two states'
+    reduced-energy distributions overlap and MBAR converges), with
+    energy.csv holding U_s = E_other + E_mix,s(E1, E2) reduced by kB*T_s.
     Returns (directory, cv_file).
     """
+    from ctgomartini.analysis.remd_mbar import kB
+
     directory = tmp_path / "output_remd"
     directory.mkdir()
     n_states = len(TEMPERATURES)
 
+    states = [
+        {"temperature": t, "ctg_gbp_beta": 0.001, "ctg_gbp_C1": 0.0, "ctg_gbp_C2": 0.0}
+        for t in TEMPERATURES
+    ]
     metadata = {
         "backend": "openmm",
         "method": "exp",
         "molname": "gbp",
         "replica_count": n_states,
         "n_basins": 2,
+        "parameter_names": {
+            "coupling": "ctg_gbp_beta",
+            "C1": "ctg_gbp_C1",
+            "C2": "ctg_gbp_C2",
+        },
         "dt": 0.02,
         "exc_freq": 250,
         "stepsPerIteration": 250,
         "reportInterval": 1,
-        "states": [
-            {"temperature": t, "ctg_gbp_beta": 1.0, "ctg_gbp_C1": 0.0, "ctg_gbp_C2": 0.0}
-            for t in TEMPERATURES
-        ],
+        "states": states,
     }
     (directory / "metadata.json").write_text(json.dumps(metadata))
 
     rng = np.random.default_rng(seed)
-    base = rng.normal(0.0, 1.0, size=(n_frames, n_states))
-    # energy.csv rows: [replica][state] flattened per frame
+    e_other = rng.normal(0.0, 30.0, size=(n_frames, n_states))  # [frame][replica]
+    e1 = 1000.0 + np.arange(n_states)[None, :] + 0.01 * np.arange(n_frames)[:, None]
+    e2 = 2000.0 + np.arange(n_states)[None, :] + 0.01 * np.arange(n_frames)[:, None]
+
+    # energy.csv rows: [replica][state] flattened per frame;
+    # U_s = E_other + E_mix,s (both states share the mixing parameters here)
     energy = np.empty((n_frames, n_states * n_states))
-    for state in range(n_states):
-        energy[:, state::n_states] = base + 0.05 * state + rng.normal(
-            0.0, 0.01, size=(n_frames, n_states)
-        )
+    for state, params in enumerate(states):
+        mix = -np.log(
+            np.exp(-params["ctg_gbp_beta"] * e1) + np.exp(-params["ctg_gbp_beta"] * e2)
+        ) / params["ctg_gbp_beta"]
+        energy[:, state::n_states] = (e_other + mix) / (kB * params["temperature"])
     np.savetxt(directory / "energy.csv", energy, delimiter=",")
 
     # log.csv: replicas stay in their own states
@@ -65,9 +80,7 @@ def _make_openmm_dir(tmp_path, n_frames: int = 100, seed: int = 0):
     cv_lines = ["Iteration,Replica,Molecule,E1,E2"]
     for frame in range(n_frames):
         for replica in range(n_states):
-            e1 = 1000.0 + replica + 0.01 * frame
-            e2 = 2000.0 + replica + 0.01 * frame
-            cv_lines.append(f"{frame},{replica},gbp,{e1},{e2}")
+            cv_lines.append(f"{frame},{replica},gbp,{e1[frame, replica]},{e2[frame, replica]}")
     (directory / "cv_energies.csv").write_text("\n".join(cv_lines) + "\n")
 
     # External CV file: time + one column per state
@@ -128,6 +141,17 @@ class TestFESAnalyzerFunctionality:
         assert analyzer.subsampled_indices is not None
         assert analyzer.u_kn is not None
         assert analyzer.concatenated_cv is not None
+
+        # u_kn[s] must hold every replica's frames evaluated at state s in
+        # replica-major order (kln_to_kn receives the transposed
+        # [replica][state][frame] view). This pins the axis convention.
+        idx = analyzer.subsampled_indices
+        for state in range(analyzer.n_states):
+            np.testing.assert_allclose(
+                analyzer.u_kn[state],
+                analyzer.replica_energies[state][:, idx].ravel(),
+                rtol=1e-12,
+            )
 
     def test_analyze_invalid_state(self, tmp_path):
         """Test that invalid state raises ValueError."""

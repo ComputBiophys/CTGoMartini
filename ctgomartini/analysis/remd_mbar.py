@@ -37,6 +37,25 @@ def _import_pymbar():
     return pymbar, timeseries
 
 
+def _exp_mix_energy(e1: np.ndarray, e2: np.ndarray, beta: float, c1: float,
+                    c2: float) -> np.ndarray:
+    """EXP mixed energy -(1/beta) ln[exp(-beta(e1+c1)) + exp(-beta(e2+c2))].
+
+    Numerically stable log-sum-exp form (works element-wise on arrays).
+    """
+    a = -beta * (e1 + c1)
+    b = -beta * (e2 + c2)
+    m = np.maximum(a, b)
+    return -(m + np.log(np.exp(a - m) + np.exp(b - m))) / beta
+
+
+def _ham_mix_energy(e1: np.ndarray, e2: np.ndarray, delta: float, c1: float,
+                    c2: float) -> np.ndarray:
+    """HAM mixed energy (e1+e2+dV)/2 - sqrt[((e1-e2-dV)/2)^2 + delta^2]."""
+    dv = c2 - c1
+    return (e1 + e2 + dv) / 2 - np.sqrt(((e1 - e2 - dv) / 2) ** 2 + delta**2)
+
+
 class FESAnalyzer:
     """
     Free Energy Surface (FES) analyzer for REMD simulations using MBAR.
@@ -61,7 +80,8 @@ class FESAnalyzer:
     """
     
     def __init__(self, output_file: Union[str, Path], cv_file: Union[str, Path], 
-                 interval: Optional[int] = None):
+                 interval: Optional[int] = None,
+                 e_other_tol: float | None = None):
         """
         Initialize the FES analyzer with simulation data files.
         
@@ -75,6 +95,12 @@ class FESAnalyzer:
                       If None (default), the built-in REMD directory data is
                       already spaced by the report interval, so the
                       default is 1.
+            e_other_tol: Tolerance in kJ/mol for the E_other consistency
+                      check (the state-independent remainder reconstructed
+                      from every ladder state must agree). If None, uses
+                      max(1e-3, 1e-6 * max|E_other|), which tolerates
+                      single/mixed-precision GPU energy noise but catches
+                      mismatched metadata/energy/cv_energies files.
         
         Raises:
             FileNotFoundError: If input files do not exist.
@@ -83,6 +109,7 @@ class FESAnalyzer:
         self.output_file = Path(output_file)
         self.cv_file = Path(cv_file)
         self._user_interval = interval  # Store user-specified interval (None means auto-detect)
+        self._e_other_tol = e_other_tol
         self.fes = None
         
         # Analysis results storage
@@ -90,16 +117,24 @@ class FESAnalyzer:
         self.u_kn: Optional[np.ndarray] = None
         self.concatenated_cv: Optional[np.ndarray] = None
         self.subsampled_unsampled_energies: Optional[np.ndarray] = None
-        # Raw basin energies in kJ/mol (built-in REMD directories only), in
-        # the same [replica][basin][frame] layout as unsampled_energies. The
-        # mixing analysis uses them directly so that no temperature rescaling
-        # is involved (correct for mixed-temperature REMD).
+        # Full basin energies in kJ/mol (built-in REMD directories only), in
+        # the same [replica][basin][frame] layout as unsampled_energies:
+        # E_full_i(x) = E_other(x) + E_i(x), where E_other is the
+        # state-independent remainder of the system (everything outside the
+        # multiple-basin CustomCVForce) reconstructed from energy.csv and
+        # cv_energies.csv. The mixing analysis combines the full energies
+        # directly so that no temperature rescaling is involved (correct for
+        # mixed-temperature REMD), and the result matches the complete model
+        # energy of the old openmmtools unsampled_energies semantics.
         self._basin_energies_kj: np.ndarray | None = None
         self._subsampled_basin_energies_kj: np.ndarray | None = None
+        # State-independent remainder E_other(x) in kJ/mol, [replica][frame].
+        self._e_other_kj: np.ndarray | None = None
         # NPT work term W = p*V - gamma*A in kJ/mol (built-in REMD directories
         # with metadata npt.enabled only), [replica][frame]. It enters both
         # the per-state reduced energies (replica_energies) and the mixing
-        # analysis target potential.
+        # analysis target potential. energy.csv stores bare potential
+        # energies, so E_other never contains the work term.
         self._work_energies_kj: np.ndarray | None = None
         self._subsampled_work_kj: np.ndarray | None = None
         
@@ -153,10 +188,27 @@ class FESAnalyzer:
         by BuiltinREMDRunner. Does not require openmmtools. Frames are already
         spaced by the run's report interval, so the default interval is 1.
 
+        cv_energies.csv holds only the multiple-basin (CustomCVForce) energies
+        E1/E2, not the complete system energy. The full basin energies are
+        reconstructed through the identity
+
+            U_s(x) = E_other(x) + E_mix,s(E1(x), E2(x)),
+
+        where U_s is the total energy of conformation x in ladder state s
+        (energy.csv, unreduced via kB*T_s) and E_other is the
+        state-independent remainder (Martini nonbonded, electrostatics,
+        ordinary bonded terms, ...). E_other is computed from state 0 and
+        cross-checked against every other state (see the e_other_tol
+        constructor argument); the stored basin channels hold the full
+        energies E_full_i = E_other + E_i, matching the old openmmtools
+        unsampled_energies semantics.
+
         NPT runs (metadata "npt" block with enabled=true) additionally read
         volume.csv (and area.csv for p_type=membrane): the reduced potential
         of state s is beta_s*(U + p*V - gamma*A), so the per-state reduced
         energies gain the work term W/(kB*T_s) with W = p*V - gamma*A.
+        energy.csv stores bare potential energies, so E_other never contains
+        the work term; W is handled separately.
 
         Raises:
             RuntimeError: If data loading fails.
@@ -245,21 +297,85 @@ class FESAnalyzer:
                         f"{n_states} (one per replica)"
                     )
 
-            # Reduce basin energies by the temperature of the state each
-            # replica occupies at that frame, and keep the raw kJ/mol values
-            # alongside: the mixing analysis combines the raw energies, which
-            # is exact even when states differ in temperature.
-            # Both arrays follow the openmmtools layout [replica][basin][frame].
-            basin_energies_kj = np.zeros((n_states, 2, n_frames))
-            unsampled_energies = np.zeros((n_states, 2, n_frames))
+            # Reconstruct the state-independent remainder E_other(x) through
+            # U_s(x) = E_other(x) + E_mix,s(E1, E2): energy.csv holds the
+            # total reduced energies U_s/(kB*T_s) of each replica's
+            # conformation in every ladder state (bare potential energies,
+            # no NPT work term), while cv_energies.csv holds only the
+            # multi-basin part. E_other is deterministic per state; all
+            # ladder states must reconstruct the same E_other, which guards
+            # against mismatched metadata/energy/cv_energies files.
+            names = metadata.get("parameter_names") or {}
+            states = metadata["states"]
+            coupling_key = names.get("coupling")
+            if coupling_key is None:
+                coupling_key = next(
+                    key for key in states[0]
+                    if key != "temperature" and key.endswith(("_beta", "_delta"))
+                )
+            namespace = coupling_key.rsplit("_", 1)[0]
+            c1_key = names.get("C1", f"{namespace}_C1")
+            c2_key = names.get("C2", f"{namespace}_C2")
+            method = str(metadata.get("method", "")).lower()
+            if not method:
+                method = "exp" if coupling_key.endswith("_beta") else "ham"
+            if method not in ("exp", "ham"):
+                raise ValueError(
+                    f"Unknown mixing method {method!r} in metadata.json "
+                    f"(expected 'exp' or 'ham')"
+                )
+
+            def state_mix_energy(s: int, e1: np.ndarray, e2: np.ndarray) -> np.ndarray:
+                """E_mix,s(E1, E2) in kJ/mol with state s's mixing parameters."""
+                params = states[s]
+                coupling = float(params[coupling_key])
+                c1 = float(params[c1_key])
+                c2 = float(params[c2_key])
+                if method == "exp":
+                    return _exp_mix_energy(e1, e2, coupling, c1, c2)
+                return _ham_mix_energy(e1, e2, coupling, c1, c2)
+
+            # [frame][replica][basin] basin energies E1/E2 (kJ/mol)
+            e_basins = np.zeros((n_frames, n_states, 2))
             for frame, iteration in enumerate(cv_iterations):
                 for replica in range(n_states):
-                    e1, e2 = basin[(iteration, replica)]
-                    kt_replica = kB * temperatures[state_assignment[frame][replica]]
-                    basin_energies_kj[replica, 0, frame] = e1
-                    basin_energies_kj[replica, 1, frame] = e2
-                    unsampled_energies[replica, 0, frame] = e1 / kt_replica
-                    unsampled_energies[replica, 1, frame] = e2 / kt_replica
+                    e_basins[frame, replica] = basin[(iteration, replica)]
+
+            # [frame][replica][state] total energies U_s in kJ/mol
+            u_kj = u_rsn * (kB * np.asarray(temperatures))[None, None, :]
+            e_other_states = np.stack([
+                u_kj[:, :, s] - state_mix_energy(s, e_basins[..., 0], e_basins[..., 1])
+                for s in range(n_states)
+            ])
+            e_other = e_other_states[0]  # deterministic choice: state 0
+            if n_states > 1:
+                deviation = float(np.max(np.abs(e_other_states[1:] - e_other)))
+                tol = self._e_other_tol
+                if tol is None:
+                    tol = max(1e-3, 1e-6 * float(np.max(np.abs(e_other))))
+                if deviation > tol:
+                    raise ValueError(
+                        f"E_other reconstructed from different ladder states "
+                        f"disagrees: max deviation {deviation:.6g} kJ/mol exceeds "
+                        f"tolerance {tol:.6g} kJ/mol. metadata.json, energy.csv "
+                        f"and cv_energies.csv are inconsistent (files from "
+                        f"different runs or corrupted output). Pass e_other_tol "
+                        f"to override."
+                    )
+            # [replica][frame]
+            self._e_other_kj = e_other.T[:, ::self.interval]
+
+            # Full basin energies E_full_i = E_other + E_i, reduced by the
+            # temperature of the state each replica occupies at that frame;
+            # the raw kJ/mol channel is kept alongside: the mixing analysis
+            # combines the raw energies, which is exact even when states
+            # differ in temperature. Because mix(E_other + E1, E_other + E2)
+            # = E_other + mix(E1, E2) for both EXP and HAM, mixing the full
+            # energies yields the complete model energy E_other + E_mix.
+            # Both arrays follow the openmmtools layout [replica][basin][frame].
+            basin_energies_kj = e_other.T[:, None, :] + e_basins.transpose(1, 2, 0)
+            kt_fr = kB * np.asarray(temperatures)[state_assignment]  # [frame][replica]
+            unsampled_energies = basin_energies_kj / kt_fr.T[:, None, :]
             self.unsampled_energies = unsampled_energies[:, :, ::self.interval]
             self._basin_energies_kj = basin_energies_kj[:, :, ::self.interval]
 
@@ -363,12 +479,20 @@ class FESAnalyzer:
                 start_point=start_point, start_ratio=start_ratio
             )
             
-            # Prepare energy and CV arrays
-            u_kln = self.replica_energies[:, :, self.subsampled_indices]
+            # Prepare energy and CV arrays. pymbar's kln_to_kn expects
+            # u_kln[sampled_group, evaluated_state, frame] and returns
+            # u_kn[evaluated_state, sample] with samples ordered by group;
+            # replica_energies is [evaluated_state][replica][frame], so the
+            # first two axes must be transposed. After the transpose each
+            # sample's energies across states belong to one conformation, and
+            # u_kn[s] holds every replica's frames evaluated at state s in
+            # replica-major order (matching concatenated_cv).
+            u_kln = self.replica_energies[:, :, self.subsampled_indices].transpose(
+                1, 0, 2
+            )
             cv_kn = self.cv_values_replica[:, self.subsampled_indices]
             
             # Convert from kln to kn format
-            # k: state, l: replica, n: frame
             u_kn = pymbar.utils.kln_to_kn(u_kln)
             
             # Calculate FES
@@ -521,7 +645,12 @@ class FESAnalyzer:
         Perform FES analysis for a single mixing parameter set.
         
         Supports both EXP (exponential) and HAM (Hamiltonian) mixing methods
-        for multiple-basin Go-Martini simulations.
+        for multiple-basin Go-Martini simulations. The mixing formulas are
+        evaluated on the full basin energies E_full_i = E_other + E_i
+        (reconstructed at load time), so the resulting target potential is
+        the complete model energy E_other + E_mix, not just the
+        multiple-basin CustomCVForce part. For a parameter set that matches
+        a ladder state s, the result equals analyze_onestate(s).
         
         Args:
             mixing_parameters: Dictionary of mixing parameters.
@@ -560,11 +689,14 @@ class FESAnalyzer:
         return self.analyze(u_n, self.concatenated_cv, temperature, **kwargs)
     
     def _get_basin_energies(self, temperature: float) -> tuple[np.ndarray, np.ndarray]:
-        """Return (E1, E2) basin energies in kJ/mol for all subsampled samples.
+        """Return (E_full_1, E_full_2) full basin energies in kJ/mol.
 
+        E_full_i(x) = E_other(x) + E_i(x): the complete pure-basin system
+        energies (multi-basin CustomCVForce part E_i plus the
+        state-independent remainder E_other reconstructed at load time).
         Concatenated replica-major (replica 0 frames, then replica 1 frames,
         ...), matching the sample order of concatenated_cv. Built-in REMD
-        directories store the raw basin energies in kJ/mol, so they are used
+        directories store the full basin energies in kJ/mol, so they are used
         directly (no temperature rescaling), which is exact even when states
         differ in temperature.
 
@@ -584,8 +716,9 @@ class FESAnalyzer:
         
         Energy = -(1/beta) * ln[ exp(-beta*(E1+C1)) + exp(-beta*(E2+C2)) ]
         
-        Numerical stability is improved by subtracting the mean energy
-        to avoid large exponential values.
+        E1/E2 are the full basin energies (E_other + E_i), so the result is
+        the complete model energy. Numerical stability is improved by
+        subtracting the mean energy to avoid large exponential values.
         """
         E1, E2 = self._get_basin_energies(temperature)
         
@@ -608,7 +741,8 @@ class FESAnalyzer:
         HAM (Hamiltonian) mixing method for multiple-basin potential.
         
         Energy = (E1+E2+dV)/2 - sqrt[((E1-E2-dV)/2)^2 + delta^2]
-        where dV = C2 - C1
+        where dV = C2 - C1. E1/E2 are the full basin energies
+        (E_other + E_i), so the result is the complete model energy.
         """
         E1, E2 = self._get_basin_energies(temperature)
         
