@@ -32,7 +32,7 @@ def test_combine_contacts_writes_runtime_cutoff() -> None:
     ]
 
 
-def test_combine_contacts_keeps_legacy_format_when_cutoff_is_omitted() -> None:
+def test_combine_contacts_keeps_legacy_format_with_contact_type_1() -> None:
     state_contacts = [
         [['1', '5', '1', '0.50', '15.0']],
         [['1', '5', '1', '0.54', '15.0']],
@@ -42,6 +42,7 @@ def test_combine_contacts_keeps_legacy_format_when_cutoff_is_omitted() -> None:
         2,
         state_contacts,
         cutoff=0.06,
+        contact_type=1,
     )
 
     assert contacts == [['1', '5', '1', '0.52', '15.0']]

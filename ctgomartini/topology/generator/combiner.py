@@ -481,11 +481,47 @@ def combine_exclusions(mols_exclusions_list: list[list[list[str]]]) -> list[list
     return mbexclusions
 
 
+CONTACT_RCUT_FIXED_NM = 1.1  # Fixed cutoff of legacy functype-1 contacts
+
+
+def _resolve_contact_format(
+    contact_type: int, contact_rcut: float | None
+) -> tuple[str, str | None]:
+    """Resolve the contact entry format for the given contact type.
+
+    Args:
+        contact_type: Contact potential type: 1 (6-12 LJ, fixed 1.1 nm
+            cutoff), 2 (6-12 LJ, adjustable cutoff) or 3 (10-12 LJ,
+            adjustable cutoff).
+        contact_rcut: Runtime cutoff in nanometers for the adjustable types
+            (2/3); defaults to 1.1 when omitted. Ignored for type 1 (with a
+            notice if an explicit non-default value was given).
+
+    Returns:
+        Tuple of (functype, rcut_string); rcut_string is None for type 1
+        (no rcut field is written).
+    """
+    if contact_type not in (1, 2, 3):
+        raise ValueError(
+            f"Error: unsupported contact_type: {contact_type} (choose from 1, 2, 3)"
+        )
+    if contact_type == 1:
+        if contact_rcut is not None and float(contact_rcut) != CONTACT_RCUT_FIXED_NM:
+            print(
+                f"Note: contact_type=1 fixes the contact cutoff at "
+                f"{CONTACT_RCUT_FIXED_NM} nm; ignoring contact_rcut={contact_rcut}."
+            )
+        return '1', None
+    rcut = CONTACT_RCUT_FIXED_NM if contact_rcut is None else contact_rcut
+    return str(contact_type), str(rcut)
+
+
 def combine_contacts(
     n_mols: int,
     mols_contacts_list: list[list[list[str]]],
     cutoff: float,
     contact_rcut: float | None = None,
+    contact_type: int = 2,
 ) -> tuple[list[list[str]], list[list[str]]]:
     """Combine contacts from multiple molecular states.
 
@@ -494,14 +530,18 @@ def combine_contacts(
         mols_contacts_list: List of contact lists from each molecule.
         cutoff: Distance cutoff for considering contacts as similar.
         contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
-            When provided, output entries use adjustable 6-12 contacts
-            (functype 2). When omitted, the legacy topology format is kept.
+            Used by the adjustable types 2/3 (default 1.1 when omitted);
+            ignored by type 1.
+        contact_type: Contact potential type: 1 (6-12 LJ, fixed 1.1 nm
+            cutoff, no rcut field), 2 (6-12 LJ, adjustable cutoff) or
+            3 (10-12 LJ, adjustable cutoff).
 
     Returns:
         Tuple of (mbcontacts, mbmulti_contacts) where mbcontacts are
         contacts with averaged parameters and mbmulti_contacts are
         state-specific contacts.
     """
+    functype, rcut = _resolve_contact_format(contact_type, contact_rcut)
     assert len(mols_contacts_list) == n_mols, "Error: The number of contacts is not equal to the number of molecules."
     mols_contacts_dict_list: list[dict[tuple[int, int], list[str]]] = []
     for i, contacts in enumerate(mols_contacts_list):
@@ -526,14 +566,14 @@ def combine_contacts(
             for fields in value:
                 state = fields[0]
                 fields = fields[1:]
-                if contact_rcut is None:
+                if functype == '1':
                     newfields = fields[:2] + [str(n_mols), state] + fields[2:]
                 else:
                     newfields = (
                         fields[:2]
-                        + [str(n_mols), state, '2']
+                        + [str(n_mols), state, functype]
                         + fields[3:5]
-                        + [str(contact_rcut)]
+                        + [rcut]
                     )
                 mbmulti_contacts.append(newfields)
         else:
@@ -543,7 +583,7 @@ def combine_contacts(
             if diff_sigma <= cutoff:
                 mean_sigma = round(sum(sigma_list) / len(sigma_list), 10)
                 mean_epsilon = round(sum(epsilon_list) / len(epsilon_list), 10)
-                if contact_rcut is None:
+                if functype == '1':
                     mbcontacts.append([
                         str(key[0]),
                         str(key[1]),
@@ -555,23 +595,23 @@ def combine_contacts(
                     mbcontacts.append([
                         str(key[0]),
                         str(key[1]),
-                        '2',
+                        functype,
                         str(mean_sigma),
                         str(mean_epsilon),
-                        str(contact_rcut),
+                        rcut,
                     ])
             else:
                 for fields in value:
                     state = fields[0]
                     fields = fields[1:]
-                    if contact_rcut is None:
+                    if functype == '1':
                         newfields = fields[:2] + [str(n_mols), state] + fields[2:]
                     else:
                         newfields = (
                             fields[:2]
-                            + [str(n_mols), state, '2']
+                            + [str(n_mols), state, functype]
                             + fields[3:5]
-                            + [str(contact_rcut)]
+                            + [rcut]
                         )
                     mbmulti_contacts.append(newfields)
 

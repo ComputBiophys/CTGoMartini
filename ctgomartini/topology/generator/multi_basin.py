@@ -29,24 +29,29 @@ def create_mb_topology(
     mbmol_name: str,
     dict_cutoffs: dict[str, float] | None = None,
     contact_rcut: float | None = None,
+    contact_type: int = 2,
 ) -> Any:
     """
     Generate a multiple-basin (MB) topology for Martini Go-models.
-    
+
     Combines multiple molecular topologies into a single multiple-basin topology,
     allowing simulation of molecules that can exist in multiple conformational states.
-    
+
     Args:
         mols_list: List of [topfile, mol_name] pairs for each molecule to combine.
             Example: [['topfileA.itp', 'molA'], ['topfileB.itp', 'molB']]
         mbmol_name: Name for the new multiple-basin molecule.
         dict_cutoffs: Dictionary of cutoff values for different interaction types.
-            Keys: 'cutoff_BBB_angles', 'cutoff_BBBB_dihedrals', 
+            Keys: 'cutoff_BBB_angles', 'cutoff_BBBB_dihedrals',
                   'cutoff_SBBS_dihedrals', 'cutoff_contacts'.
             Default is all zeros (no cutoffs).
         contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
-            When provided, the value is stored in each generated contact entry.
-            When omitted, the legacy topology format is kept.
+            Used by the adjustable types 2/3 (default 1.1 when omitted);
+            ignored by type 1.
+        contact_type: Contact potential type: 1 (6-12 LJ, fixed 1.1 nm
+            cutoff, legacy format without rcut field), 2 (6-12 LJ with
+            per-contact adjustable cutoff) or 3 (10-12 LJ with per-contact
+            adjustable cutoff).
 
     Returns:
         MBMolecule: A multiple-basin molecule object with combined topology.
@@ -195,6 +200,7 @@ def create_mb_topology(
         mols_contacts_list,
         dict_cutoffs['cutoff_contacts'],
         contact_rcut=contact_rcut,
+        contact_type=contact_type,
     )
     mbmol._topology['contacts'] = mbcontacts
     mbmol._topology['multi_contacts'] = mbmulti_contacts        

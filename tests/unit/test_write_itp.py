@@ -93,7 +93,7 @@ class TestWriteItp:
                 'cutoff_BBBB_dihedrals': 30,
                 'cutoff_SBBS_dihedrals': 30,
                 'cutoff_contacts': 0.06 }
-            mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
+            mbmol =  create_mb_topology(mols_list, mbmol_name, dict_cutoffs, contact_type=1)
             write_itp(mbmol)
 
         compare_itp_topology(str(test_dir), os.path.join(working_dir, "ref"), 'gbp', 'system.top')

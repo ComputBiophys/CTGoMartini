@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .combiner import extract_contacts_from_topology
+from .combiner import extract_contacts_from_topology, _resolve_contact_format
 from ..builder import MartiniTopFile
 
 
@@ -51,6 +51,37 @@ def _change_atom_type(
     return newatoms
 
 
+def _apply_contact_format(
+    contacts: list[list[str]],
+    contact_type: int,
+    contact_rcut: float | None = None,
+) -> list[list[str]]:
+    """Convert fixed-cutoff contacts to the requested contact type.
+
+    Rewrites each contact entry from functype 1 (fixed 1.1 nm runtime cutoff)
+    to functype 2 (6-12) or 3 (10-12) with a per-contact runtime cutoff.
+    Type 1 keeps the legacy fixed-cutoff format unchanged.
+
+    Args:
+        contacts: Contact entries [atomid1, atomid2, '1', sigma, epsilon].
+        contact_type: Contact potential type (1, 2 or 3).
+        contact_rcut: Runtime cutoff in nanometers, appended to each entry
+            for types 2/3 (default 1.1 when omitted); ignored for type 1.
+
+    Returns:
+        Converted entries [atomid1, atomid2, functype, sigma, epsilon, rcut],
+        or the input unchanged for type 1.
+    """
+    functype, rcut = _resolve_contact_format(contact_type, contact_rcut)
+    if functype == '1':
+        return contacts
+    converted: list[list[str]] = []
+    for fields in contacts:
+        assert fields[2] == '1', f"Error: only support functype 1 contacts: {fields}"
+        converted.append(fields[:2] + [functype] + fields[3:] + [rcut])
+    return converted
+
+
 def _apply_contact_rcut(
     contacts: list[list[str]], contact_rcut: float
 ) -> list[list[str]]:
@@ -66,31 +97,31 @@ def _apply_contact_rcut(
     Returns:
         Converted entries [atomid1, atomid2, '2', sigma, epsilon, rcut].
     """
-    converted: list[list[str]] = []
-    for fields in contacts:
-        assert fields[2] == '1', f"Error: only support functype 1 contacts: {fields}"
-        converted.append(fields[:2] + ['2'] + fields[3:] + [str(contact_rcut)])
-    return converted
+    return _apply_contact_format(contacts, 2, contact_rcut)
     
 
 def create_sb_topology(
-    mols_list: list[list[str]], 
+    mols_list: list[list[str]],
     sbmol_name: str,
-    contact_rcut: float | None = None
+    contact_rcut: float | None = None,
+    contact_type: int = 2,
 ) -> Any:
     """
     Generate a single-basin (SB) Martini topology from a list of molecules.
-    
+
     Creates a unified topology for single-basin Martini models.
-    
+
     Args:
         mols_list: List of [topfile, mol_name] pairs.
             Example: [['topfileA.itp', 'molA'], ['topfileB.itp', 'molB']]
         sbmol_name: Name for the new single-basin molecule.
         contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
-            When provided, contacts are written as adjustable 6-12 contacts
-            (functype 2) with this per-contact cutoff. When omitted, the
-            legacy fixed-cutoff format (functype 1) is kept.
+            Used by the adjustable types 2/3 (default 1.1 when omitted);
+            ignored by type 1.
+        contact_type: Contact potential type: 1 (6-12 LJ, fixed 1.1 nm
+            cutoff, legacy format without rcut field), 2 (6-12 LJ with
+            per-contact adjustable cutoff) or 3 (10-12 LJ with per-contact
+            adjustable cutoff).
         
     Returns:
         SBMolecule: Single-basin molecule object with topology attributes:
@@ -174,11 +205,10 @@ def create_sb_topology(
     sbmol._topology['contacts'] = mol._topology['contacts']
     sbmol._topology['exclusions'] = mol._topology['exclusions']
 
-    # Optionally convert contacts to adjustable 6-12 form with runtime cutoff
-    if contact_rcut is not None:
-        sbmol._topology['contacts'] = _apply_contact_rcut(
-            sbmol._topology['contacts'], contact_rcut
-        )
+    # Convert contacts to the requested type (no-op for the legacy type 1)
+    sbmol._topology['contacts'] = _apply_contact_format(
+        sbmol._topology['contacts'], contact_type, contact_rcut
+    )
 
     # Process any additional topology categories
     categories_list: list[str] = []

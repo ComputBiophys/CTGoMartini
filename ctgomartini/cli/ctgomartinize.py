@@ -229,6 +229,7 @@ def MBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    contact_type: int = 2,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
     extract_states: bool = False,
@@ -292,6 +293,7 @@ def MBGOMartinize(
         mbmol_name,
         dict_cutoffs,
         contact_rcut=go_up,
+        contact_type=contact_type,
     )
 
     # Modify multiple_basin parameters according to method
@@ -364,6 +366,7 @@ def SBGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    contact_type: int = 2,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
 ) -> None:
@@ -420,7 +423,9 @@ def SBGOMartinize(
     print(f"  Generating single-basin topology...")
     
     mols_list: list[list[str]] = [[f'{state_name}/system.top', state_name]]
-    sbmol = create_sb_topology(mols_list, state_name, contact_rcut=go_up)
+    sbmol = create_sb_topology(
+        mols_list, state_name, contact_rcut=go_up, contact_type=contact_type
+    )
 
     if method.lower() != "sbp":
         raise ValueError(f'Error: Unsupported method: {method}')
@@ -467,6 +472,7 @@ def SwitchingGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    contact_type: int = 2,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
 ) -> None:
@@ -518,7 +524,9 @@ def SwitchingGOMartinize(
         # Generate single-basin topology for switching (inside state dir)
         print(f"\n  Generating single-basin topology for {state_name}...")
         mols_list: list[list[str]] = [[str(state_dir / 'system.top'), state_name]]
-        sbmol = create_sb_topology(mols_list, state_name, contact_rcut=go_up)
+        sbmol = create_sb_topology(
+            mols_list, state_name, contact_rcut=go_up, contact_type=contact_type
+        )
         write_itp(sbmol)
         print(f"  ✓ Topology written: {state_name}.itp, {state_name}_params.itp")
 
@@ -562,6 +570,7 @@ def CTGOMartinize(
     go_eps: float = 12.0,
     go_low: float = 0.3,
     go_up: float = 1.1,
+    contact_type: int = 2,
     constraints2bonds: float | None = None,
     min_seq_distance: int = 4,
     extract_states: bool = False,
@@ -571,7 +580,7 @@ def CTGOMartinize(
         SwitchingGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            go_eps=go_eps, go_low=go_low, go_up=go_up, contact_type=contact_type,
             constraints2bonds=constraints2bonds,
             min_seq_distance=min_seq_distance,
         )
@@ -579,7 +588,7 @@ def CTGOMartinize(
         MBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list, mbmol_name,
             dict_cutoffs, method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            go_eps=go_eps, go_low=go_low, go_up=go_up, contact_type=contact_type,
             constraints2bonds=constraints2bonds,
             min_seq_distance=min_seq_distance,
             extract_states=extract_states,
@@ -588,7 +597,7 @@ def CTGOMartinize(
         SBGOMartinize(
             aa_strfile_list, map_file_list, state_name_list,
             method=method, dssp=dssp, ff=ff, other_params=other_params,
-            go_eps=go_eps, go_low=go_low, go_up=go_up,
+            go_eps=go_eps, go_low=go_low, go_up=go_up, contact_type=contact_type,
             constraints2bonds=constraints2bonds,
             min_seq_distance=min_seq_distance,
         )
@@ -675,7 +684,16 @@ Notes:
     parser.add_argument('-go-low', dest='go_low', default=0.3, type=float,
                         help='Lower cutoff for Go contacts in nm (default: 0.3)')
     parser.add_argument('-go-up', dest='go_up', default=1.1, type=float,
-                        help='Upper cutoff for Go contacts in nm (default: 1.1)')
+                        help='Upper cutoff for Go contacts in nm (default: 1.1). '
+                             'Used as the per-contact runtime cutoff for adjustable '
+                             'contact types (2/3); ignored by -contact-type 1.')
+    parser.add_argument('-contact-type', dest='contact_type', default=2, type=int,
+                        choices=[1, 2, 3],
+                        help='Go contact potential type (default: 2): '
+                             '1 = 6-12 LJ with fixed 1.1 nm cutoff (legacy functype 1, '
+                             'no rcut field); 2 = 6-12 LJ with adjustable cutoff '
+                             '(functype 2); 3 = 10-12 LJ with adjustable cutoff '
+                             '(functype 3). The adjustable cutoff is -go-up.')
     parser.add_argument('-min-seq-distance', dest='min_seq_distance', default=4, type=int,
                         help='Minimum sequence distance (PDB numbering) for intra-chain contacts. '
                              'Contacts within the same chain with distance < min-seq-distance are '
@@ -720,7 +738,7 @@ Notes:
         args.strfile, map_file_list, args.moltype, args.mbmoltype,
         dict_cutoffs, method=args.method, dssp=args.dssp, ff=args.ff,
         other_params=args.other_params, go_eps=args.go_eps,
-        go_low=args.go_low, go_up=args.go_up,
+        go_low=args.go_low, go_up=args.go_up, contact_type=args.contact_type,
         constraints2bonds=args.constraints2bonds,
         min_seq_distance=args.min_seq_distance,
         extract_states=args.extract_states,

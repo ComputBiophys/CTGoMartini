@@ -239,7 +239,7 @@ def _full_gro_data(sbp_work: str):
 
 
 def build_sb_system(
-    work: str, rcut: float | None, protein_only: bool
+    work: str, rcut: float | None, protein_only: bool, contact_type: int = 2
 ) -> tuple[mm.System, dict, np.ndarray, object]:
     """create_sb_topology -> write_itp -> MartiniTopFile -> create_system.
 
@@ -251,7 +251,9 @@ def build_sb_system(
     gro, positions = _full_gro_data(work)
     box = gro.getPeriodicBoxVectors()
     with WorkingDirectoryContext(work):
-        sbmol = create_sb_topology([["open.top", "open"]], "sbrcut", contact_rcut=rcut)
+        sbmol = create_sb_topology(
+            [["open.top", "open"]], "sbrcut", contact_rcut=rcut, contact_type=contact_type
+        )
         if protein_only:
             sbmol._topology.pop("virtual_sitesn", None)
         write_itp(sbmol)
@@ -373,7 +375,9 @@ def test_sb_chain_legacy_fixed_cutoff_equivalence(sbp_work: str) -> None:
     """Legacy functype 1 (fixed 1.1 nm) and adjustable functype 2 at rcut=1.1
     must give the same contact energy and forces."""
     system_adj, sections, positions, box = build_sb_system(sbp_work, 1.1, protein_only=True)
-    system_leg, _, _, _ = build_sb_system(sbp_work, None, protein_only=True)
+    system_leg, _, _, _ = build_sb_system(
+        sbp_work, None, protein_only=True, contact_type=1
+    )
 
     adjustable = contact_forces_in_system(system_adj, adjustable=True)
     assert any(f.getNumBonds() > 0 for f in adjustable)
