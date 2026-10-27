@@ -287,7 +287,12 @@ def MBGOMartinize(
         [f'{state_name}/system.top', state_name]
         for state_name in state_name_list
     ]
-    mbmol = create_mb_topology(mols_list, mbmol_name, dict_cutoffs)
+    mbmol = create_mb_topology(
+        mols_list,
+        mbmol_name,
+        dict_cutoffs,
+        contact_rcut=go_up,
+    )
 
     # Modify multiple_basin parameters according to method
     if method.lower() == "ham":

@@ -27,7 +27,8 @@ from ..builder import MartiniTopFile
 def create_mb_topology(
     mols_list: list[list[str]],
     mbmol_name: str,
-    dict_cutoffs: dict[str, float] | None = None
+    dict_cutoffs: dict[str, float] | None = None,
+    contact_rcut: float | None = None,
 ) -> Any:
     """
     Generate a multiple-basin (MB) topology for Martini Go-models.
@@ -43,6 +44,9 @@ def create_mb_topology(
             Keys: 'cutoff_BBB_angles', 'cutoff_BBBB_dihedrals', 
                   'cutoff_SBBS_dihedrals', 'cutoff_contacts'.
             Default is all zeros (no cutoffs).
+        contact_rcut: Runtime cutoff for Go contact potentials in nanometers.
+            When provided, the value is stored in each generated contact entry.
+            When omitted, the legacy topology format is kept.
 
     Returns:
         MBMolecule: A multiple-basin molecule object with combined topology.
@@ -187,7 +191,10 @@ def create_mb_topology(
     # Add contacts and multi-contacts
     mols_contacts_list = [mol._topology['contacts'] for (_, mol) in mols_pairs]
     mbcontacts, mbmulti_contacts = combine_contacts(
-        n_mols, mols_contacts_list, dict_cutoffs['cutoff_contacts']
+        n_mols,
+        mols_contacts_list,
+        dict_cutoffs['cutoff_contacts'],
+        contact_rcut=contact_rcut,
     )
     mbmol._topology['contacts'] = mbcontacts
     mbmol._topology['multi_contacts'] = mbmulti_contacts        
